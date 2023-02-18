@@ -14,12 +14,15 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
 set(TS_FILES unofficial-gog-client_en_US.ts)
 
+set(QRC_FILES resources.qrc)
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
         ${TS_FILES}
+        ${QRC_FILES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
