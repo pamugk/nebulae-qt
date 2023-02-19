@@ -20,7 +20,14 @@ set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
+        pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
+        pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
+        widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
+        widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
+        widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
+        widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
+        widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
         ${TS_FILES}
         ${QRC_FILES}
 )

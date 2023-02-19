@@ -25,6 +25,9 @@
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
      <widget class="QWidget" name="filtersScrollAreaContents">
       <property name="geometry">
        <rect>
@@ -34,7 +37,10 @@
         <height>531</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="filtersScrollAreaLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
        <item>
         <widget class="QCheckBox" name="discountedOnlyCheckbox">
          <property name="text">
@@ -48,19 +54,6 @@
           <string>Hide DLCs and extras</string>
          </property>
         </widget>
-       </item>
-       <item>
-        <spacer name="filtersSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -219,8 +212,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>583</width>
-            <height>447</height>
+            <width>66</width>
+            <height>16</height>
            </rect>
           </property>
          </widget>

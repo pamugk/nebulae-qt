@@ -20,5 +20,16 @@
         <file>icons/angle-left.svg</file>
         <file>icons/rotate.svg</file>
         <file>icons/table-cells.svg</file>
+        <file>icons/eye-slash.svg</file>
+        <file>icons/eye.svg</file>
+        <file>icons/angle-down.svg</file>
+        <file>icons/windows.svg</file>
+        <file>icons/xmark.svg</file>
+        <file>icons/linux.svg</file>
+        <file>icons/apple.svg</file>
+        <file>icons/star.svg</file>
+        <file>icons/star-stroke.svg</file>
+        <file>icons/star-half-stroke.svg</file>
+        <file>icons/cart-plus.svg</file>
     </qresource>
 </RCC>
