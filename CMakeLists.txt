@@ -18,9 +18,9 @@ set(QRC_FILES resources.qrc)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+        mainwindow.cpp mainwindow.h mainwindow.ui
+        pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
+        pages/storepage.h pages/storepage.cpp pages/storepage.ui
         ${TS_FILES}
         ${QRC_FILES}
 )

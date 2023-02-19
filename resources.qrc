@@ -16,5 +16,9 @@
         <file>icons/user.svg</file>
         <file>icons/gog-galaxy.svg</file>
         <file>icons/layer-group.svg</file>
+        <file>icons/angle-right.svg</file>
+        <file>icons/angle-left.svg</file>
+        <file>icons/rotate.svg</file>
+        <file>icons/table-cells.svg</file>
     </qresource>
 </RCC>
