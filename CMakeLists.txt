@@ -19,6 +19,12 @@ set(QRC_FILES resources.qrc)
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h mainwindow.ui
+
+        api/models/product.h
+        api/models/productshared.h
+        api/models/tag.h
+        api/models/user.h
+
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
