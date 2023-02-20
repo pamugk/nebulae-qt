@@ -236,6 +236,42 @@
     </message>
 </context>
 <context>
+    <name>OrderGroup</name>
+    <message>
+        <location filename="widgets/ordergroup.ui" line="14"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_ordergroup.h" line="65"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/ordergroup.ui" line="32"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_ordergroup.h" line="66"/>
+        <source>Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/ordergroup.ui" line="39"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_ordergroup.h" line="67"/>
+        <source>Total Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/ordergroup.ui" line="59"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_ordergroup.h" line="68"/>
+        <source>ORDER #%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OrderItem</name>
+    <message>
+        <location filename="widgets/orderitem.ui" line="16"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="35"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OrdersPage</name>
     <message>
         <location filename="pages/orderspage.ui" line="14"/>
@@ -260,31 +296,31 @@
     <name>StoreGridTile</name>
     <message>
         <location filename="widgets/storegridtile.ui" line="20"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="99"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="100"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets/storegridtile.ui" line="38"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="100"/>
+        <location filename="widgets/storegridtile.ui" line="41"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="101"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets/storegridtile.ui" line="45"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="101"/>
+        <location filename="widgets/storegridtile.ui" line="48"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="102"/>
         <source>Discount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets/storegridtile.ui" line="52"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="102"/>
+        <location filename="widgets/storegridtile.ui" line="55"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="103"/>
         <source>Old price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets/storegridtile.ui" line="95"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="104"/>
+        <location filename="widgets/storegridtile.ui" line="98"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_storegridtile.h" line="105"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>

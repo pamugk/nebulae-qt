@@ -25,6 +25,8 @@ set(PROJECT_SOURCES
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
+        widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
+        widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
