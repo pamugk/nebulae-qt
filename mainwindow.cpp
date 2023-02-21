@@ -6,6 +6,8 @@
 #include "./pages/storepage.h"
 #include "./pages/wishlistpage.h"
 
+#include "./windows/authdialog.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -21,6 +23,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pagesStack->addWidget(allGamesPage);
     ui->pagesStack->addWidget(wishlistPage);
     ui->pagesStack->addWidget(ordersPage);
+
+    apiClient = new GogApiClient(this);
+    connect(apiClient, &GogApiClient::authenticated, [this]{
+        ui->loginButton->setVisible(false);
+    });
+    connect(ui->loginButton, &QPushButton::clicked, apiClient, &GogApiClient::grant);
+    connect(apiClient, &GogApiClient::authorize, [this](const QUrl &authUrl){
+        AuthDialog dialog(this);
+        dialog.setUrl(authUrl);
+        dialog.exec();
+    });
 }
 
 MainWindow::~MainWindow()

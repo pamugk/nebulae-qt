@@ -125,6 +125,20 @@
     </message>
 </context>
 <context>
+    <name>AuthDialog</name>
+    <message>
+        <location filename="windows/authdialog.ui" line="14"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_authdialog.h" line="48"/>
+        <source>Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/authdialog.ui" line="33"/>
+        <source>about:blank</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CollapsibleArea</name>
     <message>
         <location filename="widgets/collapsiblearea.ui" line="20"/>
@@ -265,9 +279,27 @@
 <context>
     <name>OrderItem</name>
     <message>
-        <location filename="widgets/orderitem.ui" line="16"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="35"/>
+        <location filename="widgets/orderitem.ui" line="20"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="88"/>
         <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/orderitem.ui" line="57"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="90"/>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/orderitem.ui" line="78"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="91"/>
+        <source>Old price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="widgets/orderitem.ui" line="94"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_orderitem.h" line="92"/>
+        <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

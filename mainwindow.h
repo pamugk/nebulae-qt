@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "./api/gogapiclient.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -35,6 +37,8 @@ private slots:
     void on_friendsButton_clicked();
 
 private:
+    GogApiClient *apiClient;
+
     Ui::MainWindow *ui;
     QWidget *storePage;
     QWidget *allGamesPage;
