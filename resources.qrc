@@ -36,5 +36,9 @@
         <file>icons/house.svg</file>
         <file>icons/sliders.svg</file>
         <file>icons/window-maximize.svg</file>
+        <file>icons/square-plus.svg</file>
+        <file>icons/message.svg</file>
+        <file>icons/terminal.svg</file>
+        <file>icons/keyboard.svg</file>
     </qresource>
 </RCC>

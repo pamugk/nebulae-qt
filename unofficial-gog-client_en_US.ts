@@ -325,6 +325,63 @@
     </message>
 </context>
 <context>
+    <name>SearchDialog</name>
+    <message>
+        <location filename="windows/searchdialog.ui" line="14"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="207"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="75"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="209"/>
+        <source>Search your friends, games and...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="82"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="210"/>
+        <source>Show results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="144"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="212"/>
+        <source>Perform actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="154"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="213"/>
+        <source>Search in tags, genres, ratings &amp; more...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="167"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="214"/>
+        <source>Launch any game, start chatting with a friend...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="185"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="215"/>
+        <source>Search metadata</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="250"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="218"/>
+        <source>Add games</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="windows/searchdialog.ui" line="266"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="219"/>
+        <source>Find any game and mark it as owned</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SettingsDialog</name>
     <message>
         <location filename="windows/settingsdialog.ui" line="79"/>

@@ -38,6 +38,8 @@ private slots:
 
     void on_settingsButton_clicked();
 
+    void on_actionButton_clicked();
+
 private:
     GogApiClient *apiClient;
 

@@ -31,6 +31,8 @@ set(PROJECT_SOURCES
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
+        viewmodels/searchlistmodel.h viewmodels/searchlistmodel.cpp
+
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
@@ -41,6 +43,7 @@ set(PROJECT_SOURCES
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
+        windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui
         ${TS_FILES}
         ${QRC_FILES}

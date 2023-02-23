@@ -7,6 +7,7 @@
 #include "../pages/wishlistpage.h"
 
 #include "authdialog.h"
+#include "searchdialog.h"
 #include "settingsdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -100,6 +101,13 @@ void MainWindow::on_friendsButton_clicked()
 void MainWindow::on_settingsButton_clicked()
 {
     SettingsDialog dialog(this);
+    dialog.exec();
+}
+
+
+void MainWindow::on_actionButton_clicked()
+{
+    SearchDialog dialog(this);
     dialog.exec();
 }
 
