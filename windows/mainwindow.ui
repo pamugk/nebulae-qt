@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>GOG Client (Unofficial)</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/icons/gog-galaxy.svg</normaloff>:/icons/gog-galaxy.svg</iconset>
   </property>
   <property name="styleSheet">
@@ -31,7 +31,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/arrow-left.svg</normaloff>:/icons/arrow-left.svg</iconset>
          </property>
          <property name="flat">
@@ -45,7 +45,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/arrow-right.svg</normaloff>:/icons/arrow-right.svg</iconset>
          </property>
          <property name="flat">
@@ -137,7 +137,7 @@ QLabel {
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources.qrc">
               <normaloff>:/icons/gear.svg</normaloff>:/icons/gear.svg</iconset>
             </property>
             <property name="iconSize">
@@ -157,7 +157,7 @@ QLabel {
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources.qrc">
               <normaloff>:/icons/right-to-bracket.svg</normaloff>:/icons/right-to-bracket.svg</iconset>
             </property>
             <property name="iconSize">
@@ -183,7 +183,7 @@ QLabel {
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources.qrc">
               <normaloff>:/icons/magnifying-glass.svg</normaloff>:/icons/magnifying-glass.svg</iconset>
             </property>
             <property name="iconSize">
@@ -213,7 +213,7 @@ QLabel {
           <string>Discover</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/layer-group.svg</normaloff>:/icons/layer-group.svg</iconset>
          </property>
          <property name="flat">
@@ -233,7 +233,7 @@ QLabel {
           <string>Recent</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/calendar.svg</normaloff>:/icons/calendar.svg</iconset>
          </property>
          <property name="flat">
@@ -254,7 +254,7 @@ QLabel {
           <string>Store</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/cart-shopping.svg</normaloff>:/icons/cart-shopping.svg</iconset>
          </property>
          <property name="flat">
@@ -268,7 +268,7 @@ QLabel {
           <string>All games</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/tag.svg</normaloff>:/icons/tag.svg</iconset>
          </property>
          <property name="flat">
@@ -282,7 +282,7 @@ QLabel {
           <string>Wishlist</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/heart.svg</normaloff>:/icons/heart.svg</iconset>
          </property>
          <property name="flat">
@@ -296,7 +296,7 @@ QLabel {
           <string>Orders history</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/receipt.svg</normaloff>:/icons/receipt.svg</iconset>
          </property>
          <property name="flat">
@@ -317,7 +317,7 @@ QLabel {
           <string>Owned games</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/list.svg</normaloff>:/icons/list.svg</iconset>
          </property>
          <property name="flat">
@@ -331,7 +331,7 @@ QLabel {
           <string>Installed</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/desktop.svg</normaloff>:/icons/desktop.svg</iconset>
          </property>
          <property name="flat">
@@ -352,7 +352,7 @@ QLabel {
           <string>Friends online</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/icons/user-group.svg</normaloff>:/icons/user-group.svg</iconset>
          </property>
          <property name="flat">
@@ -383,7 +383,7 @@ QLabel {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1024</width>
      <height>23</height>
     </rect>
    </property>
@@ -391,7 +391,7 @@ QLabel {
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

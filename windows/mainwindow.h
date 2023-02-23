@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-#include "./api/gogapiclient.h"
+#include "../api/gogapiclient.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -35,6 +35,8 @@ private slots:
     void on_installedButton_clicked();
 
     void on_friendsButton_clicked();
+
+    void on_settingsButton_clicked();
 
 private:
     GogApiClient *apiClient;

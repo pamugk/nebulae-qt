@@ -18,7 +18,6 @@ set(QRC_FILES resources.qrc)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp mainwindow.h mainwindow.ui
 
         api/gogapiclient.h api/gogapiclient.cpp
 
@@ -41,6 +40,8 @@ set(PROJECT_SOURCES
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
+        windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
+        windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui
         ${TS_FILES}
         ${QRC_FILES}
 )

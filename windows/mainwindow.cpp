@@ -1,12 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-#include "./pages/allgamespage.h"
-#include "./pages/orderspage.h"
-#include "./pages/storepage.h"
-#include "./pages/wishlistpage.h"
+#include "../pages/allgamespage.h"
+#include "../pages/orderspage.h"
+#include "../pages/storepage.h"
+#include "../pages/wishlistpage.h"
 
-#include "./windows/authdialog.h"
+#include "authdialog.h"
+#include "settingsdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -93,5 +94,12 @@ void MainWindow::on_installedButton_clicked()
 void MainWindow::on_friendsButton_clicked()
 {
 
+}
+
+
+void MainWindow::on_settingsButton_clicked()
+{
+    SettingsDialog dialog(this);
+    dialog.exec();
 }
 

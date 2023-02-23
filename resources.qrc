@@ -31,5 +31,10 @@
         <file>icons/star-stroke.svg</file>
         <file>icons/star-half-stroke.svg</file>
         <file>icons/cart-plus.svg</file>
+        <file>icons/bell.svg</file>
+        <file>icons/download.svg</file>
+        <file>icons/house.svg</file>
+        <file>icons/sliders.svg</file>
+        <file>icons/window-maximize.svg</file>
     </qresource>
 </RCC>
