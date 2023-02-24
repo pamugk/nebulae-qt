@@ -26,6 +26,9 @@ set(PROJECT_SOURCES
         api/models/tag.h
         api/models/user.h
 
+        internals/pages.h
+        internals/settingsmanager.h internals/settingsmanager.cpp
+
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui

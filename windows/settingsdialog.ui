@@ -27,13 +27,13 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>32</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>16</number>
+    <number>0</number>
    </property>
    <item>
     <widget class="QWidget" name="drawer" native="true">
@@ -65,13 +65,13 @@ QPushButton:checked
        <number>24</number>
       </property>
       <property name="topMargin">
-       <number>0</number>
+       <number>32</number>
       </property>
       <property name="rightMargin">
        <number>32</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>16</number>
       </property>
       <item>
        <widget class="QLabel" name="galaxyLabel">
@@ -215,13 +215,13 @@ QPushButton:checked
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>32</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>16</number>
        </property>
        <item>
         <widget class="QScrollArea" name="generalPageScrollArea">
@@ -377,6 +377,10 @@ QPushButton:checked
            </item>
            <item row="0" column="0" colspan="3">
             <widget class="QLabel" name="generalPageHeaderLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>GENERAL</string>
              </property>
@@ -419,6 +423,10 @@ QPushButton:checked
            </item>
            <item row="5" column="0" colspan="3">
             <widget class="QLabel" name="generalPageConvenienceLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>CONVENIENCE</string>
              </property>
@@ -472,13 +480,13 @@ QPushButton:checked
         <number>24</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>32</number>
        </property>
        <property name="rightMargin">
         <number>8</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>16</number>
        </property>
        <property name="spacing">
         <number>20</number>
@@ -525,8 +533,8 @@ QPushButton:checked
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="interfacePageHeaderLabel">
          <property name="styleSheet">
-          <string notr="true">padding-bottom: 20px;
-border-bottom: thin solid black;</string>
+          <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
          </property>
          <property name="text">
           <string>CUSTOMIZATIONS</string>
@@ -583,13 +591,13 @@ border-bottom: thin solid black;</string>
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>32</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>16</number>
        </property>
        <item>
         <widget class="QScrollArea" name="notificationsPageScrollArea">
@@ -604,8 +612,8 @@ border-bottom: thin solid black;</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>574</width>
-            <height>552</height>
+            <width>361</width>
+            <height>516</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
@@ -693,6 +701,10 @@ border-bottom: thin solid black;</string>
            </item>
            <item row="0" column="0" colspan="3">
             <widget class="QLabel" name="notificationsPageHeaderLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>NOTIFICATIONS</string>
              </property>
@@ -745,6 +757,10 @@ border-bottom: thin solid black;</string>
            </item>
            <item row="8" column="0" colspan="3">
             <widget class="QLabel" name="notificationsPositionLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>POSITION &amp; VOLUME</string>
              </property>
@@ -789,9 +805,6 @@ border-bottom: thin solid black;</string>
       </layout>
      </widget>
      <widget class="QWidget" name="installingPage">
-      <property name="styleSheet">
-       <string notr="true">border: none;</string>
-      </property>
       <layout class="QVBoxLayout" name="installingPageLayout">
        <property name="spacing">
         <number>0</number>
@@ -800,16 +813,19 @@ border-bottom: thin solid black;</string>
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>32</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>16</number>
        </property>
        <item>
         <widget class="QScrollArea" name="installingPageScrollArea">
+         <property name="styleSheet">
+          <string notr="true">border: none;</string>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -838,10 +854,130 @@ border-bottom: thin solid black;</string>
            <property name="spacing">
             <number>20</number>
            </property>
+           <item row="14" column="1">
+            <layout class="QHBoxLayout" name="scheduleLimitLayout">
+             <property name="spacing">
+              <number>8</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="scheduleLimitFromLabel">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>From</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTimeEdit" name="scheduleLimitFromTimeEdit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="scheduleLimitToLabel">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>To</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTimeEdit" name="scheduleLimitToTimeEdit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="15" column="0" colspan="2">
+            <spacer name="installingPageSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="13" column="1">
+            <widget class="QCheckBox" name="scheduleLimitCheckBox">
+             <property name="text">
+              <string>Schedule</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="installingPageHeaderLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>INSTALLING GAMES</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <layout class="QHBoxLayout" name="temporaryUpdateLayout">
+             <property name="spacing">
+              <number>8</number>
+             </property>
+             <item>
+              <widget class="QLineEdit" name="temporaryUpdateLineEdit">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="temporaryUpdateButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/icons/ellipsis.svg</normaloff>:/icons/ellipsis.svg</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="11" column="1">
+            <widget class="QCheckBox" name="bandwidthLimitCheckBox">
+             <property name="text">
+              <string>Limit bandwidth</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="shortcutLabel">
+             <property name="text">
+              <string>Shortcut</string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="0" rowspan="2">
+            <widget class="QLabel" name="bandwidthLimitLabel">
+             <property name="text">
+              <string>Bandwidth limit</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
              </property>
             </widget>
            </item>
@@ -852,6 +988,45 @@ border-bottom: thin solid black;</string>
              </property>
             </widget>
            </item>
+           <item row="4" column="1">
+            <widget class="QCheckBox" name="shortcutCheckBox">
+             <property name="text">
+              <string>Create shortcut on desktop</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QCheckBox" name="pauseDownloadsCheckBox">
+             <property name="text">
+              <string>Pause downloads when playing</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="temporaryUpdateFolderLabel">
+             <property name="text">
+              <string>Temporary game update folder</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0" colspan="2">
+            <widget class="QLabel" name="bandwidthLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
+             <property name="text">
+              <string>BANDWIDTH</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="downloadsFolderLabel">
+             <property name="text">
+              <string>Other downloads folder</string>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="0">
             <widget class="QLabel" name="installationFolderLabel">
              <property name="text">
@@ -859,40 +1034,36 @@ border-bottom: thin solid black;</string>
              </property>
             </widget>
            </item>
-           <item row="11" column="1">
-            <layout class="QHBoxLayout" name="scheduleLimitLayout">
-             <property name="spacing">
-              <number>8</number>
+           <item row="10" column="0">
+            <widget class="QLabel" name="pauseDownloadsLabel">
+             <property name="text">
+              <string>While playing</string>
              </property>
-             <item>
-              <widget class="QLabel" name="scheduleLimitFromLabel">
-               <property name="text">
-                <string>From</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTimeEdit" name="scheduleLimitFromTimeEdit"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="scheduleLimitToLabel">
-               <property name="text">
-                <string>To</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTimeEdit" name="scheduleLimitToTimeEdit"/>
-             </item>
-            </layout>
+            </widget>
            </item>
-           <item row="9" column="1">
+           <item row="13" column="0" rowspan="2">
+            <widget class="QLabel" name="scheduleLimitLabel">
+             <property name="text">
+              <string>Schedule limit</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="preferredLanguageComboBox"/>
+           </item>
+           <item row="12" column="1">
             <layout class="QHBoxLayout" name="bandwidthLimitLayout">
              <property name="spacing">
               <number>8</number>
              </property>
              <item>
               <widget class="QLabel" name="bandwidthLimitToLabel">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -906,123 +1077,78 @@ border-bottom: thin solid black;</string>
              </item>
              <item>
               <widget class="QSpinBox" name="bandwidthLimitSpinBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="bandwidthLimitComboBox"/>
+              <widget class="QComboBox" name="bandwidthLimitComboBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="preferredLanguageComboBox"/>
-           </item>
-           <item row="5" column="1">
-            <widget class="QComboBox" name="downloadsFolderComboBox"/>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="temporaryUpdateFolderLabel">
-             <property name="text">
-              <string>Temporary game update folder</string>
+           <item row="2" column="1">
+            <layout class="QHBoxLayout" name="installationFolderLayout">
+             <property name="spacing">
+              <number>8</number>
              </property>
-            </widget>
-           </item>
-           <item row="6" column="0" colspan="2">
-            <widget class="QLabel" name="bandwidthLabel">
-             <property name="text">
-              <string>BANDWIDTH</string>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="1">
-            <widget class="QCheckBox" name="bandwidthLimitCheckBox">
-             <property name="text">
-              <string>Limit bandwidth</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="shortcutLabel">
-             <property name="text">
-              <string>Shortcut</string>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="0" rowspan="2">
-            <widget class="QLabel" name="scheduleLimitLabel">
-             <property name="text">
-              <string>Schedule limit</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="1">
-            <widget class="QCheckBox" name="scheduleLimitComboBox">
-             <property name="text">
-              <string>Schedule</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="pauseDownloadsLabel">
-             <property name="text">
-              <string>While playing</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="downloadsFolderLabel">
-             <property name="text">
-              <string>Other downloads folder</string>
-             </property>
-            </widget>
+             <item>
+              <widget class="QLineEdit" name="installationFolderLineEdit">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="installationFolderButton">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/icons/ellipsis.svg</normaloff>:/icons/ellipsis.svg</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item row="7" column="1">
-            <widget class="QCheckBox" name="pauseDownloadsCheckBox">
-             <property name="text">
-              <string>Pause downloads when playing</string>
+            <layout class="QHBoxLayout" name="downloadsFolderLayout">
+             <property name="spacing">
+              <number>8</number>
              </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QCheckBox" name="shortcutCheckBox">
-             <property name="text">
-              <string>Create shortcut on desktop</string>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0" rowspan="2">
-            <widget class="QLabel" name="bandwidthLimitLabel">
-             <property name="text">
-              <string>Bandwidth limit</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QComboBox" name="temporaryUpdateFolderComboBox"/>
-           </item>
-           <item row="12" column="0" colspan="2">
-            <spacer name="installingPageSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit"/>
+             <item>
+              <widget class="QLineEdit" name="downloadsFolderLineEdit">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="downloadsFolderButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/icons/ellipsis.svg</normaloff>:/icons/ellipsis.svg</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -1039,13 +1165,13 @@ border-bottom: thin solid black;</string>
         <number>0</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>32</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>16</number>
        </property>
        <item>
         <widget class="QScrollArea" name="featuresPageScrollArea">
@@ -1061,7 +1187,7 @@ border-bottom: thin solid black;</string>
             <x>0</x>
             <y>0</y>
             <width>300</width>
-            <height>717</height>
+            <height>738</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="featuresPageGrid">
@@ -1165,6 +1291,10 @@ border-bottom: thin solid black;</string>
            </item>
            <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="featuresPageHeaderLabel">
+             <property name="styleSheet">
+              <string notr="true">border-bottom: 1px solid black;
+padding-bottom: 20px;</string>
+             </property>
              <property name="text">
               <string>GLOBAL TOGGLES</string>
              </property>

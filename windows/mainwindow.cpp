@@ -43,6 +43,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setSettingsManager(SettingsManager *settingsManager)
+{
+    this->settingsManager = settingsManager;
+}
+
 
 void MainWindow::on_discoverButton_clicked()
 {
@@ -101,6 +106,7 @@ void MainWindow::on_friendsButton_clicked()
 void MainWindow::on_settingsButton_clicked()
 {
     SettingsDialog dialog(this);
+    dialog.setSettingsManager(settingsManager);
     dialog.exec();
 }
 

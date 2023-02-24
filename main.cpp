@@ -1,12 +1,16 @@
-#include "windows/mainwindow.h"
-
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
 
+#include "internals/settingsmanager.h"
+#include "windows/mainwindow.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    QCoreApplication::setOrganizationName("pamugk.github.com");
+    QCoreApplication::setApplicationName("GOG Galaxy (Unofficial)");
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -17,7 +21,11 @@ int main(int argc, char *argv[])
             break;
         }
     }
+
+    SettingsManager settingsManager;
+
     MainWindow w;
+    w.setSettingsManager(&settingsManager);
     w.show();
     return a.exec();
 }

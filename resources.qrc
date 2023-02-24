@@ -40,5 +40,6 @@
         <file>icons/message.svg</file>
         <file>icons/terminal.svg</file>
         <file>icons/keyboard.svg</file>
+        <file>icons/ellipsis.svg</file>
     </qresource>
 </RCC>

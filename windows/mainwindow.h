@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "../api/gogapiclient.h"
+#include "../internals/settingsmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,6 +17,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    void setSettingsManager(SettingsManager *settingsManager);
 
 private slots:
     void on_discoverButton_clicked();
@@ -42,6 +45,7 @@ private slots:
 
 private:
     GogApiClient *apiClient;
+    SettingsManager *settingsManager;
 
     Ui::MainWindow *ui;
     QWidget *storePage;

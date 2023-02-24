@@ -328,55 +328,55 @@
     <name>SearchDialog</name>
     <message>
         <location filename="windows/searchdialog.ui" line="14"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="207"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="208"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="75"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="209"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="210"/>
         <source>Search your friends, games and...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="82"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="210"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="211"/>
         <source>Show results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="144"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="212"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="213"/>
         <source>Perform actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="154"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="213"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="214"/>
         <source>Search in tags, genres, ratings &amp; more...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="167"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="214"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="215"/>
         <source>Launch any game, start chatting with a friend...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="185"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="215"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="216"/>
         <source>Search metadata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="250"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="218"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="219"/>
         <source>Add games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/searchdialog.ui" line="266"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="219"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_searchdialog.h" line="220"/>
         <source>Find any game and mark it as owned</source>
         <translation type="unfinished"></translation>
     </message>
@@ -385,468 +385,468 @@
     <name>SettingsDialog</name>
     <message>
         <location filename="windows/settingsdialog.ui" line="79"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="956"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1028"/>
         <source>GOG GALAXY CLIENT</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="86"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="957"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1029"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="106"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="958"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1030"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="123"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="959"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1031"/>
         <source>Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="140"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="960"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1032"/>
         <source>GOG.COM GAMES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="147"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="961"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1033"/>
         <source>Installing, updating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="164"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="962"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1034"/>
         <source>Game features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="197"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="963"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1035"/>
         <source>1.0.0 - Pre-alpha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="284"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="965"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1037"/>
         <source>Experimental features and updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="294"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="966"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1038"/>
         <source>Starting page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="301"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="967"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1039"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="321"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="969"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1041"/>
         <source>Auto start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="341"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="971"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1043"/>
         <source>Auto login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="361"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="973"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1045"/>
         <source>Bug reports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="381"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="974"/>
+        <location filename="windows/settingsdialog.ui" line="385"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1046"/>
         <source>GENERAL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="403"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="975"/>
+        <location filename="windows/settingsdialog.ui" line="407"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1047"/>
         <source>These features are still under development. Please read this article if you want to check how to roll back to the public GOG GALAXY version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="413"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="976"/>
+        <location filename="windows/settingsdialog.ui" line="417"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1048"/>
         <source>Be the first to try out new features and help us improve them</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="423"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="977"/>
+        <location filename="windows/settingsdialog.ui" line="431"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1049"/>
         <source>CONVENIENCE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="433"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="978"/>
+        <location filename="windows/settingsdialog.ui" line="441"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1050"/>
         <source>Launch GOG Galaxy at system startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="443"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="979"/>
+        <location filename="windows/settingsdialog.ui" line="451"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1051"/>
         <source>Keep me logged in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="450"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="980"/>
+        <location filename="windows/settingsdialog.ui" line="458"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1052"/>
         <source>Submit bug reports to help improve GOG Galaxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="545"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="984"/>
+        <location filename="windows/settingsdialog.ui" line="553"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1056"/>
         <source>GOG.COM Store</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="552"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="985"/>
+        <location filename="windows/settingsdialog.ui" line="560"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1057"/>
         <source>Hide from sidebar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="571"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="987"/>
+        <location filename="windows/settingsdialog.ui" line="579"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1059"/>
         <source>Show online friends as a sidebar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="630"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="988"/>
+        <location filename="windows/settingsdialog.ui" line="638"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1060"/>
         <source>Friend starts a game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="637"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="989"/>
+        <location filename="windows/settingsdialog.ui" line="645"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1061"/>
         <source>Friend invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="650"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="990"/>
+        <location filename="windows/settingsdialog.ui" line="658"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1062"/>
         <source>Position in overlay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="657"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="991"/>
+        <location filename="windows/settingsdialog.ui" line="665"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1063"/>
         <source>Friend comes online</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="667"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="992"/>
-        <location filename="windows/settingsdialog.cpp" line="18"/>
+        <location filename="windows/settingsdialog.ui" line="675"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1064"/>
+        <location filename="windows/settingsdialog.cpp" line="20"/>
         <source>Wishlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="687"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="993"/>
+        <location filename="windows/settingsdialog.ui" line="695"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1065"/>
         <source>Position on desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="697"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="994"/>
+        <location filename="windows/settingsdialog.ui" line="709"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1066"/>
         <source>NOTIFICATIONS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="710"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="995"/>
+        <location filename="windows/settingsdialog.ui" line="722"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1067"/>
         <source>Installing / updating status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="723"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="996"/>
+        <location filename="windows/settingsdialog.ui" line="735"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1068"/>
         <source>Message received</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="733"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="997"/>
+        <location filename="windows/settingsdialog.ui" line="745"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1069"/>
         <source>Game invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="749"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="998"/>
+        <location filename="windows/settingsdialog.ui" line="765"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1070"/>
         <source>POSITION &amp; VOLUME</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="762"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="999"/>
+        <location filename="windows/settingsdialog.ui" line="778"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1071"/>
         <source>Sound volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="844"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1000"/>
+        <location filename="windows/settingsdialog.ui" line="925"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1075"/>
         <source>INSTALLING GAMES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="851"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1001"/>
+        <location filename="windows/settingsdialog.ui" line="987"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1080"/>
         <source>Preferred game language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="858"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1002"/>
+        <location filename="windows/settingsdialog.ui" line="1033"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1086"/>
         <source>Game installation folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="870"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1003"/>
+        <location filename="windows/settingsdialog.ui" line="868"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1072"/>
         <source>From</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="880"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1004"/>
+        <location filename="windows/settingsdialog.ui" line="885"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1073"/>
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="903"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1005"/>
+        <location filename="windows/settingsdialog.ui" line="1074"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1089"/>
         <source>to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="928"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1006"/>
+        <location filename="windows/settingsdialog.ui" line="1008"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1083"/>
         <source>Temporary game update folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="935"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1007"/>
+        <location filename="windows/settingsdialog.ui" line="1019"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1084"/>
         <source>BANDWIDTH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="942"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1008"/>
+        <location filename="windows/settingsdialog.ui" line="963"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1077"/>
         <source>Limit bandwidth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="949"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1009"/>
+        <location filename="windows/settingsdialog.ui" line="970"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1078"/>
         <source>Shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="956"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1010"/>
+        <location filename="windows/settingsdialog.ui" line="1047"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1088"/>
         <source>Schedule limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="966"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1011"/>
+        <location filename="windows/settingsdialog.ui" line="914"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1074"/>
         <source>Schedule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="973"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1012"/>
+        <location filename="windows/settingsdialog.ui" line="1040"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1087"/>
         <source>While playing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="980"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1013"/>
+        <location filename="windows/settingsdialog.ui" line="1026"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1085"/>
         <source>Other downloads folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="987"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1014"/>
+        <location filename="windows/settingsdialog.ui" line="1001"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1082"/>
         <source>Pause downloads when playing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="994"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1015"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1081"/>
         <source>Create shortcut on desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1001"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1016"/>
+        <location filename="windows/settingsdialog.ui" line="977"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1079"/>
         <source>Bandwidth limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1086"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1017"/>
+        <location filename="windows/settingsdialog.ui" line="1212"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1092"/>
         <source>Game time tracking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1098"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1018"/>
+        <location filename="windows/settingsdialog.ui" line="1224"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1093"/>
         <source>Achievements are unlocked when playling supported games, then uploaded and displayed in GOG Galaxy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1108"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1019"/>
+        <location filename="windows/settingsdialog.ui" line="1234"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1094"/>
         <source>Overlay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1115"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1020"/>
+        <location filename="windows/settingsdialog.ui" line="1241"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1095"/>
         <source>Cloud saves</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1122"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1021"/>
+        <location filename="windows/settingsdialog.ui" line="1248"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1096"/>
         <source>In-game features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1137"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1022"/>
+        <location filename="windows/settingsdialog.ui" line="1263"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1097"/>
         <source>Game time is recorded when playing all games, then uploaded and displayed in GOG Galaxy.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1147"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1023"/>
+        <location filename="windows/settingsdialog.ui" line="1273"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1098"/>
         <source>Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1159"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1024"/>
+        <location filename="windows/settingsdialog.ui" line="1285"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1099"/>
         <source>Overlay adds option to see GOG Galaxy stats, friends, chat and see desktop notifications when inside most of the games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1169"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1025"/>
+        <location filename="windows/settingsdialog.ui" line="1299"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1100"/>
         <source>GLOBAL TOGGLES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1176"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1026"/>
+        <location filename="windows/settingsdialog.ui" line="1306"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1101"/>
         <source>Game data features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1191"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1027"/>
+        <location filename="windows/settingsdialog.ui" line="1321"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1102"/>
         <source>Auto-update keeps all installed GOG games up to date in the background, without need to confirm updates manually.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1206"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1028"/>
+        <location filename="windows/settingsdialog.ui" line="1336"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1103"/>
         <source>Cloud saves downloads your saves when installing a supported GOG game, and syncs them before and after play sessions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="1216"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1029"/>
+        <location filename="windows/settingsdialog.ui" line="1346"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1104"/>
         <source>Auto-update games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="532"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="983"/>
+        <location filename="windows/settingsdialog.ui" line="540"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1055"/>
         <source>CUSTOMIZATIONS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="windows/settingsdialog.ui" line="20"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="955"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1027"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="564"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="986"/>
+        <location filename="windows/settingsdialog.ui" line="572"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1058"/>
         <source>The friends sidebar is available on window wider than 1500x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="518"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="982"/>
+        <location filename="windows/settingsdialog.ui" line="526"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1054"/>
         <source>Preferred store</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.ui" line="489"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="981"/>
+        <location filename="windows/settingsdialog.ui" line="497"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_settingsdialog.h" line="1053"/>
         <source>Friends sidebar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="17"/>
+        <location filename="windows/settingsdialog.cpp" line="19"/>
         <source>Discover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="17"/>
+        <location filename="windows/settingsdialog.cpp" line="19"/>
         <source>Recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="18"/>
+        <location filename="windows/settingsdialog.cpp" line="20"/>
         <source>Store</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="18"/>
+        <location filename="windows/settingsdialog.cpp" line="20"/>
         <source>All games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="18"/>
+        <location filename="windows/settingsdialog.cpp" line="20"/>
         <source>Order history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="19"/>
+        <location filename="windows/settingsdialog.cpp" line="21"/>
         <source>Owned games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="19"/>
+        <location filename="windows/settingsdialog.cpp" line="21"/>
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="windows/settingsdialog.cpp" line="20"/>
+        <location filename="windows/settingsdialog.cpp" line="22"/>
         <source>Friends</source>
         <translation type="unfinished"></translation>
     </message>
