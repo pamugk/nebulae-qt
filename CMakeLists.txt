@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Gui NetworkAuth WebEngineWidgets Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth Widgets WebEngineWidgets LinguistTools)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets WebEngineWidgets Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets Widgets WebEngineWidgets LinguistTools)
 
 set(TS_FILES unofficial-gog-client_en_US.ts)
 
@@ -25,16 +25,18 @@ set(PROJECT_SOURCES
         api/models/productshared.h
         api/models/tag.h
         api/models/user.h
+        api/models/wishlist.h
+
+        api/utils/serialization.h api/utils/serialization.cpp
 
         internals/pages.h
         internals/settingsmanager.h internals/settingsmanager.cpp
 
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
+        pages/basepage.h pages/basepage.cpp
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
-
-        viewmodels/searchlistmodel.h viewmodels/searchlistmodel.cpp
 
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
@@ -79,7 +81,7 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(unofficial-gog-client PRIVATE Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::NetworkAuth Qt${QT_VERSION_MAJOR}::WebEngineWidgets Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(unofficial-gog-client PRIVATE Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::SvgWidgets Qt${QT_VERSION_MAJOR}::NetworkAuth Qt${QT_VERSION_MAJOR}::WebEngineWidgets Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(unofficial-gog-client PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

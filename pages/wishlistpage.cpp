@@ -1,16 +1,22 @@
 #include "wishlistpage.h"
 #include "ui_wishlistpage.h"
 
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMenu>
 #include <QMenuBar>
+#include <QNetworkReply>
+
+#include "../api/utils/serialization.h"
+#include "../widgets/wishlistitem.h"
 
 WishlistPage::WishlistPage(QWidget *parent) :
-    QWidget(parent),
+    BasePage(parent),
     ui(new Ui::WishlistPage)
 {
     ui->setupUi(this);
 
-    auto icon = QIcon(":/icons/angle-down.svg");
     auto menuBar = new QMenuBar(this);
     auto genresMenu = menuBar->addMenu("GENRES");
     genresMenu->addAction("SIMULATION");
@@ -35,7 +41,7 @@ WishlistPage::WishlistPage(QWidget *parent) :
     featureMenu->addAction("OVERLAY");
     featureMenu->addAction("SINGLE-PLAYER");
     featureMenu->addAction("SINGLE-PLAYER");
-    auto priceMenu = menuBar->addMenu("PRICE");
+    menuBar->addMenu("PRICE");
 
     ui->filtersLayout->addWidget(menuBar);
 }
@@ -43,4 +49,49 @@ WishlistPage::WishlistPage(QWidget *parent) :
 WishlistPage::~WishlistPage()
 {
     delete ui;
+}
+
+void WishlistPage::setApiClient(GogApiClient *apiClient)
+{
+    this->apiClient = apiClient;
+}
+
+void WishlistPage::clear()
+{
+    ui->titleLabel->setText("WISHLISTED TITLES");
+    ui->resultsList->clear();
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+}
+
+void WishlistPage::initialize()
+{
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    auto networkReply = apiClient->getWishlist();
+    connect(networkReply, &QNetworkReply::finished, this, [=](){
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            GetWishlistResponse data;
+            parseSearchWishlistResponse(resultJson, data);
+            Product product;
+            foreach (product, data.products)
+            {
+                auto item = new QListWidgetItem(product.title, ui->resultsList);
+                auto itemWidget = new WishlistItem(product, ui->resultsList);
+                item->setSizeHint(itemWidget->sizeHint());
+                ui->resultsList->addItem(item);
+                ui->resultsList->setItemWidget(item, itemWidget);
+            }
+            ui->titleLabel->setText(QString("WISHLISTED TITLES (%1)").arg(data.totalProducts));
+            ui->contentsStack->setCurrentWidget(ui->resultsPage);
+            networkReply->deleteLater();
+        }
+    });
+    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            networkReply->deleteLater();
+        }
+    });
 }

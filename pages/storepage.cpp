@@ -2,7 +2,7 @@
 #include "ui_storepage.h"
 
 StorePage::StorePage(QWidget *parent) :
-    QWidget(parent),
+    BasePage(parent),
     ui(new Ui::StorePage)
 {
     ui->setupUi(this);
@@ -11,4 +11,19 @@ StorePage::StorePage(QWidget *parent) :
 StorePage::~StorePage()
 {
     delete ui;
+}
+
+void StorePage::setApiClient(GogApiClient *apiClient)
+{
+
+}
+
+void StorePage::clear()
+{
+
+}
+
+void StorePage::initialize()
+{
+
 }

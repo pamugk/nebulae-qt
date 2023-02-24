@@ -5,7 +5,7 @@
 #include "../widgets/filtercheckbox.h"
 
 AllGamesPage::AllGamesPage(QWidget *parent) :
-    QWidget(parent),
+    BasePage(parent),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);
@@ -85,4 +85,19 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
 AllGamesPage::~AllGamesPage()
 {
     delete ui;
+}
+
+void AllGamesPage::setApiClient(GogApiClient *apiClient)
+{
+
+}
+
+void AllGamesPage::clear()
+{
+
+}
+
+void AllGamesPage::initialize()
+{
+
 }

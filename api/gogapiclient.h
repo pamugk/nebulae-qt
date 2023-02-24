@@ -5,6 +5,8 @@
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QSettings>
 
+#include "./models/wishlist.h"
+
 class GogApiClient : public QObject
 {
     Q_OBJECT
@@ -12,6 +14,8 @@ class GogApiClient : public QObject
 public:
     explicit GogApiClient(QObject *parent = nullptr);
     bool isAuthenticated();
+
+    QNetworkReply *getWishlist(const QString query = QString(), WishlistSortOrder order = WishlistSortOrder::TITLE, quint16 page = 1);
 
 public slots:
     void grant();

@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "../api/models/product.h"
+
 namespace Ui {
 class WishlistItem;
 }
@@ -12,7 +14,7 @@ class WishlistItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit WishlistItem(QWidget *parent = nullptr);
+    explicit WishlistItem(const Product &data, QWidget *parent = nullptr);
     ~WishlistItem();
 
 private:

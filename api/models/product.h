@@ -12,15 +12,17 @@
 
 struct Price
 {
-    qreal amount;
-    qreal baseAmount;
-    qreal finalAmount;
+    QString amount;
+    QString baseAmount;
+    QString finalAmount;
     bool discounted;
-    qreal discountPercentage;
+    qint32 discountPercentage;
+    QString discountDifference;
     QString symbol;
     bool free;
     qreal discount;
     bool bonusStoreCreditIncluded;
+    QString bonusStoreCreditAmount;
     QString promoId;
 };
 

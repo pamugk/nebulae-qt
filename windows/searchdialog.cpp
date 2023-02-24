@@ -1,6 +1,5 @@
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "../viewmodels/searchlistmodel.h"
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
@@ -8,7 +7,6 @@ SearchDialog::SearchDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentWidget(ui->startPage);
-    ui->resultsListView->setModel(new SearchListModel(ui->resultsListView));
     this->setFixedSize(600, 240);
 }
 

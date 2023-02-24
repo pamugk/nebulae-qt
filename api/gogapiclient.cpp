@@ -13,7 +13,7 @@ GogApiClient::GogApiClient(QObject *parent)
     client.setClientIdentifierSharedKey(environment.value("CLIENT_SECRET"));
     client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
     client.setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
-    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QVariantMap *parameters) {
+    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters) {
                                             switch (stage)
                                             {
                                             case QAbstractOAuth::Stage::RequestingTemporaryCredentials:
@@ -50,7 +50,7 @@ GogApiClient::GogApiClient(QObject *parent)
         }
     });
 
-    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken){
+    connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, this, [this](const QString & newToken){
         if (storeTokens)
         {
             settings.setValue("/credentials/refresh_token", newToken);
@@ -61,6 +61,31 @@ GogApiClient::GogApiClient(QObject *parent)
 bool GogApiClient::isAuthenticated()
 {
     return !client.token().isNull();
+}
+
+QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
+{
+    QVariantMap parameters;
+    if (!query.isNull() && !query.isEmpty())
+    {
+        parameters["search"] = query;
+    }
+    QString orderString;
+    switch (order)
+    {
+    case WishlistSortOrder::DATE_ADDED:
+        orderString = "date_added";
+        break;
+    case WishlistSortOrder::TITLE:
+        orderString = "title";
+        break;
+    case WishlistSortOrder::USER_REVIEWS:
+        orderString = "user_reviews";
+        break;
+    }
+    parameters["sortBy"] = orderString;
+    parameters["page"] = QString::number(page);
+    return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
 }
 
 void GogApiClient::grant()

@@ -325,6 +325,14 @@
     </message>
 </context>
 <context>
+    <name>PlatformsInfo</name>
+    <message>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_platformsinfo.h" line="60"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SearchDialog</name>
     <message>
         <location filename="windows/searchdialog.ui" line="14"/>
@@ -930,26 +938,8 @@
     <name>WishlistItem</name>
     <message>
         <location filename="widgets/wishlistitem.ui" line="14"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistitem.h" line="93"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistitem.h" line="146"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="widgets/wishlistitem.ui" line="63"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistitem.h" line="95"/>
-        <source>Title</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="widgets/wishlistitem.ui" line="76"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistitem.h" line="96"/>
-        <source>Genre</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="widgets/wishlistitem.ui" line="102"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistitem.h" line="98"/>
-        <source>TBA</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -957,37 +947,38 @@
     <name>WishlistPage</name>
     <message>
         <location filename="pages/wishlistpage.ui" line="14"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="124"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="139"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="pages/wishlistpage.ui" line="29"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="125"/>
-        <source>WISHLISTED TITLES (%d)</source>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="140"/>
+        <source>WISHLISTED TITLES</source>
+        <oldsource>WISHLISTED TITLES (%1)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="pages/wishlistpage.ui" line="49"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="126"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="141"/>
         <source>YOUR WISHLIST CAN BE SEEN BY:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="pages/wishlistpage.ui" line="63"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="127"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="142"/>
         <source>ONLY ME</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="pages/wishlistpage.ui" line="68"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="128"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="143"/>
         <source>FRIENDS ONLY</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="pages/wishlistpage.ui" line="73"/>
-        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="129"/>
+        <location filename="build/Desktop/Debug/unofficial-gog-client_autogen/include/ui_wishlistpage.h" line="144"/>
         <source>EVERYONE</source>
         <translation type="unfinished"></translation>
     </message>

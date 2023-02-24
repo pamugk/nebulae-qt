@@ -26,7 +26,7 @@
      <item>
       <widget class="QLabel" name="titleLabel">
        <property name="text">
-        <string>WISHLISTED TITLES (%d)</string>
+        <string>WISHLISTED TITLES</string>
        </property>
       </widget>
      </item>
@@ -81,26 +81,71 @@
     <widget class="QStackedWidget" name="contentsStack">
      <widget class="QWidget" name="resultsPage">
       <layout class="QVBoxLayout" name="resultsPageLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>24</number>
+       </property>
+       <property name="topMargin">
+        <number>32</number>
+       </property>
+       <property name="rightMargin">
+        <number>8</number>
+       </property>
+       <property name="bottomMargin">
+        <number>16</number>
+       </property>
        <item>
-        <widget class="QScrollArea" name="scrollArea">
-         <property name="widgetResizable">
+        <widget class="QListWidget" name="resultsList">
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::NoSelection</enum>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+         <property name="uniformItemSizes">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>762</width>
-            <height>495</height>
-           </rect>
-          </property>
-         </widget>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="loaderPage"/>
+     <widget class="QWidget" name="loaderPage">
+      <layout class="QVBoxLayout" name="loaderPageLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>24</number>
+       </property>
+       <property name="topMargin">
+        <number>32</number>
+       </property>
+       <property name="rightMargin">
+        <number>8</number>
+       </property>
+       <property name="bottomMargin">
+        <number>16</number>
+       </property>
+       <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="maximum">
+          <number>0</number>
+         </property>
+         <property name="value">
+          <number>-1</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

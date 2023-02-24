@@ -18,21 +18,36 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    storePage = new StorePage(ui->pagesStack);
-    allGamesPage = new AllGamesPage(ui->pagesStack);
-    wishlistPage = new WishlistPage(ui->pagesStack);
-    ordersPage = new OrdersPage(ui->pagesStack);
+    pages[Page::DISCOVER] = new StorePage(ui->pagesStack);
+    pages[Page::ALL_GAMES] = new AllGamesPage(ui->pagesStack);
+    pages[Page::WISHLIST] = new WishlistPage(ui->pagesStack);
+    pages[Page::ORDER_HISTORY] = new OrdersPage(ui->pagesStack);
 
-    ui->pagesStack->addWidget(storePage);
-    ui->pagesStack->addWidget(allGamesPage);
-    ui->pagesStack->addWidget(wishlistPage);
-    ui->pagesStack->addWidget(ordersPage);
-
+    BasePage *item;
+    foreach (item, pages.values())
+    {
+        ui->pagesStack->addWidget(item);
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::navigate(Page newPage)
+{
+    if (pages.contains(newPage))
+    {
+        if (pages.contains(currentPage))
+        {
+            pages[currentPage]->clear();
+        }
+        auto page = pages[newPage];
+        currentPage = newPage;
+        ui->pagesStack->setCurrentWidget(page);
+        page->initialize();
+    }
 }
 
 void MainWindow::setApiClient(GogApiClient *apiClient)
@@ -48,6 +63,12 @@ void MainWindow::setApiClient(GogApiClient *apiClient)
         dialog.setUrl(authUrl);
         dialog.exec();
     });
+
+    BasePage *item;
+    foreach (item, pages.values())
+    {
+        item->setApiClient(apiClient);
+    }
 }
 
 void MainWindow::setSettingsManager(SettingsManager *settingsManager)
@@ -55,58 +76,55 @@ void MainWindow::setSettingsManager(SettingsManager *settingsManager)
     this->settingsManager = settingsManager;
 }
 
-
 void MainWindow::on_discoverButton_clicked()
 {
-
+    navigate(Page::DISCOVER);
 }
-
 
 void MainWindow::on_recentButton_clicked()
 {
-
+    navigate(Page::RECENT);
 }
-
 
 void MainWindow::on_storeButton_clicked()
 {
-    ui->pagesStack->setCurrentWidget(storePage);
+    navigate(Page::STORE);
 }
 
 
 void MainWindow::on_allGamesButton_clicked()
 {
-    ui->pagesStack->setCurrentWidget(allGamesPage);
+    navigate(Page::ALL_GAMES);
 }
 
 
 void MainWindow::on_wishlistButton_clicked()
 {
-    ui->pagesStack->setCurrentWidget(wishlistPage);
+    navigate(Page::WISHLIST);
 }
 
 
 void MainWindow::on_ordersButton_clicked()
 {
-    ui->pagesStack->setCurrentWidget(ordersPage);
+    navigate(Page::ORDER_HISTORY);
 }
 
 
 void MainWindow::on_libraryButton_clicked()
 {
-
+    navigate(Page::OWNED_GAMES);
 }
 
 
 void MainWindow::on_installedButton_clicked()
 {
-
+    navigate(Page::INSTALLED_GAMES);
 }
 
 
 void MainWindow::on_friendsButton_clicked()
 {
-
+    navigate(Page::FRIENDS);
 }
 
 

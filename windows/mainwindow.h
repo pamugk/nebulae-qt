@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMap>
 
 #include "../api/gogapiclient.h"
 #include "../internals/settingsmanager.h"
+#include "../pages/basepage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -49,9 +51,9 @@ private:
     SettingsManager *settingsManager;
 
     Ui::MainWindow *ui;
-    QWidget *storePage;
-    QWidget *allGamesPage;
-    QWidget *wishlistPage;
-    QWidget *ordersPage;
+    Page currentPage;
+    QMap<Page, BasePage *> pages;
+
+    void navigate(Page newPage);
 };
 #endif // MAINWINDOW_H
