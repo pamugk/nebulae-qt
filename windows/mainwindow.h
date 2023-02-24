@@ -18,6 +18,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void setApiClient(GogApiClient *apiClient);
     void setSettingsManager(SettingsManager *settingsManager);
 
 private slots:

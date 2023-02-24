@@ -181,6 +181,7 @@ public:
     void setEnableOverlay(bool value);
 
 signals:
+    void autoLoginChanged(bool value);
 
 private:
     QSettings settings;

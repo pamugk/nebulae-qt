@@ -7,14 +7,13 @@ GogApiClient::GogApiClient(QObject *parent)
     : QObject{parent}
 {
     auto environment = QProcessEnvironment::systemEnvironment();
-    client = new QOAuth2AuthorizationCodeFlow(this);
 
-    client->setReplyHandler(new QOAuthHttpServerReplyHandler(6543, client));
-    client->setClientIdentifier(environment.value("CLIENT_ID"));
-    client->setClientIdentifierSharedKey(environment.value("CLIENT_SECRET"));
-    client->setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
-    client->setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
-    client->setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QVariantMap *parameters) {
+    client.setReplyHandler(new QOAuthHttpServerReplyHandler(6543, &client));
+    client.setClientIdentifier(environment.value("CLIENT_ID"));
+    client.setClientIdentifierSharedKey(environment.value("CLIENT_SECRET"));
+    client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
+    client.setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
+    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QVariantMap *parameters) {
                                             switch (stage)
                                             {
                                             case QAbstractOAuth::Stage::RequestingTemporaryCredentials:
@@ -33,16 +32,53 @@ GogApiClient::GogApiClient(QObject *parent)
                                             }
                                         });
 
-    connect(client, &QOAuth2AuthorizationCodeFlow::statusChanged, [=](
+    connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged, this, [this](
                 QAbstractOAuth::Status status) {
             if (status == QAbstractOAuth::Status::Granted) {
                 emit authenticated();
             }
         });
-    connect(client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
+    connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
+
+    client.setRefreshToken(settings.value("/credentials/refresh_token", QString()).toString());
+    client.setToken(settings.value("/credentials/token", QString()).toString());
+
+    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken){
+        if (storeTokens)
+        {
+            settings.setValue("/credentials/token", newToken);
+        }
+    });
+
+    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken){
+        if (storeTokens)
+        {
+            settings.setValue("/credentials/refresh_token", newToken);
+        }
+    });
+}
+
+bool GogApiClient::isAuthenticated()
+{
+    return !client.token().isNull();
 }
 
 void GogApiClient::grant()
 {
-    client->grant();
+    client.grant();
+}
+
+void GogApiClient::setStoreCredentials(bool value)
+{
+    storeTokens = value;
+    if (storeTokens)
+    {
+        settings.setValue("/credentials/refresh_token", client.refreshToken());
+        settings.setValue("/credentials/token", client.token());
+    }
+    else
+    {
+        settings.remove("/credentials/refresh_token");
+        settings.remove("/credentials/token");
+    }
 }

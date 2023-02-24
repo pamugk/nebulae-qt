@@ -55,6 +55,7 @@ bool SettingsManager::isAutoLogin()
 void SettingsManager::setAutoLogin(bool value)
 {
     settings.setValue("/general/auto_login", value);
+    emit autoLoginChanged(value);
 }
 
 Page SettingsManager::getStartingPage()

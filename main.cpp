@@ -4,6 +4,7 @@
 #include <QSystemTrayIcon>
 #include <QTranslator>
 
+#include "api/gogapiclient.h"
 #include "internals/settingsmanager.h"
 #include "windows/mainwindow.h"
 
@@ -24,9 +25,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    SettingsManager settingsManager;
+    SettingsManager settingsManager(&a);
+
+    GogApiClient apiClient(&a);
+    apiClient.setStoreCredentials(settingsManager.isAutoLogin());
+    QObject::connect(&settingsManager, &SettingsManager::autoLoginChanged,
+            &apiClient, &GogApiClient::setStoreCredentials);
 
     MainWindow w;
+    w.setApiClient(&apiClient);
     w.setSettingsManager(&settingsManager);
     w.show();
 

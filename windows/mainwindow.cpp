@@ -12,7 +12,9 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow),
+      apiClient(nullptr),
+      settingsManager(nullptr)
 {
     ui->setupUi(this);
 
@@ -26,21 +28,26 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pagesStack->addWidget(wishlistPage);
     ui->pagesStack->addWidget(ordersPage);
 
-    apiClient = new GogApiClient(this);
-    connect(apiClient, &GogApiClient::authenticated, [this]{
-        ui->loginButton->setVisible(false);
-    });
-    connect(ui->loginButton, &QPushButton::clicked, apiClient, &GogApiClient::grant);
-    connect(apiClient, &GogApiClient::authorize, [this](const QUrl &authUrl){
-        AuthDialog dialog(this);
-        dialog.setUrl(authUrl);
-        dialog.exec();
-    });
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setApiClient(GogApiClient *apiClient)
+{
+    this->apiClient = apiClient;
+    ui->loginButton->setVisible(!apiClient->isAuthenticated());
+    connect(apiClient, &GogApiClient::authenticated, this, [this]{
+        ui->loginButton->setVisible(false);
+    });
+    connect(ui->loginButton, &QPushButton::clicked, apiClient, &GogApiClient::grant);
+    connect(apiClient, &GogApiClient::authorize, this, [this](const QUrl &authUrl){
+        AuthDialog dialog(this);
+        dialog.setUrl(authUrl);
+        dialog.exec();
+    });
 }
 
 void MainWindow::setSettingsManager(SettingsManager *settingsManager)
