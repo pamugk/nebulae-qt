@@ -1,5 +1,7 @@
 #include <QApplication>
 #include <QLocale>
+#include <QMenu>
+#include <QSystemTrayIcon>
 #include <QTranslator>
 
 #include "internals/settingsmanager.h"
@@ -27,5 +29,18 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.setSettingsManager(&settingsManager);
     w.show();
+
+    QSystemTrayIcon trayIcon(QIcon(":/icons/gog-galaxy.png"), &a);
+    QMenu trayMenu;
+    QObject::connect(trayMenu.addAction("Show main window"), &QAction::triggered, [&w](bool checked){
+        w.show();
+    });
+    QObject::connect(trayMenu.addAction("Exit"), &QAction::triggered, [&a](bool checked){
+        a.exit();
+    });
+    trayIcon.setContextMenu(&trayMenu);
+    trayIcon.setToolTip("GOG Galaxy (Unofficial)");
+    trayIcon.show();
+
     return a.exec();
 }

@@ -41,5 +41,6 @@
         <file>icons/terminal.svg</file>
         <file>icons/keyboard.svg</file>
         <file>icons/ellipsis.svg</file>
+        <file>icons/gog-galaxy.png</file>
     </qresource>
 </RCC>
