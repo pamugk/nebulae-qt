@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(217, 217, 217);</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0" rowspan="2">
     <widget class="QScrollArea" name="filtersScrollArea">
@@ -34,7 +37,7 @@
         <x>0</x>
         <y>0</y>
         <width>171</width>
-        <height>531</height>
+        <height>536</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="filtersScrollAreaLayout">
@@ -227,8 +230,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>583</width>
-            <height>447</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="resultsScrollAreaLayout">
@@ -399,6 +402,11 @@
      <layout class="QHBoxLayout" name="headerLayout">
       <item>
        <widget class="QLabel" name="totalLabel">
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string notr="true"/>
         </property>
@@ -419,6 +427,9 @@
       </item>
       <item>
        <widget class="QLineEdit" name="lineEdit">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(237, 237, 237); border-radius: 20px;</string>
+        </property>
         <property name="placeholderText">
          <string>Search store by title, publisher or tag</string>
         </property>
