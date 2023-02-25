@@ -20,6 +20,7 @@ public:
     virtual void setApiClient(GogApiClient *apiClient) override;
 
 private:
+    GogApiClient *apiClient;
     Ui::OrdersPage *ui;
 
 public slots:

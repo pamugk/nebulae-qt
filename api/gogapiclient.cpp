@@ -68,6 +68,26 @@ QNetworkReply *GogApiClient::getAnything(const QString &url)
     return client.get(url);
 }
 
+QNetworkReply *GogApiClient::getOrdersHistory(
+        bool cancelled, bool completed, bool inProgress,
+        bool notRedeemed, bool pending, bool redeemed,
+        const QString &query, quint16 page)
+{
+    QVariantMap parameters;
+    parameters["canceled"] = cancelled ? "1" : "0";
+    parameters["completed"] = completed ? "1" : "0";
+    parameters["in_progress"] = inProgress ? "1" : "0";
+    parameters["not_redeemed"] = notRedeemed ? "1" : "0";
+    parameters["pending"] = pending ? "1" : "0";
+    parameters["redeemed"] = redeemed ? "1" : "0";
+    parameters["page"] = QString::number(page);
+    if (!query.isEmpty())
+    {
+        parameters["search"] = query;
+    }
+    return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
+}
+
 QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
 {
     QVariantMap parameters;

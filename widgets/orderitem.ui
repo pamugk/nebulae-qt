@@ -20,6 +20,9 @@
    <string>Form</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>8</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -53,8 +56,13 @@
    </item>
    <item>
     <widget class="QLabel" name="titleLabel">
+     <property name="font">
+      <font>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>Title</string>
+      <string notr="true"/>
      </property>
     </widget>
    </item>
@@ -75,7 +83,7 @@
       <string notr="true">color: gray;</string>
      </property>
      <property name="text">
-      <string>Old price</string>
+      <string notr="true"/>
      </property>
     </widget>
    </item>
@@ -91,7 +99,7 @@
       <string notr="true">color: gray;</string>
      </property>
      <property name="text">
-      <string>Price</string>
+      <string notr="true"/>
      </property>
     </widget>
    </item>

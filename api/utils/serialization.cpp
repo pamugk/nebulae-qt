@@ -4,7 +4,7 @@
 
 void parseZonedDateTime(const QJsonObject &json, ZonedDateTime &data)
 {
-    //data.date = QDateTime::fromString(json["date"].toString(), Qt::ISODateWithMs);
+    data.date = QDateTime::fromString(json["date"].toString(), Qt::ISODateWithMs);
     data.timezoneType = json["timezone_type"].toInt();
     data.timezone = json["timezone"].toString();
 }
@@ -64,7 +64,7 @@ void parseProductData(const QJsonObject &json, Product &data)
     }
     data.discounted = json["isDiscounted"].toBool();
     data.inDevelopment = json["isInDevelopment"].toBool();
-    data.id = json["id"].toInt();
+    data.id = json["id"].toInteger();
     if (!json["releaseDate"].isNull())
     {
         data.releaseDate = QDateTime::fromSecsSinceEpoch(json["releaseDate"].toInt()).date();

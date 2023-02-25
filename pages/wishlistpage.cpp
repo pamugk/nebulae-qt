@@ -1,7 +1,6 @@
 #include "wishlistpage.h"
 #include "ui_wishlistpage.h"
 
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMenu>

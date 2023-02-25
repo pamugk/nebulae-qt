@@ -16,7 +16,12 @@ public:
     bool isAuthenticated();
 
     QNetworkReply *getAnything(const QString &url);
-    QNetworkReply *getWishlist(const QString query = QString(), WishlistSortOrder order = WishlistSortOrder::TITLE, quint16 page = 1);
+    QNetworkReply *getOrdersHistory(bool cancelled, bool completed, bool inProgress,
+                                    bool notRedeemed, bool pending,  bool redeemed,
+                                    const QString &query, quint16 page = 1);
+    QNetworkReply *getWishlist(const QString query = QString(),
+                               WishlistSortOrder order = WishlistSortOrder::TITLE,
+                               quint16 page = 1);
 
 public slots:
     void grant();

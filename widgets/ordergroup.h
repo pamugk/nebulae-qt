@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+#include "../api/models/order.h"
+#include "../api/gogapiclient.h"
+
 namespace Ui {
 class OrderGroup;
 }
@@ -12,7 +15,9 @@ class OrderGroup : public QWidget
     Q_OBJECT
 
 public:
-    explicit OrderGroup(QWidget *parent = nullptr);
+    explicit OrderGroup(const Order &data,
+                        GogApiClient *apiClient,
+                        QWidget *parent = nullptr);
     ~OrderGroup();
 
 private:
