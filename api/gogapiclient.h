@@ -15,6 +15,7 @@ public:
     explicit GogApiClient(QObject *parent = nullptr);
     bool isAuthenticated();
 
+    QNetworkReply *getAnything(const QString &url);
     QNetworkReply *getWishlist(const QString query = QString(), WishlistSortOrder order = WishlistSortOrder::TITLE, quint16 page = 1);
 
 public slots:

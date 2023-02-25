@@ -3,7 +3,9 @@
 
 #include <QSvgWidget>
 
-WishlistItem::WishlistItem(const Product &data, QWidget *parent) :
+WishlistItem::WishlistItem(const Product &data,
+                           GogApiClient *apiClient,
+                           QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WishlistItem)
 {
@@ -14,7 +16,7 @@ WishlistItem::WishlistItem(const Product &data, QWidget *parent) :
     ui->buyButton->setText(data.TBA ? "TBA" : QString("%1 %2").arg(data.price.amount, data.price.symbol));
 
     int star = 1;
-    for (star; star <= data.rating / 10; star++)
+    for (; star <= data.rating / 10; star++)
     {
         auto starWidget = new QSvgWidget(":/icons/star.svg", ui->rating);
         starWidget->setFixedSize(16, 16);
@@ -27,15 +29,26 @@ WishlistItem::WishlistItem(const Product &data, QWidget *parent) :
         starWidget->setFixedSize(16, 16);
         ui->ratingLayout->addWidget(starWidget);
     }
-    for (star; star <= 5; star++)
+    for (; star <= 5; star++)
     {
         auto starWidget = new QSvgWidget(":/icons/star-stroke.svg", ui->rating);
         starWidget->setFixedSize(16, 16);
         ui->ratingLayout->addWidget(starWidget);
     }
+
+    imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
+    connect(imageReply, &QNetworkReply::finished, this, [this]() {
+        ui->coverLabel->setPixmap(QPixmap::fromImage(QImage::fromData(imageReply->readAll(), "PNG")));
+        imageReply->deleteLater();
+        imageReply = nullptr;
+    });
 }
 
 WishlistItem::~WishlistItem()
 {
+    if (imageReply != nullptr)
+    {
+        imageReply->deleteLater();
+    }
     delete ui;
 }

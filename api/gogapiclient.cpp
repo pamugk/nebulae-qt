@@ -63,13 +63,16 @@ bool GogApiClient::isAuthenticated()
     return !client.token().isNull();
 }
 
+QNetworkReply *GogApiClient::getAnything(const QString &url)
+{
+    return client.get(url);
+}
+
 QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
 {
     QVariantMap parameters;
-    if (!query.isNull() && !query.isEmpty())
-    {
-        parameters["search"] = query;
-    }
+    parameters["hiddenFlag"] = "0";
+    parameters["mediaType"] = "1";
     QString orderString;
     switch (order)
     {
@@ -85,6 +88,10 @@ QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder 
     }
     parameters["sortBy"] = orderString;
     parameters["page"] = QString::number(page);
+    if (!query.isNull() && !query.isEmpty())
+    {
+        parameters["search"] = query;
+    }
     return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
 }
 

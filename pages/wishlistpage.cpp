@@ -77,7 +77,7 @@ void WishlistPage::initialize()
             foreach (product, data.products)
             {
                 auto item = new QListWidgetItem(product.title, ui->resultsList);
-                auto itemWidget = new WishlistItem(product, ui->resultsList);
+                auto itemWidget = new WishlistItem(product, apiClient, ui->resultsList);
                 item->setSizeHint(itemWidget->sizeHint());
                 ui->resultsList->addItem(item);
                 ui->resultsList->setItemWidget(item, itemWidget);
