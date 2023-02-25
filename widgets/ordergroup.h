@@ -20,6 +20,9 @@ public:
                         QWidget *parent = nullptr);
     ~OrderGroup();
 
+private slots:
+    void on_infoButton_clicked();
+
 private:
     Ui::OrderGroup *ui;
 };

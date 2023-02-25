@@ -4,8 +4,8 @@
 #include <QNetworkReply>
 #include <QWidget>
 
-#include "../api/models/order.h"
 #include "../api/gogapiclient.h"
+#include "../api/models/order.h"
 
 namespace Ui {
 class OrderItem;

@@ -21,6 +21,9 @@ set(PROJECT_SOURCES
 
         api/gogapiclient.h api/gogapiclient.cpp
 
+        api/models/catalog.h
+        api/models/filters.h
+        api/models/metatag.h
         api/models/order.h
         api/models/product.h
         api/models/productshared.h
@@ -28,6 +31,7 @@ set(PROJECT_SOURCES
         api/models/user.h
         api/models/wishlist.h
 
+        api/utils/catalogserialization.h api/utils/catalogserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
 

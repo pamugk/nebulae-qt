@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -46,6 +46,12 @@
        <height>114</height>
       </size>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>72</width>
+       <height>114</height>
+      </size>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -54,21 +60,26 @@
    <item row="3" column="3">
     <widget class="QLabel" name="priceLabel">
      <property name="text">
-      <string>Price</string>
+      <string notr="true">Price</string>
      </property>
     </widget>
    </item>
    <item row="2" column="3">
     <widget class="QLabel" name="oldPriceLabel">
+     <property name="font">
+      <font>
+       <strikeout>true</strikeout>
+      </font>
+     </property>
      <property name="text">
-      <string>Old price</string>
+      <string notr="true">Old price</string>
      </property>
     </widget>
    </item>
    <item row="2" column="2" rowspan="2">
     <widget class="QLabel" name="discountLabel">
      <property name="text">
-      <string>Discount</string>
+      <string notr="true">Discount</string>
      </property>
     </widget>
    </item>
@@ -115,16 +126,21 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>
    </item>
    <item row="0" column="1" colspan="4">
     <widget class="QLabel" name="titleLabel">
+     <property name="font">
+      <font>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>Title</string>
+      <string notr="true">Title</string>
      </property>
     </widget>
    </item>

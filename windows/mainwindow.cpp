@@ -39,14 +39,14 @@ void MainWindow::navigate(Page newPage)
 {
     if (pages.contains(newPage))
     {
+        auto page = pages[newPage];
+        ui->pagesStack->setCurrentWidget(page);
+        page->initialize();
         if (pages.contains(currentPage))
         {
             pages[currentPage]->clear();
         }
-        auto page = pages[newPage];
         currentPage = newPage;
-        ui->pagesStack->setCurrentWidget(page);
-        page->initialize();
     }
 }
 

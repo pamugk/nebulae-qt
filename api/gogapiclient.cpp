@@ -115,6 +115,57 @@ QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder 
     return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
 }
 
+QNetworkReply *GogApiClient::searchCatalog(const QString orderField, bool orderAscending,
+                                           const QString &countryCode, const QString &locale, const QString &currencyCode,
+                                           const QString &query, bool discounted,
+                                           const QStringList &genres, const QStringList &languages,
+                                           const QStringList &systems, const QStringList &tags,
+                                           const QStringList &features, const QStringList &releaseStatuses,
+                                           const QStringList &productTypes,
+                                           quint16 page, quint32 limit)
+{
+    QVariantMap parameters;
+    parameters["limit"] = QString::number(limit);
+    if (!query.isNull() && !query.isEmpty())
+    {
+        parameters["query"] = "like:" + query;
+    }
+    parameters["order"] = QString("%1:%2").arg(orderAscending ? "asc" : "desc", orderField);
+    if (!productTypes.isEmpty())
+    {
+        parameters["genre"] = "in:" + genres.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["language"] = "in:" + languages.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["system"] = "in:" + systems.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["tag"] = "in:" + tags.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["feature"] = "in:" + features.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["releaseStatus"] = "in:" + releaseStatuses.join(',');
+    }
+    if (!productTypes.isEmpty())
+    {
+        parameters["productType"] = "in:" + productTypes.join(',');
+    }
+    parameters["page"] = QString::number(page);
+    parameters["countryCode"] = countryCode;
+    parameters["locale"] = locale;
+    parameters["currencyCode"] = currencyCode;
+    return client.get(QUrl("https://catalog.gog.com/v1/catalog"), parameters);
+}
+
 void GogApiClient::grant()
 {
     client.grant();

@@ -22,6 +22,14 @@ public:
     QNetworkReply *getWishlist(const QString query = QString(),
                                WishlistSortOrder order = WishlistSortOrder::TITLE,
                                quint16 page = 1);
+    QNetworkReply *searchCatalog(const QString orderField, bool orderAscending,
+                                 const QString &countryCode, const QString &locale, const QString &currencyCode,
+                                 const QString &query = QString(), bool discounted = false,
+                                 const QStringList &genres = QStringList(), const QStringList &languages = QStringList(),
+                                 const QStringList &systems = QStringList(), const QStringList &tags = QStringList(),
+                                 const QStringList &features = QStringList(), const QStringList &releaseStatuses = QStringList(),
+                                 const QStringList &productTypes = QStringList(),
+                                 quint16 page = 1, quint32 limit = 48);
 
 public slots:
     void grant();
