@@ -16,8 +16,8 @@ class WishlistItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit WishlistItem(const Product &data,
-                          GogApiClient *apiClient,
+    explicit WishlistItem(const api::Product &data,
+                          api::GogApiClient *apiClient,
                           QWidget *parent = nullptr);
     ~WishlistItem();
 

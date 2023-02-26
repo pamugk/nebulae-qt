@@ -2,13 +2,13 @@
 
 #include <QJsonArray>
 
-void parseMetaTag(const QJsonObject &json, MetaTag &data)
+void parseMetaTag(const QJsonObject &json, api::MetaTag &data)
 {
     data.name = json["name"].toString();
     data.slug = json["slug"].toString();
 }
 
-void parseMetaTagArray(const QJsonArray &json, QVector<MetaTag> &data)
+void parseMetaTagArray(const QJsonArray &json, QVector<api::MetaTag> &data)
 {
     data.resize(json.count());
     for (int i = 0; i < json.count(); i++)
@@ -25,12 +25,12 @@ void parseStringArray(const QJsonArray &json, QVector<QString> &data)
      }
 }
 
-void parseMoney(const QJsonObject &json, Money &data)
+void parseMoney(const QJsonObject &json, api::Money &data)
 {
 
 }
 
-void parseProduct(const QJsonObject &json, CatalogProduct &data)
+void parseProduct(const QJsonObject &json, api::CatalogProduct &data)
 {
     data.id = json["id"].toString();
     data.slug = json["slug"].toString();
@@ -66,7 +66,7 @@ void parseProduct(const QJsonObject &json, CatalogProduct &data)
     data.reviewsRating = json["reviewsRating"].toInt();
 }
 
-void parseFilters(const QJsonObject &json, StoreFilters &data)
+void parseFilters(const QJsonObject &json, api::StoreFilters &data)
 {
     if (json["releaseDateRange"].isObject())
     {
@@ -102,7 +102,7 @@ void parseFilters(const QJsonObject &json, StoreFilters &data)
     parseMetaTagArray(json["fullTagsList"].toArray(), data.fullTagsList);
 }
 
-void parseSearchCatalogResponse(const QJsonObject &json, SearchCatalogResponse &data)
+void parseSearchCatalogResponse(const QJsonObject &json, api::SearchCatalogResponse &data)
 {
     data.pages = json["pages"].toInt();
     data.productCount = json["productCount"].toInt();

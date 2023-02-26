@@ -17,7 +17,7 @@ public:
     explicit StorePage(QWidget *parent = nullptr);
     ~StorePage();
 
-    virtual void setApiClient(GogApiClient *apiClient) override;
+    virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 private:
     Ui::StorePage *ui;

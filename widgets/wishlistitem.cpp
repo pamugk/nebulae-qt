@@ -3,8 +3,8 @@
 
 #include <QSvgWidget>
 
-WishlistItem::WishlistItem(const Product &data,
-                           GogApiClient *apiClient,
+WishlistItem::WishlistItem(const api::Product &data,
+                           api::GogApiClient *apiClient,
                            QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WishlistItem)

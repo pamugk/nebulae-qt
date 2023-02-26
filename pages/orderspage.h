@@ -17,15 +17,20 @@ public:
     explicit OrdersPage(QWidget *parent = nullptr);
     ~OrdersPage();
 
-    virtual void setApiClient(GogApiClient *apiClient) override;
+    virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 private:
-    GogApiClient *apiClient;
+    api::GogApiClient *apiClient;
+    api::OrderFilter filter;
     Ui::OrdersPage *ui;
+
+    void fetchData();
 
 public slots:
     virtual void clear() override;
     virtual void initialize() override;
+private slots:
+    void on_searchEdit_textChanged(const QString &arg1);
 };
 
 #endif // ORDERSPAGE_H

@@ -1,8 +1,8 @@
 #include "storelistitem.h"
 #include "ui_storelistitem.h"
 
-StoreListItem::StoreListItem(const CatalogProduct &data,
-                             GogApiClient *apiClient,
+StoreListItem::StoreListItem(const api::CatalogProduct &data,
+                             api::GogApiClient *apiClient,
                              QWidget *parent) :
     QWidget(parent),
     ui(new Ui::StoreListItem)

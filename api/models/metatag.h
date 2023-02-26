@@ -5,15 +5,18 @@
 
 #include <QString>
 
-struct MetaTag
+namespace api
 {
-    QString name;
-    QString slug;
-};
+    struct MetaTag
+    {
+        QString name;
+        QString slug;
+    };
 
-struct HierarchicalMetaTag: public MetaTag
-{
-    quint8 level;
-};
+    struct HierarchicalMetaTag: public MetaTag
+    {
+        quint8 level;
+    };
+}
 
 #endif // METATAG_H

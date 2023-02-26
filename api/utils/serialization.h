@@ -5,6 +5,6 @@
 
 #include "../models/wishlist.h"
 
-void parseSearchWishlistResponse(const QJsonObject &json, GetWishlistResponse &data);
+void parseSearchWishlistResponse(const QJsonObject &json, api::GetWishlistResponse &data);
 
 #endif // SERIALIZATION_H

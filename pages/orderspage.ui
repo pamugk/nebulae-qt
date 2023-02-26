@@ -32,22 +32,6 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: black; padding-right: 20px;</string>
-     </property>
-     <property name="text">
-      <string>ORDERS HISTORY</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QLineEdit" name="searchEdit">
      <property name="sizePolicy">
@@ -70,6 +54,9 @@ QLineEdit:focus
      </property>
      <property name="placeholderText">
       <string>SEARCH...</string>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -109,7 +96,7 @@ QLineEdit:focus
             <x>0</x>
             <y>0</y>
             <width>784</width>
-            <height>515</height>
+            <height>508</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="resultsScrollContentsLayout">
@@ -163,6 +150,50 @@ QLineEdit:focus
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="emptyPage">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="nothingFoundLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>No results found</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QToolButton" name="filtersToolButton">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>ORDERS HISTORY</string>
+     </property>
+     <property name="popupMode">
+      <enum>QToolButton::MenuButtonPopup</enum>
+     </property>
+     <property name="toolButtonStyle">
+      <enum>Qt::ToolButtonTextBesideIcon</enum>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+     <property name="arrowType">
+      <enum>Qt::NoArrow</enum>
+     </property>
     </widget>
    </item>
   </layout>

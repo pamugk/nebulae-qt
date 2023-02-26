@@ -13,7 +13,7 @@ StorePage::~StorePage()
     delete ui;
 }
 
-void StorePage::setApiClient(GogApiClient *apiClient)
+void StorePage::setApiClient(api::GogApiClient *apiClient)
 {
 
 }

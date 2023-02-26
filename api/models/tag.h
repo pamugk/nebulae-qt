@@ -4,11 +4,14 @@
 #include <QtGlobal>
 #include <QString>
 
-struct Tag
+namespace api
 {
-    QString id;
-    QString name;
-    qint32 productCount;
-};
+    struct Tag
+    {
+        QString id;
+        QString name;
+        qint32 productCount;
+    };
+}
 
 #endif // TAG_H

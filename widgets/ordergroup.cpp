@@ -3,8 +3,8 @@
 
 #include "./orderitem.h"
 
-OrderGroup::OrderGroup(const Order &data,
-                       GogApiClient *apiClient,
+OrderGroup::OrderGroup(const api::Order &data,
+                       api::GogApiClient *apiClient,
                        QWidget *parent) :
     QWidget(parent),
     ui(new Ui::OrderGroup)
@@ -36,7 +36,7 @@ OrderGroup::OrderGroup(const Order &data,
     }
     ui->dateLabel->setText(data.date.toString());
 
-    OrderProduct product;
+    api::OrderProduct product;
     foreach (product, data.products)
     {
         ui->productsLayout->addWidget(new OrderItem(product, apiClient, this));

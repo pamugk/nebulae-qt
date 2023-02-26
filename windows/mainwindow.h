@@ -20,7 +20,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setApiClient(GogApiClient *apiClient);
+    void setApiClient(api::GogApiClient *apiClient);
     void setSettingsManager(SettingsManager *settingsManager);
 
 private slots:
@@ -47,7 +47,7 @@ private slots:
     void on_actionButton_clicked();
 
 private:
-    GogApiClient *apiClient;
+    api::GogApiClient *apiClient;
     SettingsManager *settingsManager;
 
     Ui::MainWindow *ui;

@@ -21,12 +21,13 @@ set(PROJECT_SOURCES
 
         api/gogapiclient.h api/gogapiclient.cpp
 
-        api/models/catalog.h
+        api/models/catalog.h api/models/catalogfilter.h
         api/models/filters.h
         api/models/metatag.h
-        api/models/order.h
+        api/models/order.h api/models/orderfilter.h
         api/models/product.h
         api/models/productshared.h
+        api/models/sort.h
         api/models/tag.h
         api/models/user.h
         api/models/wishlist.h

@@ -3,7 +3,7 @@
 #include <QOAuthHttpServerReplyHandler>
 #include <QProcessEnvironment>
 
-GogApiClient::GogApiClient(QObject *parent)
+api::GogApiClient::GogApiClient(QObject *parent)
     : QObject{parent}
 {
     auto environment = QProcessEnvironment::systemEnvironment();
@@ -58,37 +58,34 @@ GogApiClient::GogApiClient(QObject *parent)
     });
 }
 
-bool GogApiClient::isAuthenticated()
+bool api::GogApiClient::isAuthenticated()
 {
     return !client.token().isNull();
 }
 
-QNetworkReply *GogApiClient::getAnything(const QString &url)
+QNetworkReply *api::GogApiClient::getAnything(const QString &url)
 {
     return client.get(url);
 }
 
-QNetworkReply *GogApiClient::getOrdersHistory(
-        bool cancelled, bool completed, bool inProgress,
-        bool notRedeemed, bool pending, bool redeemed,
-        const QString &query, quint16 page)
+QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, quint16 page)
 {
     QVariantMap parameters;
-    parameters["canceled"] = cancelled ? "1" : "0";
-    parameters["completed"] = completed ? "1" : "0";
-    parameters["in_progress"] = inProgress ? "1" : "0";
-    parameters["not_redeemed"] = notRedeemed ? "1" : "0";
-    parameters["pending"] = pending ? "1" : "0";
-    parameters["redeemed"] = redeemed ? "1" : "0";
+    parameters["canceled"] = filter.cancelled ? "1" : "0";
+    parameters["completed"] = filter.completed ? "1" : "0";
+    parameters["in_progress"] = filter.inProgress ? "1" : "0";
+    parameters["not_redeemed"] = filter.notRedeemed ? "1" : "0";
+    parameters["pending"] = filter.pending ? "1" : "0";
+    parameters["redeemed"] = filter.redeemed ? "1" : "0";
     parameters["page"] = QString::number(page);
-    if (!query.isEmpty())
+    if (!filter.query.isNull() && !filter.query.isEmpty())
     {
-        parameters["search"] = query;
+        parameters["search"] = filter.query;
     }
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
-QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
+QNetworkReply *api::GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
 {
     QVariantMap parameters;
     parameters["hiddenFlag"] = "0";
@@ -115,49 +112,71 @@ QNetworkReply *GogApiClient::getWishlist(const QString query, WishlistSortOrder 
     return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
 }
 
-QNetworkReply *GogApiClient::searchCatalog(const QString orderField, bool orderAscending,
-                                           const QString &countryCode, const QString &locale, const QString &currencyCode,
-                                           const QString &query, bool discounted,
-                                           const QStringList &genres, const QStringList &languages,
-                                           const QStringList &systems, const QStringList &tags,
-                                           const QStringList &features, const QStringList &releaseStatuses,
-                                           const QStringList &productTypes,
+QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
+                                           const CatalogFilter &filter,
+                                           QString countryCode,
+                                           QString locale,
+                                           QString currencyCode,
                                            quint16 page, quint32 limit)
 {
     QVariantMap parameters;
     parameters["limit"] = QString::number(limit);
-    if (!query.isNull() && !query.isEmpty())
+    if (!filter.query.isNull() && !filter.query.isEmpty())
     {
-        parameters["query"] = "like:" + query;
+        parameters["query"] = "like:" + filter.query;
     }
-    parameters["order"] = QString("%1:%2").arg(orderAscending ? "asc" : "desc", orderField);
-    if (!productTypes.isEmpty())
+    parameters["order"] = QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field);
+    if (!filter.genres.isEmpty())
     {
-        parameters["genre"] = "in:" + genres.join(',');
+        parameters["genres"] = "in:" + filter.genres.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.excludeGenres.isEmpty())
     {
-        parameters["language"] = "in:" + languages.join(',');
+        parameters["excludeGenres"] = "in:" + filter.excludeGenres.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.languages.isEmpty())
     {
-        parameters["system"] = "in:" + systems.join(',');
+        parameters["languages"] = "in:" + filter.languages.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.systems.isEmpty())
     {
-        parameters["tag"] = "in:" + tags.join(',');
+        parameters["systems"] = "in:" + filter.systems.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.tags.isEmpty())
     {
-        parameters["feature"] = "in:" + features.join(',');
+        parameters["tags"] = "in:" + filter.tags.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.excludeTags.isEmpty())
     {
-        parameters["releaseStatus"] = "in:" + releaseStatuses.join(',');
+        parameters["excludeTags"] = "in:" + filter.excludeTags.join(',');
     }
-    if (!productTypes.isEmpty())
+    if (!filter.features.isEmpty())
     {
-        parameters["productType"] = "in:" + productTypes.join(',');
+        parameters["features"] = "in:" + filter.features.join(',');
+    }
+    if (!filter.excludeFeatures.isEmpty())
+    {
+        parameters["excludeFeatures"] = "in:" + filter.excludeFeatures.join(',');
+    }
+    if (!filter.releaseStatuses.isEmpty())
+    {
+        parameters["releaseStatuses"] = "in:" + filter.releaseStatuses.join(',');
+    }
+    if (!filter.excludeReleaseStatuses.isEmpty())
+    {
+        parameters["excludeReleaseStatuses"] = "in:" + filter.excludeReleaseStatuses.join(',');
+    }
+    if (!filter.productTypes.isEmpty())
+    {
+        parameters["productType"] = "in:" + filter.productTypes.join(',');
+    }
+    if(filter.discounted)
+    {
+        parameters["discounted"] = "eq:true";
+    }
+    if(filter.hideOwned)
+    {
+        parameters["hideOwned"] = "true";
     }
     parameters["page"] = QString::number(page);
     parameters["countryCode"] = countryCode;
@@ -166,12 +185,12 @@ QNetworkReply *GogApiClient::searchCatalog(const QString orderField, bool orderA
     return client.get(QUrl("https://catalog.gog.com/v1/catalog"), parameters);
 }
 
-void GogApiClient::grant()
+void api::GogApiClient::grant()
 {
     client.grant();
 }
 
-void GogApiClient::setStoreCredentials(bool value)
+void api::GogApiClient::setStoreCredentials(bool value)
 {
     storeTokens = value;
     if (storeTokens)

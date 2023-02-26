@@ -15,8 +15,8 @@ class OrderGroup : public QWidget
     Q_OBJECT
 
 public:
-    explicit OrderGroup(const Order &data,
-                        GogApiClient *apiClient,
+    explicit OrderGroup(const api::Order &data,
+                        api::GogApiClient *apiClient,
                         QWidget *parent = nullptr);
     ~OrderGroup();
 

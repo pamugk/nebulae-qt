@@ -50,15 +50,15 @@ void MainWindow::navigate(Page newPage)
     }
 }
 
-void MainWindow::setApiClient(GogApiClient *apiClient)
+void MainWindow::setApiClient(api::GogApiClient *apiClient)
 {
     this->apiClient = apiClient;
     ui->loginButton->setVisible(!apiClient->isAuthenticated());
-    connect(apiClient, &GogApiClient::authenticated, this, [this]{
+    connect(apiClient, &api::GogApiClient::authenticated, this, [this]{
         ui->loginButton->setVisible(false);
     });
-    connect(ui->loginButton, &QPushButton::clicked, apiClient, &GogApiClient::grant);
-    connect(apiClient, &GogApiClient::authorize, this, [this](const QUrl &authUrl){
+    connect(ui->loginButton, &QPushButton::clicked, apiClient, &api::GogApiClient::grant);
+    connect(apiClient, &api::GogApiClient::authorize, this, [this](const QUrl &authUrl){
         AuthDialog dialog(this);
         dialog.setUrl(authUrl);
         dialog.exec();

@@ -13,7 +13,7 @@ public:
     explicit BasePage(QWidget *parent = nullptr);
     ~BasePage();
 
-    virtual void setApiClient(GogApiClient *apiClient) = 0;
+    virtual void setApiClient(api::GogApiClient *apiClient) = 0;
 
 public slots:
     virtual void clear() = 0;

@@ -6,24 +6,27 @@
 #include <QDateTime>
 #include <QString>
 
-struct Availability
+namespace api
 {
-    bool available;
-    bool availableInAccount;
-};
+    struct Availability
+    {
+        bool available;
+        bool availableInAccount;
+    };
 
-struct PlatformAvailability
-{
-    bool Windows;
-    bool Mac;
-    bool Linux;
-};
+    struct PlatformAvailability
+    {
+        bool Windows;
+        bool Mac;
+        bool Linux;
+    };
 
-struct ZonedDateTime
-{
-    QDateTime date;
-    quint8 timezoneType;
-    QString timezone;
-};
+    struct ZonedDateTime
+    {
+        QDateTime date;
+        quint8 timezoneType;
+        QString timezone;
+    };
+}
 
 #endif // PRODUCTSHARED_H

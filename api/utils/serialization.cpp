@@ -2,14 +2,14 @@
 
 #include <QJsonArray>
 
-void parseZonedDateTime(const QJsonObject &json, ZonedDateTime &data)
+void parseZonedDateTime(const QJsonObject &json, api::ZonedDateTime &data)
 {
     data.date = QDateTime::fromString(json["date"].toString(), Qt::ISODateWithMs);
     data.timezoneType = json["timezone_type"].toInt();
     data.timezone = json["timezone"].toString();
 }
 
-void parseProductData(const QJsonObject &json, Product &data)
+void parseProductData(const QJsonObject &json, api::Product &data)
 {
     data.developer = json["developer"].toString();
     data.publisher = json["publisher"].toString();
@@ -110,7 +110,7 @@ void parseProductData(const QJsonObject &json, Product &data)
     data.ageLimit = json["ageLimit"].toInt();
 }
 
-void parseSearchWishlistResponse(const QJsonObject &json, GetWishlistResponse &data)
+void parseSearchWishlistResponse(const QJsonObject &json, api::GetWishlistResponse &data)
 {
     data.page = json["page"].toInt(1);
     data.totalProducts = json["totalProducts"].toInt(0);

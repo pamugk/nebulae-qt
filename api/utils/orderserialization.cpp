@@ -2,7 +2,7 @@
 
 #include "./orderserialization.h"
 
-void parseProductPrice(const QJsonObject &json, OrderProductPrice &data)
+void parseProductPrice(const QJsonObject &json, api::OrderProductPrice &data)
 {
     data.baseAmount = json["baseAmount"].toString();
     data.amount = json["amount"].toString();
@@ -11,7 +11,7 @@ void parseProductPrice(const QJsonObject &json, OrderProductPrice &data)
     data.symbol = json["symbol"].toString();
 }
 
-void parseOrderPrice(const QJsonObject &json, OrderPrice &data)
+void parseOrderPrice(const QJsonObject &json, api::OrderPrice &data)
 {
     data.amount = json["amount"].toString();
     data.symbol = json["symbol"].toString();
@@ -23,7 +23,7 @@ void parseOrderPrice(const QJsonObject &json, OrderPrice &data)
     data.forEmail = json["for_email"].toString();
 }
 
-void parseProduct(const QJsonObject &json, OrderProduct &data)
+void parseProduct(const QJsonObject &json, api::OrderProduct &data)
 {
     data.status = json["status"].toString();
     parseProductPrice(json["price"].toObject(), data.price);
@@ -41,7 +41,7 @@ void parseProduct(const QJsonObject &json, OrderProduct &data)
     }
 }
 
-void parseOrder(const QJsonObject &json, Order &data)
+void parseOrder(const QJsonObject &json, api::Order &data)
 {
     data.publicId = json["publicId"].toString();
     data.date = QDateTime::fromSecsSinceEpoch(json["date"].toInt());
@@ -78,7 +78,7 @@ void parseOrder(const QJsonObject &json, Order &data)
     data.statusPageUrl = json["statusPageUrl"].toString();
 }
 
-void parseGetOrdersHistoryResponse(const QJsonObject &json, GetOrdersHistoryResponse &data)
+void parseGetOrdersHistoryResponse(const QJsonObject &json, api::GetOrdersHistoryResponse &data)
 {
     auto orders = json["orders"].toArray();
     data.orders.resize(orders.count());

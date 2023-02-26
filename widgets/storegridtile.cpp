@@ -1,8 +1,8 @@
 #include "storegridtile.h"
 #include "ui_storegridtile.h"
 
-StoreGridTile::StoreGridTile(const CatalogProduct &data,
-                             GogApiClient *apiClient,
+StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
+                             api::GogApiClient *apiClient,
                              QWidget *parent) :
     QWidget(parent),
     ui(new Ui::StoreGridTile)

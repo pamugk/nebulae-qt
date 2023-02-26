@@ -1,8 +1,8 @@
 #include "orderitem.h"
 #include "ui_orderitem.h"
 
-OrderItem::OrderItem(const OrderProduct &data,
-                     GogApiClient *apiClient,
+OrderItem::OrderItem(const api::OrderProduct &data,
+                     api::GogApiClient *apiClient,
                      QWidget *parent) :
     QWidget(parent),
     ui(new Ui::OrderItem)

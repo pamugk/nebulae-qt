@@ -16,8 +16,8 @@ class StoreGridTile : public QWidget
     Q_OBJECT
 
 public:
-    explicit StoreGridTile(const CatalogProduct &data,
-                           GogApiClient *apiClient,
+    explicit StoreGridTile(const api::CatalogProduct &data,
+                           api::GogApiClient *apiClient,
                            QWidget *parent = nullptr);
     ~StoreGridTile();
 

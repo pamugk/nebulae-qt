@@ -5,6 +5,6 @@
 
 #include "../models/order.h"
 
-void parseGetOrdersHistoryResponse(const QJsonObject &json, GetOrdersHistoryResponse &data);
+void parseGetOrdersHistoryResponse(const QJsonObject &json, api::GetOrdersHistoryResponse &data);
 
 #endif // ORDER_SERIALIZATION_H

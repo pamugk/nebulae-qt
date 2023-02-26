@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
 
     SettingsManager settingsManager(&a);
 
-    GogApiClient apiClient(&a);
+    api::GogApiClient apiClient(&a);
     apiClient.setStoreCredentials(settingsManager.isAutoLogin());
     QObject::connect(&settingsManager, &SettingsManager::autoLoginChanged,
-            &apiClient, &GogApiClient::setStoreCredentials);
+            &apiClient, &api::GogApiClient::setStoreCredentials);
 
     MainWindow w;
     w.setApiClient(&apiClient);

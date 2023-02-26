@@ -16,8 +16,8 @@ class StoreListItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit StoreListItem(const CatalogProduct &data,
-                           GogApiClient *apiClient,
+    explicit StoreListItem(const api::CatalogProduct &data,
+                           api::GogApiClient *apiClient,
                            QWidget *parent = nullptr);
     ~StoreListItem();
 

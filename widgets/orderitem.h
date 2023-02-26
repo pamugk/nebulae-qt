@@ -16,8 +16,8 @@ class OrderItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit OrderItem(const OrderProduct &data,
-                       GogApiClient *apiClient,
+    explicit OrderItem(const api::OrderProduct &data,
+                       api::GogApiClient *apiClient,
                        QWidget *parent = nullptr);
     ~OrderItem();
 

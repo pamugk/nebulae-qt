@@ -15,10 +15,12 @@ public:
     explicit FilterCheckbox(const QString &text, QWidget *parent = nullptr);
     ~FilterCheckbox();
 
+signals:
+    void include(bool value);
+    void exclude(bool value);
+
 private slots:
     void on_hideButton_toggled(bool checked);
-
-    void on_filterCheckbox_stateChanged(int arg1);
 
 private:
     Ui::FilterCheckbox *ui;
