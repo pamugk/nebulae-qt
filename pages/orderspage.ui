@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(217, 217, 217);</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>8</number>
@@ -27,14 +30,18 @@
     <number>8</number>
    </property>
    <property name="spacing">
-    <number>16</number>
+    <number>0</number>
    </property>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
+       <pointsize>11</pointsize>
        <bold>true</bold>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: black; padding-right: 20px;</string>
      </property>
      <property name="text">
       <string>ORDERS HISTORY</string>
@@ -43,6 +50,24 @@
    </item>
    <item row="0" column="1">
     <widget class="QLineEdit" name="searchEdit">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLineEdit
+{
+	border: none;
+}
+
+QLineEdit:focus
+{
+	background-color: rgb(237, 237, 237);
+	border: 1px solid gray;
+}</string>
+     </property>
      <property name="placeholderText">
       <string>SEARCH...</string>
      </property>
@@ -84,7 +109,7 @@
             <x>0</x>
             <y>0</y>
             <width>784</width>
-            <height>495</height>
+            <height>515</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="resultsScrollContentsLayout">

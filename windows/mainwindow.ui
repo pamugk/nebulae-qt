@@ -27,6 +27,9 @@
       <layout class="QHBoxLayout" name="mainContentHeader">
        <item>
         <widget class="QPushButton" name="navigateBackButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -41,6 +44,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="navigateForwardButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -133,6 +139,9 @@ QLabel {
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -153,6 +162,9 @@ QLabel {
           </item>
           <item>
            <widget class="QPushButton" name="loginButton">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -178,6 +190,9 @@ QLabel {
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="text">
              <string/>
@@ -209,6 +224,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="discoverButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Discover</string>
          </property>
@@ -228,6 +246,9 @@ QLabel {
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="text">
           <string>Recent</string>
@@ -250,6 +271,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="storeButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Store</string>
          </property>
@@ -264,6 +288,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="allGamesButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>All games</string>
          </property>
@@ -278,6 +305,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="wishlistButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Wishlist</string>
          </property>
@@ -292,6 +322,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="ordersButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Orders history</string>
          </property>
@@ -313,6 +346,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="libraryButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Owned games</string>
          </property>
@@ -327,6 +363,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="installedButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Installed</string>
          </property>
@@ -348,6 +387,9 @@ QLabel {
        </item>
        <item>
         <widget class="QPushButton" name="friendsButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="text">
           <string>Friends online</string>
          </property>

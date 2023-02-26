@@ -38,7 +38,10 @@ WishlistItem::WishlistItem(const Product &data,
 
     imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        ui->coverLabel->setPixmap(QPixmap::fromImage(QImage::fromData(imageReply->readAll(), "PNG")));
+        if (imageReply->error() == QNetworkReply::NoError)
+        {
+            ui->coverLabel->setPixmap(QPixmap::fromImage(QImage::fromData(imageReply->readAll(), "PNG")));
+        }
         imageReply->deleteLater();
         imageReply = nullptr;
     });

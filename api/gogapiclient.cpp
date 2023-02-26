@@ -9,8 +9,8 @@ GogApiClient::GogApiClient(QObject *parent)
     auto environment = QProcessEnvironment::systemEnvironment();
 
     client.setReplyHandler(new QOAuthHttpServerReplyHandler(6543, &client));
-    client.setClientIdentifier(environment.value("CLIENT_ID"));
-    client.setClientIdentifierSharedKey(environment.value("CLIENT_SECRET"));
+    client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
+    client.setClientIdentifierSharedKey(environment.value("GOG_CLIENT_SECRET"));
     client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
     client.setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
     client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters) {
