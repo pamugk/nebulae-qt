@@ -41,6 +41,16 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
     filter.discounted = false;
     filter.hideOwned = false;
     filter.productTypes = QStringList({"game","pack","dlc","extras"});
+
+    page = 1;
+    paginator = new Pagination(ui->resultsPage);
+    connect(paginator, &Pagination::changedPage, this, [this](quint16 newPage)
+    {
+       page = newPage;
+       fetchData();
+    });
+    ui->resultsPageLayout->addWidget(paginator);
+    ui->resultsPageLayout->setAlignment(paginator, Qt::AlignHCenter);
 }
 
 AllGamesPage::~AllGamesPage()
@@ -56,6 +66,7 @@ void AllGamesPage::setApiClient(api::GogApiClient *apiClient)
 void AllGamesPage::fetchData()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    paginator->setVisible(false);
     while (!ui->resultsScrollAreaLayout->isEmpty())
     {
         auto item = ui->resultsScrollAreaLayout->itemAt(0);
@@ -63,7 +74,7 @@ void AllGamesPage::fetchData()
         item->widget()->deleteLater();
         delete item;
     }
-    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB");
+    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
         {
@@ -85,6 +96,7 @@ void AllGamesPage::fetchData()
                 {
                     ui->resultsScrollAreaLayout->addWidget(new StoreListItem(product, apiClient, ui->resultsScrollAreaContents));
                 }
+                paginator->changePages(page, data.pages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
 
@@ -104,6 +116,7 @@ void AllGamesPage::fetchData()
 void AllGamesPage::clear()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    paginator->setVisible(false);
     while (!ui->filtersScrollAreaLayout->isEmpty())
     {
         auto item = ui->filtersScrollAreaLayout->itemAt(0);
@@ -122,7 +135,7 @@ void AllGamesPage::clear()
 
 void AllGamesPage::initialize()
 {
-    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB");
+    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
     ui->filtersScrollArea->setVisible(false);
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     connect(networkReply, &QNetworkReply::finished, this, [=](){
@@ -139,26 +152,32 @@ void AllGamesPage::initialize()
 
             checkbox = new QCheckBox("Show only discounted", ui->filtersScrollAreaContents);
             maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.discounted);
             connect(checkbox, &QCheckBox::toggled, this, [this](bool value)
             {
                 filter.discounted = value;
+                page = 1;
                 fetchData();
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
             checkbox = new QCheckBox("Hide DLCs and extras", ui->filtersScrollAreaContents);
+            checkbox->setChecked(!filter.productTypes.contains("dlc"));
             maxWidth = std::max(maxWidth, checkbox->width());
             connect(checkbox, &QCheckBox::toggled, this, [this](bool value)
             {
                 filter.productTypes = value ? QStringList({"game","pack"}) : QStringList({"game","pack","dlc","extras"});
+                page = 1;
                 fetchData();
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
             checkbox = new QCheckBox("Hide all owned products", ui->filtersScrollAreaContents);
+            checkbox->setChecked(filter.hideOwned);
             connect(checkbox, &QCheckBox::toggled, this, [this](bool value)
             {
                 filter.hideOwned = value;
+                page = 1;
                 fetchData();
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
@@ -174,12 +193,15 @@ void AllGamesPage::initialize()
 
             api::MetaTag item;
             area = new CollapsibleArea("Release Status", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.releaseStatuses)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item](bool shouldInclude)
+                filterCheckbox->setInclude(filter.releaseStatuses.contains(item.slug));
+                filterCheckbox->setExclude(filter.excludeReleaseStatuses.contains(item.slug));
+                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -189,9 +211,11 @@ void AllGamesPage::initialize()
                     {
                         filter.releaseStatuses.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
                     fetchData();
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
@@ -201,6 +225,8 @@ void AllGamesPage::initialize()
                     {
                         filter.excludeReleaseStatuses.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
                     fetchData();
                 });
                 layout->addWidget(filterCheckbox);
@@ -210,12 +236,15 @@ void AllGamesPage::initialize()
             ui->filtersScrollAreaLayout->addWidget(area);
 
             area = new CollapsibleArea("Genres", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.genres)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item](bool shouldInclude)
+                filterCheckbox->setInclude(filter.genres.contains(item.slug));
+                filterCheckbox->setExclude(filter.excludeGenres.contains(item.slug));
+                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -225,9 +254,11 @@ void AllGamesPage::initialize()
                     {
                         filter.genres.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
                     fetchData();
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
@@ -237,6 +268,8 @@ void AllGamesPage::initialize()
                     {
                         filter.excludeGenres.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
                     fetchData();
                 });
                 layout->addWidget(filterCheckbox);
@@ -246,12 +279,15 @@ void AllGamesPage::initialize()
             ui->filtersScrollAreaLayout->addWidget(area);
 
             area = new CollapsibleArea("Tags", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.tags)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item](bool shouldInclude)
+                filterCheckbox->setInclude(filter.tags.contains(item.slug));
+                filterCheckbox->setExclude(filter.excludeTags.contains(item.slug));
+                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -261,9 +297,11 @@ void AllGamesPage::initialize()
                     {
                         filter.tags.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
                     fetchData();
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
@@ -273,6 +311,8 @@ void AllGamesPage::initialize()
                     {
                         filter.excludeTags.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
                     fetchData();
                 });
                 layout->addWidget(filterCheckbox);
@@ -283,12 +323,14 @@ void AllGamesPage::initialize()
             ui->filtersScrollAreaLayout->addWidget(area);
 
             area = new CollapsibleArea("Operating Systems", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.systems.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.systems)
             {
                 auto checkbox = new QCheckBox(item.name, area);
-                connect(checkbox, &QCheckBox::toggled, this, [this, item](bool shouldInclude)
+                checkbox->setChecked(filter.systems.contains(item.slug));
+                connect(checkbox, &QCheckBox::toggled, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -298,6 +340,8 @@ void AllGamesPage::initialize()
                     {
                         filter.systems.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.systems.count());
                     fetchData();
                 });
                 layout->addWidget(checkbox);
@@ -307,12 +351,15 @@ void AllGamesPage::initialize()
             ui->filtersScrollAreaLayout->addWidget(area);
 
             area = new CollapsibleArea("Features", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.features)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item](bool shouldInclude)
+                filterCheckbox->setInclude(filter.features.contains(item.slug));
+                filterCheckbox->setExclude(filter.excludeFeatures.contains(item.slug));
+                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -322,9 +369,11 @@ void AllGamesPage::initialize()
                     {
                         filter.features.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
                     fetchData();
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
@@ -334,6 +383,8 @@ void AllGamesPage::initialize()
                     {
                         filter.excludeFeatures.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
                     fetchData();
                 });
                 layout->addWidget(filterCheckbox);
@@ -346,12 +397,14 @@ void AllGamesPage::initialize()
             ui->filtersScrollAreaLayout->addWidget(area);
 
             area = new CollapsibleArea("Languages", ui->filtersScrollAreaContents);
+            area->setChangedFilters(filter.languages.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
             foreach (item, data.filters.languages)
             {
                 auto checkbox = new QCheckBox(item.name, area);
-                connect(checkbox, &QCheckBox::toggled, this, [this, item](bool shouldInclude)
+                checkbox->setChecked(filter.languages.contains(item.slug));
+                connect(checkbox, &QCheckBox::toggled, this, [this, item, area](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
@@ -361,6 +414,8 @@ void AllGamesPage::initialize()
                     {
                         filter.languages.removeOne(item.slug);
                     }
+                    page = 1;
+                    area->setChangedFilters(filter.languages.count());
                     fetchData();
                 });
                 layout->addWidget(checkbox);
@@ -373,7 +428,7 @@ void AllGamesPage::initialize()
             ui->filtersScrollArea->setVisible(true);
 
             ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(data.productCount)));
-            ui->pagesLabel->setText(QString("%1 of %2").arg(QString::number(1), QString::number(data.pages)));
+            ui->pagesLabel->setText(QString("%1 of %2").arg(QString::number(page), QString::number(data.pages)));
 
             if (data.products.isEmpty())
             {
@@ -386,6 +441,7 @@ void AllGamesPage::initialize()
                 {
                     ui->resultsScrollAreaLayout->addWidget(new StoreListItem(product, apiClient, ui->resultsScrollAreaContents));
                 }
+                paginator->changePages(page, data.pages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
 
@@ -404,6 +460,7 @@ void AllGamesPage::initialize()
 
 void AllGamesPage::on_lineEdit_textChanged(const QString &arg1)
 {
+    page = 1;
     filter.query = arg1.trimmed();
     fetchData();
 }
@@ -415,6 +472,7 @@ void AllGamesPage::on_sortOrderComboBox_currentIndexChanged(int index)
     {
         index = 0;
     }
+    page = 1;
     currentSortOrder = index;
     fetchData();
 }

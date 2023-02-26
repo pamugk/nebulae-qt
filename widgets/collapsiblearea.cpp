@@ -12,6 +12,10 @@ CollapsibleArea::CollapsibleArea(const QString &header, QWidget *parent) :
     toggleAnimation.addAnimation(new QPropertyAnimation(this, "minimumHeight"));
     toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
     toggleAnimation.addAnimation(new QPropertyAnimation(ui->scrollArea, "maximumHeight"));
+
+    connect(ui->clearButton, &QPushButton::clicked, this, &CollapsibleArea::clearFilters);
+    ui->changedFiltersLabel->setVisible(false);
+    ui->clearButton->setVisible(false);
 }
 
 CollapsibleArea::~CollapsibleArea()
@@ -42,5 +46,13 @@ void CollapsibleArea::setContentLayout(QLayout *contentLayout) {
     contentAnimation->setDuration(300);
     contentAnimation->setStartValue(0);
     contentAnimation->setEndValue(contentHeight);
+}
+
+void CollapsibleArea::setChangedFilters(quint8 changedFilterCount)
+{
+    auto visibleChange = changedFilterCount > 0;
+    ui->changedFiltersLabel->setVisible(visibleChange);
+    ui->changedFiltersLabel->setText(QString::number(changedFilterCount));
+    ui->clearButton->setVisible(visibleChange);
 }
 

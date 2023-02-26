@@ -85,25 +85,12 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, qu
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getWishlist(const QString query, WishlistSortOrder order, quint16 page)
+QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, quint16 page)
 {
     QVariantMap parameters;
     parameters["hiddenFlag"] = "0";
     parameters["mediaType"] = "1";
-    QString orderString;
-    switch (order)
-    {
-    case WishlistSortOrder::DATE_ADDED:
-        orderString = "date_added";
-        break;
-    case WishlistSortOrder::TITLE:
-        orderString = "title";
-        break;
-    case WishlistSortOrder::USER_REVIEWS:
-        orderString = "user_reviews";
-        break;
-    }
-    parameters["sortBy"] = orderString;
+    parameters["sortBy"] = order;
     parameters["page"] = QString::number(page);
     if (!query.isNull() && !query.isEmpty())
     {

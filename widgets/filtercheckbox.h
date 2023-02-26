@@ -22,6 +22,10 @@ signals:
 private slots:
     void on_hideButton_toggled(bool checked);
 
+public slots:
+    void setInclude(bool value);
+    void setExclude(bool value);
+
 private:
     Ui::FilterCheckbox *ui;
 };

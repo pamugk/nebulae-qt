@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "./basepage.h"
+#include "../widgets/pagination.h"
 
 namespace Ui {
 class OrdersPage;
@@ -22,6 +23,8 @@ public:
 private:
     api::GogApiClient *apiClient;
     api::OrderFilter filter;
+    quint16 page;
+    Pagination *paginator;
     Ui::OrdersPage *ui;
 
     void fetchData();

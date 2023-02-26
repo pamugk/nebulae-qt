@@ -24,3 +24,18 @@ void FilterCheckbox::on_hideButton_toggled(bool checked)
     }
 }
 
+void FilterCheckbox::setInclude(bool value)
+{
+    ui->filterCheckbox->setChecked(value);
+}
+
+void FilterCheckbox::setExclude(bool value)
+{
+    ui->hideButton->setChecked(value);
+    ui->filterCheckbox->setEnabled(!value);
+    if (value)
+    {
+        ui->filterCheckbox->setChecked(false);
+    }
+}
+

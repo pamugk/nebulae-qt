@@ -17,6 +17,12 @@ public:
     ~CollapsibleArea();
     void setContentLayout(QLayout *contentLayout);
 
+signals:
+    void clearFilters();
+
+public slots:
+    void setChangedFilters(quint8 changedFilterCount);
+
 private slots:
     void on_expandButton_toggled(bool checked);
 

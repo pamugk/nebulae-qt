@@ -22,8 +22,8 @@ namespace api
 
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, quint16 page = 1);
-        QNetworkReply *getWishlist(const QString query = QString(),
-                                   WishlistSortOrder order = WishlistSortOrder::TITLE,
+        QNetworkReply *getWishlist(const QString &query = QString(),
+                                   const QString &order = "title",
                                    quint16 page = 1);
         QNetworkReply *searchCatalog(const SortOrder &order,
                                      const CatalogFilter &filter,

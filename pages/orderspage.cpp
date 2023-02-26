@@ -25,6 +25,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(true);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.inProgress = checked;
+        page = 1;
         fetchData();
     });
 
@@ -33,6 +34,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(true);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.pending = checked;
+        page = 1;
         fetchData();
     });
 
@@ -41,6 +43,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(true);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.completed = checked;
+        page = 1;
         fetchData();
     });
 
@@ -49,6 +52,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(false);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.cancelled = checked;
+        page = 1;
         fetchData();
     });
 
@@ -57,6 +61,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(true);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.redeemed = checked;
+        page = 1;
         fetchData();
     });
 
@@ -65,6 +70,7 @@ OrdersPage::OrdersPage(QWidget *parent) :
     item->setChecked(true);
     connect(item, &QAction::toggled, this, [this](bool checked){
         filter.notRedeemed = checked;
+        page = 1;
         fetchData();
     });
 
@@ -76,6 +82,16 @@ OrdersPage::OrdersPage(QWidget *parent) :
     filter.cancelled = false;
     filter.redeemed = true;
     filter.notRedeemed = true;
+
+    page = 1;
+    paginator = new Pagination(ui->resultsPage);
+    connect(paginator, &Pagination::changedPage, this, [this](quint16 newPage)
+    {
+       page = newPage;
+       fetchData();
+    });
+    ui->resultsPageLayout->addWidget(paginator);
+    ui->resultsPageLayout->setAlignment(paginator, Qt::AlignHCenter);
 }
 
 OrdersPage::~OrdersPage()
@@ -90,7 +106,7 @@ void OrdersPage::setApiClient(api::GogApiClient *apiClient)
 
 void OrdersPage::fetchData()
 {
-    auto networkReply = apiClient->getOrdersHistory(filter);
+    auto networkReply = apiClient->getOrdersHistory(filter, page);
     clear();
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
@@ -109,6 +125,7 @@ void OrdersPage::fetchData()
                 {
                     ui->resultsScrollContentsLayout->addWidget(new OrderGroup(item, apiClient, ui->resultsScrollContents));
                 }
+                paginator->changePages(page, data.totalPages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
             networkReply->deleteLater();
@@ -126,6 +143,8 @@ void OrdersPage::fetchData()
 
 void OrdersPage::clear()
 {
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    paginator->setVisible(false);
     while (!ui->resultsScrollContentsLayout->isEmpty())
     {
         auto item = ui->resultsScrollContentsLayout->itemAt(0);
@@ -133,7 +152,6 @@ void OrdersPage::clear()
         delete item->widget();
         delete item;
     }
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
 }
 
 void OrdersPage::initialize()
@@ -143,6 +161,7 @@ void OrdersPage::initialize()
 
 void OrdersPage::on_searchEdit_textChanged(const QString &arg1)
 {
+    page = 1;
     filter.query = arg1.trimmed();
     fetchData();
 }

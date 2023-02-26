@@ -16,7 +16,21 @@ WishlistPage::WishlistPage(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->resultsScrollAreaContentsLayout->setAlignment(Qt::AlignTop);
-    connect(ui->searchEdit, &QLineEdit::textChanged, this, &WishlistPage::on_searchEdit_textChanged);
+    connect(ui->searchEdit, &QLineEdit::textChanged, this, &WishlistPage::onSearchTextChanged);
+    connect(ui->orderComboBox, &QComboBox::currentIndexChanged, this, &WishlistPage::onCurrentOrderChanged);
+
+    orders = {"title", "date_added", "user_reviews"};
+    currentOrder = 0;
+
+    page = 1;
+    paginator = new Pagination(ui->resultsPage);
+    connect(paginator, &Pagination::changedPage, this, [this](quint16 newPage)
+    {
+       page = newPage;
+       fetchData();
+    });
+    ui->resultsPageLayout->addWidget(paginator);
+    ui->resultsPageLayout->setAlignment(paginator, Qt::AlignHCenter);
 }
 
 WishlistPage::~WishlistPage()
@@ -32,7 +46,7 @@ void WishlistPage::setApiClient(api::GogApiClient *apiClient)
 void WishlistPage::fetchData()
 {
     clear();
-    auto networkReply = apiClient->getWishlist(query);
+    auto networkReply = apiClient->getWishlist(query, orders[currentOrder], page);
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
         {
@@ -53,6 +67,7 @@ void WishlistPage::fetchData()
                 }
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
                 ui->titleLabel->setText(QString("WISHLISTED TITLES (%1)").arg(data.totalProducts));
+                paginator->changePages(page, data.totalPages);
             }
             networkReply->deleteLater();
         }
@@ -69,6 +84,7 @@ void WishlistPage::fetchData()
 void WishlistPage::clear()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    paginator->setVisible(false);
     while (!ui->resultsScrollAreaContentsLayout->isEmpty())
     {
         auto item =ui->resultsScrollAreaContentsLayout->itemAt(0);
@@ -83,9 +99,21 @@ void WishlistPage::initialize()
     fetchData();
 }
 
-void WishlistPage::on_searchEdit_textChanged(const QString &arg1)
+void WishlistPage::onSearchTextChanged(const QString &arg1)
 {
+    page = 1;
     query = arg1.trimmed();
+    fetchData();
+}
+
+void WishlistPage::onCurrentOrderChanged(int index)
+{
+    if (index < 0 || index > 2)
+    {
+        index = 0;
+    }
+    currentOrder = index;
+    page = 1;
     fetchData();
 }
 

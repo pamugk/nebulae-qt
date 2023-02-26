@@ -5,13 +5,6 @@
 
 namespace api
 {
-    enum class WishlistSortOrder
-    {
-        DATE_ADDED,
-        TITLE,
-        USER_REVIEWS
-    };
-
     struct GetWishlistResponse
     {
         quint16 page;

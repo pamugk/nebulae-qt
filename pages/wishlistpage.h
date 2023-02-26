@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "./basepage.h"
+#include "../widgets/pagination.h"
 
 namespace Ui {
 class WishlistPage;
@@ -21,6 +22,10 @@ public:
 private:
     api::GogApiClient *apiClient;
     QString query;
+    QVector<QString> orders;
+    quint8 currentOrder;
+    quint16 page;
+    Pagination *paginator;
     Ui::WishlistPage *ui;
 
     void fetchData();
@@ -29,7 +34,8 @@ public slots:
     virtual void clear() override;
     virtual void initialize() override;
 private slots:
-    void on_searchEdit_textChanged(const QString &arg1);
+    void onSearchTextChanged(const QString &arg1);
+    void onCurrentOrderChanged(int index);
 };
 
 #endif // WISHLISTPAGE_H

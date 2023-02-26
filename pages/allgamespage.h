@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "./basepage.h"
+#include "../widgets/pagination.h"
 
 namespace Ui {
 class AllGamesPage;
@@ -24,6 +25,8 @@ private:
     int currentSortOrder;
     QVector<api::SortOrder> orders;
     api::CatalogFilter filter;
+    quint16 page;
+    Pagination *paginator;
     Ui::AllGamesPage *ui;
 
     void fetchData();
