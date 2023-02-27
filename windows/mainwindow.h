@@ -5,6 +5,7 @@
 #include <QMap>
 
 #include "../api/gogapiclient.h"
+#include "../internals/navigationdestination.h"
 #include "../internals/settingsmanager.h"
 #include "../pages/basepage.h"
 
@@ -22,6 +23,12 @@ public:
 
     void setApiClient(api::GogApiClient *apiClient);
     void setSettingsManager(SettingsManager *settingsManager);
+
+public slots:
+    void setDestination(NavigationDestination destination);
+
+signals:
+    void navigatingToCatalogProduct(quint64 id);
 
 private slots:
     void on_discoverButton_clicked();

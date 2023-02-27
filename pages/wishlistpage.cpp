@@ -63,7 +63,12 @@ void WishlistPage::fetchData()
                 api::Product product;
                 foreach (product, data.products)
                 {
-                    ui->resultsScrollAreaContentsLayout->addWidget(new WishlistItem(product, apiClient, ui->resultsScrollAreaContents));
+                    auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
+                    connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)
+                    {
+                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                    });
+                    ui->resultsScrollAreaContentsLayout->addWidget(wishlistItem);
                 }
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
                 ui->titleLabel->setText(QString("WISHLISTED TITLES (%1)").arg(data.totalProducts));

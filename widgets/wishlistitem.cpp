@@ -45,6 +45,8 @@ WishlistItem::WishlistItem(const api::Product &data,
         imageReply->deleteLater();
         imageReply = nullptr;
     });
+
+    itemId = data.id;
 }
 
 WishlistItem::~WishlistItem()
@@ -54,4 +56,9 @@ WishlistItem::~WishlistItem()
         imageReply->deleteLater();
     }
     delete ui;
+}
+
+void WishlistItem::mousePressEvent(QMouseEvent *event)
+{
+    emit navigateToProduct(itemId);
 }

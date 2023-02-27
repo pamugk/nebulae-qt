@@ -106,7 +106,7 @@ void parseLocalizations(const QJsonArray &json, QVector<api::Localization> &data
     }
 }
 
-void parseVideo(const QJsonObject &json, api::Video &data)
+void parseVideo(const QJsonObject &json, api::ThumbnailedVideo &data)
 {
     data.provider = json["provider"].toString();
     data.videoId = json["videoId"].toString();
@@ -128,8 +128,8 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
     data.copyrights = json["copyrights"].toString();
     data.usingDosBox = json["isUsingDosBox"].toBool();
     data.releaseStatus = json["releaseStatus"].toString();
-    data.description = json["description"].toString();
-    data.overview = json["overview"].toString();
+    data.description = json["description"].toString().replace("\\\"", "\"");
+    data.overview = json["overview"].toString().replace("\\\"", "\"");
     data.featuresDescription = json["featuresDescription"].toString();
     data.additionalRequirements = json["additionalRequirements"].toString();
 

@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
+#include "../internals/navigationdestination.h"
 
 class BasePage : public QWidget
 {
@@ -14,6 +15,9 @@ public:
     ~BasePage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) = 0;
+
+signals:
+    void navigateToDestination(NavigationDestination destination);
 
 public slots:
     virtual void clear() = 0;

@@ -11,7 +11,8 @@ enum Page
     ORDER_HISTORY,
     OWNED_GAMES,
     INSTALLED_GAMES,
-    FRIENDS
+    FRIENDS,
+    CATALOG_PRODUCT_PAGE
 };
 
 #endif // PAGES_H

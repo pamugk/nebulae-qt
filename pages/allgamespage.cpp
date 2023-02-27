@@ -94,7 +94,12 @@ void AllGamesPage::fetchData()
                 api::CatalogProduct product;
                 foreach (product, data.products)
                 {
-                    ui->resultsScrollAreaLayout->addWidget(new StoreListItem(product, apiClient, ui->resultsScrollAreaContents));
+                    auto storeListItem = new StoreListItem(product, apiClient, ui->resultsScrollAreaContents);
+                    connect(storeListItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
+                    {
+                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                    });
+                    ui->resultsScrollAreaLayout->addWidget(storeListItem);
                 }
                 paginator->changePages(page, data.pages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
@@ -439,7 +444,12 @@ void AllGamesPage::initialize()
                 api::CatalogProduct product;
                 foreach (product, data.products)
                 {
-                    ui->resultsScrollAreaLayout->addWidget(new StoreListItem(product, apiClient, ui->resultsScrollAreaContents));
+                    auto storeListItem = new StoreListItem(product, apiClient, ui->resultsScrollAreaContents);
+                    connect(storeListItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
+                    {
+                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                    });
+                    ui->resultsScrollAreaLayout->addWidget(storeListItem);
                 }
                 paginator->changePages(page, data.pages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);

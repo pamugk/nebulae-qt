@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 
 #include "../pages/allgamespage.h"
+#include "../pages/catalogproductpage.h"
 #include "../pages/orderspage.h"
 #include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
@@ -23,10 +24,16 @@ MainWindow::MainWindow(QWidget *parent)
     pages[Page::WISHLIST] = new WishlistPage(ui->pagesStack);
     pages[Page::ORDER_HISTORY] = new OrdersPage(ui->pagesStack);
 
+    auto catalogProductPage = new CatalogProductPage(ui->pagesStack);
+    connect(this, &MainWindow::navigatingToCatalogProduct,
+            catalogProductPage, &CatalogProductPage::setProductId);
+    pages[Page::CATALOG_PRODUCT_PAGE] = catalogProductPage;
+
     BasePage *item;
     foreach (item, pages.values())
     {
         ui->pagesStack->addWidget(item);
+        connect(item, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
     }
 }
 
@@ -74,6 +81,17 @@ void MainWindow::setApiClient(api::GogApiClient *apiClient)
 void MainWindow::setSettingsManager(SettingsManager *settingsManager)
 {
     this->settingsManager = settingsManager;
+}
+
+void MainWindow::setDestination(NavigationDestination destination)
+{
+    switch (destination.page)
+    {
+    case Page::CATALOG_PRODUCT_PAGE:
+        emit navigatingToCatalogProduct(destination.parameters.toULongLong());
+        break;
+    }
+    navigate(destination.page);
 }
 
 void MainWindow::on_discoverButton_clicked()

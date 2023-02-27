@@ -32,6 +32,8 @@ StoreListItem::StoreListItem(const api::CatalogProduct &data,
         imageReply->deleteLater();
         imageReply = nullptr;
     });
+
+    itemId = data.id.toLongLong();
 }
 
 StoreListItem::~StoreListItem()
@@ -41,4 +43,9 @@ StoreListItem::~StoreListItem()
         imageReply->deleteLater();
     }
     delete ui;
+}
+
+void StoreListItem::mousePressEvent(QMouseEvent *event)
+{
+    emit navigateToProduct(itemId);
 }

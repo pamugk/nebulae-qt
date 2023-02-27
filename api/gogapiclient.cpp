@@ -68,6 +68,13 @@ QNetworkReply *api::GogApiClient::getAnything(const QString &url)
     return client.get(url);
 }
 
+QNetworkReply *api::GogApiClient::getCatalogProductInfo(quint64 id, const QString &locale)
+{
+    QVariantMap parameters;
+    parameters["locale"] = locale;
+    return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
+}
+
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, quint16 page)
 {
     QVariantMap parameters;

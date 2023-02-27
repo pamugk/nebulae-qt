@@ -1,6 +1,8 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
+#include <QtGlobal>
+
 #include <QObject>
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QSettings>
@@ -21,6 +23,7 @@ namespace api
         bool isAuthenticated();
 
         QNetworkReply *getAnything(const QString &url);
+        QNetworkReply *getCatalogProductInfo(quint64 id, const QString &locale);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, quint16 page = 1);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",

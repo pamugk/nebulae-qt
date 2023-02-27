@@ -38,11 +38,13 @@ set(PROJECT_SOURCES
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
 
+        internals/navigationdestination.h
         internals/pages.h
         internals/settingsmanager.h internals/settingsmanager.cpp
 
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/basepage.h pages/basepage.cpp
+        pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui

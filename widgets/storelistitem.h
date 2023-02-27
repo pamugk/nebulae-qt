@@ -1,6 +1,7 @@
 #ifndef STORELISTITEM_H
 #define STORELISTITEM_H
 
+#include <QMouseEvent>
 #include <QNetworkReply>
 #include <QWidget>
 
@@ -21,7 +22,14 @@ public:
                            QWidget *parent = nullptr);
     ~StoreListItem();
 
+signals:
+    void navigateToProduct(quint64 id);
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+
 private:
+    quint64 itemId;
     QNetworkReply *imageReply;
     Ui::StoreListItem *ui;
 };

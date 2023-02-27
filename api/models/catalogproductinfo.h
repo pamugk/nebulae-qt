@@ -56,7 +56,7 @@ namespace api
         QVector<Requirement> definedRequirements;
     };
 
-    struct Video
+    struct ThumbnailedVideo
     {
         QString provider;
         QString videoId;
@@ -129,7 +129,7 @@ namespace api
         QString checkoutLink;
         QString productType;
         QVector<Localization> localizations;
-        QVector<Video> videos;
+        QVector<ThumbnailedVideo> videos;
         QVector<Bonus> bonuses;
         QVector<FormattedLink> screenshots;
         QString publisher;
