@@ -23,6 +23,7 @@ namespace api
     {
         quint64 id;
         QString name;
+        QString link;
         bool hasProductCard;
         QVector<Bonus> bonuses;
     };
@@ -38,14 +39,13 @@ namespace api
     {
         QString id;
         QString name;
-        QString description;
     };
 
     struct SystemRequirements
     {
         QString type;
         QString description;
-        QVector<Requirement> requirements;
+        QMap<QString, QString> requirements;
     };
 
     struct SupportedOperatingSystem
@@ -53,6 +53,7 @@ namespace api
         QString name;
         QString versions;
         QVector<SystemRequirements> systemRequirements;
+        QVector<Requirement> definedRequirements;
     };
 
     struct Video
@@ -104,6 +105,7 @@ namespace api
         QString storeLink;
         QString supportLink;
         QString forumLink;
+        QString iconLink;
         QString iconSquareLink;
         QString logoLink;
         QString boxArtImageLink;
@@ -125,7 +127,6 @@ namespace api
         bool secret;
         FormattedLink imageLink;
         QString checkoutLink;
-        QString pricesLink;
         QString productType;
         QVector<Localization> localizations;
         QVector<Video> videos;
@@ -137,7 +138,8 @@ namespace api
         QVector<HierarchicalMetaTag> tags;
         QVector<MetaTag> properties;
         QMap<QString, ContentRating> ratings;
-        QVector<MetaTag> fetures;
+        QVector<MetaTag> features;
+        QVector<Edition> editions;
         Series series;
     };
 }

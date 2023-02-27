@@ -27,7 +27,8 @@ void parseStringArray(const QJsonArray &json, QVector<QString> &data)
 
 void parseMoney(const QJsonObject &json, api::Money &data)
 {
-
+    data.amount = json["amount"].toString();
+    data.currency = json["currency"].toString();
 }
 
 void parseProduct(const QJsonObject &json, api::CatalogProduct &data)

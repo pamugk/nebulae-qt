@@ -34,6 +34,7 @@ set(PROJECT_SOURCES
         api/models/wishlist.h
 
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
+        api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
 
