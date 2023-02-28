@@ -43,5 +43,12 @@
         <file>icons/ellipsis.svg</file>
         <file>icons/gog-galaxy.png</file>
         <file>icons/circle-xmark.svg</file>
+        <file>icons/check.svg</file>
+        <file>icons/gamepad.svg</file>
+        <file>icons/cloud-arrow-up.svg</file>
+        <file>icons/crown.svg</file>
+        <file>icons/trophy.svg</file>
+        <file>icons/people-group.svg</file>
+        <file>icons/object-group.svg</file>
     </qresource>
 </RCC>

@@ -27,6 +27,8 @@ private slots:
 
     void on_goBackButton_clicked();
 
+    void descriptionViewContentsSizeChanged(const QSizeF &size);
+
 private:
     api::GogApiClient *apiClient;
     quint64 id;

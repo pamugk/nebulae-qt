@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QMap>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 #include "./metatag.h"
@@ -32,7 +33,7 @@ namespace api
     {
         quint8 ageRating;
         QString category;
-        QVector<QString> contentDescriptors;
+        QStringList contentDescriptors;
     };
 
     struct Requirement
@@ -91,17 +92,16 @@ namespace api
 
     struct GetCatalogProductInfoResponse
     {
-        // General info
-        bool inDevelopment;
-        bool usingDosBox;
+        quint64 id;
+        QDateTime globalReleaseDate;
+        QDateTime gogReleaseDate;
+        QMap<QString, ContentRating> ratings;
         QString copyrights;
         QString releaseStatus;
         QString description;
         QString overview;
         QString featuresDescription;
         QString additionalRequirements;
-
-        // Links
         QString storeLink;
         QString supportLink;
         QString forumLink;
@@ -112,20 +112,7 @@ namespace api
         QString backgroundImageLink;
         QString galaxyBackgroundImageLink;
         QVector<QString> includedGames;
-
-        // Main product info
-        bool availableForSale;
-        bool visibleInCatalog;
-        bool preorder;
-        bool visibleInAccount;
-        quint64 id;
         QString title;
-        bool installable;
-        QDateTime globalReleaseDate;
-        bool hasProductCard;
-        QDateTime gogReleaseDate;
-        bool secret;
-        FormattedLink imageLink;
         QString checkoutLink;
         QString productType;
         QVector<Localization> localizations;
@@ -137,10 +124,21 @@ namespace api
         QVector<SupportedOperatingSystem> supportedOperatingSystems;
         QVector<HierarchicalMetaTag> tags;
         QVector<MetaTag> properties;
-        QMap<QString, ContentRating> ratings;
         QVector<MetaTag> features;
         QVector<Edition> editions;
         Series series;
+        FormattedLink imageLink;
+        quint32 size;
+
+        bool inDevelopment;
+        bool usingDosBox;
+        bool availableForSale;
+        bool visibleInCatalog;
+        bool preorder;
+        bool visibleInAccount;
+        bool installable;
+        bool hasProductCard;
+        bool secret;
     };
 }
 

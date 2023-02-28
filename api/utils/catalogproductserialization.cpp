@@ -129,6 +129,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
     data.usingDosBox = json["isUsingDosBox"].toBool();
     data.releaseStatus = json["releaseStatus"].toString();
     data.description = json["description"].toString().replace("\\\"", "\"");
+    data.size = json["size"].toInt();
     data.overview = json["overview"].toString().replace("\\\"", "\"");
     data.featuresDescription = json["featuresDescription"].toString();
     data.additionalRequirements = json["additionalRequirements"].toString();
