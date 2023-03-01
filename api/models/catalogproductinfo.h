@@ -5,6 +5,7 @@
 
 #include <QDateTime>
 #include <QMap>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -26,7 +27,8 @@ namespace api
         QString name;
         QString link;
         bool hasProductCard;
-        QVector<Bonus> bonuses;
+        QVector<QString> bonuses;
+        QSet<QString> bonusSet;
     };
 
     struct ContentRating
@@ -125,6 +127,8 @@ namespace api
         QVector<HierarchicalMetaTag> tags;
         QVector<MetaTag> properties;
         QVector<MetaTag> features;
+        QMap<QString, Bonus> editionBonuses;
+        QVector<QString> fullBonusList;
         QVector<Edition> editions;
         Series series;
         FormattedLink imageLink;

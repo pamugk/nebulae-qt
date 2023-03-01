@@ -53,15 +53,25 @@ void parseBonus(const QJsonObject &json, api::Bonus &data)
     data.type.slug = json["type"]["slug"].toString();
 }
 
-void parseEdition(const QJsonObject &json, api::Edition &data)
+void parseEdition(const QJsonObject &json,
+                  QMap<QString, api::Bonus> &bonusMap,
+                  api::Edition &data)
 {
     data.id = json["id"].toInteger();
     data.name = json["name"].toString();
     auto bonuses = json["bonuses"].toArray();
     data.bonuses.resize(bonuses.count());
+    data.bonusSet.reserve(bonuses.count());
     for (int i = 0; i < bonuses.count(); i++)
     {
-        parseBonus(bonuses[i].toObject(), data.bonuses[i]);
+        api::Bonus bonus;
+        parseBonus(bonuses[i].toObject(), bonus);
+        data.bonuses[i] = bonus.name;
+        data.bonusSet.insert(bonus.name);
+        if (!bonusMap.contains(bonus.name))
+        {
+            bonusMap[bonus.name] = bonus;
+        }
     }
     data.hasProductCard = json["hasProductCard"].toBool();
     data.link = json["_links"]["self"]["href"].toString();
@@ -279,7 +289,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         data.editions.resize(editions.count());
         for (int i = 0; i < editions.count(); i++)
         {
-            parseEdition(editions[i].toObject(), data.editions[i]);
+            parseEdition(editions[i].toObject(), data.editionBonuses, data.editions[i]);
         }
 
         if (productData["series"].isObject())
@@ -287,6 +297,47 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
             auto series = productData["series"];
             data.series.id = series["id"].toInteger();
             data.series.name = series["name"].toString();
+        }
+
+        // Merging product bonuses in the following order:
+        // common bonuses first, edition-specific bonuses to follow.
+        // For some reason, there can be several bonuses with the same name and different ids,
+        // so they have to be merged by a name.
+        QSet<QString> fullBonusSet;
+        for (int i = 0; i < data.editions.count() - 1; i++)
+        {
+            for (int j = 0; j < data.editions[i].bonuses.count(); j++)
+            {
+                auto bonusName = data.editions[i].bonuses[j];
+                if (fullBonusSet.contains(bonusName))
+                {
+                    continue;
+                }
+
+                bool isCommonBonus = true;
+                for (int k = i + 1; k < data.editions.count() && isCommonBonus; k++)
+                {
+                    isCommonBonus = data.editions[k].bonusSet.contains(bonusName);
+                }
+
+                if (isCommonBonus)
+                {
+                    fullBonusSet.insert(bonusName);
+                    data.fullBonusList.append(bonusName);
+                }
+            }
+        }
+        for (int i = 0; i < data.editions.count(); i++)
+        {
+            for (int j = 0; j < data.editions[i].bonuses.count(); j++)
+            {
+                auto bonusName = data.editions[i].bonuses[j];
+                if (!fullBonusSet.contains(bonusName))
+                {
+                    fullBonusSet.insert(bonusName);
+                    data.fullBonusList.append(bonusName);
+                }
+            }
         }
     }
 }

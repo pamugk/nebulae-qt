@@ -10,6 +10,7 @@ CheckedItem::CheckedItem(const QString &text, bool checked, QWidget *parent) :
     ui->checkmarkLabel->setEnabled(checked);
     ui->textLabel->setEnabled(checked);
     ui->textLabel->setText(text);
+    ui->textLabel->setVisible(text.isEmpty());
 }
 
 CheckedItem::~CheckedItem()

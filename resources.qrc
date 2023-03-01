@@ -50,5 +50,13 @@
         <file>icons/trophy.svg</file>
         <file>icons/people-group.svg</file>
         <file>icons/object-group.svg</file>
+        <file>icons/book-bookmark.svg</file>
+        <file>icons/display.svg</file>
+        <file>icons/file-lines.svg</file>
+        <file>icons/film.svg</file>
+        <file>icons/folder-plus.svg</file>
+        <file>icons/music.svg</file>
+        <file>icons/image-portrait.svg</file>
+        <file>icons/images.svg</file>
     </qresource>
 </RCC>

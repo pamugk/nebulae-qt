@@ -42,6 +42,8 @@ set(PROJECT_SOURCES
         internals/pages.h
         internals/settingsmanager.h internals/settingsmanager.cpp
 
+        layouts/flowlayout.h layouts/flowlayout.cpp
+
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/basepage.h pages/basepage.cpp
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
@@ -49,6 +51,7 @@ set(PROJECT_SOURCES
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
+        widgets/bonusitem.h widgets/bonusitem.cpp widgets/bonusitem.ui
         widgets/checkeditem.h widgets/checkeditem.cpp widgets/checkeditem.ui
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
