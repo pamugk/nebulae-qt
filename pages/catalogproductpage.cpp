@@ -10,6 +10,8 @@
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
 #include "../widgets/featureitem.h"
+#include "../widgets/imageholder.h"
+#include "../widgets/videoholder.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
     BasePage(parent),
@@ -66,6 +68,14 @@ void CatalogProductPage::clear()
     ui->windowsLabel->setVisible(false);
     ui->macOsLabel->setVisible(false);
     ui->linuxLabel->setVisible(false);
+
+    while (!ui->mediaScrollAreaContentsLayout->isEmpty())
+    {
+        auto item = ui->mediaScrollAreaContentsLayout->itemAt(0);
+        ui->mediaScrollAreaContentsLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
 
     while (!ui->gameFeaturesLayout->isEmpty())
     {
@@ -175,6 +185,26 @@ void CatalogProductPage::initialize()
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
+
+            if (data.videos.isEmpty() && data.screenshots.isEmpty())
+            {
+                ui->mediaScrollArea->setVisible(false);
+            }
+            else
+            {
+                api::ThumbnailedVideo video;
+                foreach (video, data.videos)
+                {
+                    auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
+                    ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
+                }
+                api::FormattedLink screenshotLink;
+                foreach (screenshotLink, data.screenshots)
+                {
+                    auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
+                }
+            }
 
             bool setOS = false;
             QStringList supportedOSInfo(data.supportedOperatingSystems.count());
@@ -416,6 +446,8 @@ void CatalogProductPage::initialize()
             ui->featuresLabel->setVisible(!data.featuresDescription.isNull());
             ui->copyrightsLabel->setText(data.copyrights);
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
+            ui->criticsReviewLabel->setVisible(false);
+
             ui->contentStack->setCurrentWidget(ui->mainPage);
 
             networkReply->deleteLater();

@@ -56,11 +56,13 @@ set(PROJECT_SOURCES
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
+        widgets/imageholder.h widgets/imageholder.cpp widgets/imageholder.ui
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
+        widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
