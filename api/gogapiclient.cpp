@@ -92,6 +92,39 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, qu
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getProductAverageRating(quint64 productId, const QString &reviewer)
+{
+    QVariantMap parameters;
+    if (!reviewer.isEmpty())
+    {
+        parameters["reviewer"] = reviewer;
+    }
+    return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/averageRating").arg(QString::number(productId))), parameters);
+}
+
+QNetworkReply *api::GogApiClient::getProductPrices(quint64 productId, const QString &countryCode)
+{
+    QVariantMap parameters;
+    parameters["countryCode"] = countryCode;
+    return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(QString::number(productId))), parameters);
+}
+
+QNetworkReply *api::GogApiClient::getProductReviews(quint64 productId,
+                                                    const QStringList &languages,
+                                                    const SortOrder &order,
+                                                    quint32 limit, quint32 page)
+{
+    QVariantMap parameters;
+    if (!languages.isEmpty())
+    {
+        parameters["language"] = "in:" + languages.join(',');
+    }
+    parameters["limit"] = QString::number(limit);
+    parameters["order"] = QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field);
+    parameters["page"] = QString::number(page);
+    return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId))), parameters);
+}
+
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, quint16 page)
 {
     QVariantMap parameters;

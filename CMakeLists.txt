@@ -26,8 +26,10 @@ set(PROJECT_SOURCES
         api/models/filters.h
         api/models/metatag.h
         api/models/order.h api/models/orderfilter.h
+        api/models/price.h
         api/models/product.h
         api/models/productshared.h
+        api/models/review.h
         api/models/sort.h
         api/models/tag.h
         api/models/user.h
@@ -36,6 +38,8 @@ set(PROJECT_SOURCES
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
         api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
+        api/utils/priceserialization.h api/utils/priceserialization.cpp
+        api/utils/reviewserialization.h api/utils/reviewserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
 
         internals/navigationdestination.h
@@ -60,6 +64,7 @@ set(PROJECT_SOURCES
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
+        widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
         widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui

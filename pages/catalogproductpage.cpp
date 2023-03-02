@@ -1,16 +1,23 @@
 #include "catalogproductpage.h"
 #include "ui_catalogproductpage.h"
 
+#include <cmath>
+
 #include <QCheckBox>
 #include <QJsonDocument>
+#include <QLocale>
 #include <QNetworkReply>
 
 #include "../api/utils/catalogproductserialization.h"
+#include "../api/utils/priceserialization.h"
+#include "../api/utils/reviewserialization.h"
+
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
+#include "../widgets/reviewitem.h"
 #include "../widgets/videoholder.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
@@ -20,6 +27,13 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->setupUi(this);
 
     ui->contentRatingWarningPageLayout->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+    ui->starLabel->setVisible(false);
+    ui->ratingLabel->setVisible(false);
+
+    ui->discountLabel->setVisible(false);
+    ui->oldPriceLabel->setVisible(false);
+    ui->pricelabel->setVisible(false);
 
     ui->windowsLabel->setVisible(false);
     ui->macOsLabel->setVisible(false);
@@ -39,6 +53,14 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->macOsTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->linuxTab), false);
     ui->linuxTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+    ui->criticsReviewLabel->setVisible(false);
+
+    ui->userReviewsLabel->setVisible(false);
+    ui->userReviewsHeader->setVisible(false);
+    ui->ownersRatingLabel->setVisible(false);
+    ui->userReviewsStackedWidget->setVisible(false);
+    ui->userReviewsLoaderPageLayout->setAlignment(Qt::AlignTop);
 
     connect(ui->descriptionView->page(), &QWebEnginePage::contentsSizeChanged,
             this, &CatalogProductPage::descriptionViewContentsSizeChanged);
@@ -62,6 +84,16 @@ void CatalogProductPage::setProductId(quint64 id)
 void CatalogProductPage::clear()
 {
     ui->contentStack->setCurrentWidget(ui->loaderPage);
+
+    ui->starLabel->setVisible(false);
+    ui->ratingLabel->setVisible(false);
+
+    ui->discountLabel->setVisible(false);
+    ui->oldPriceLabel->setVisible(false);
+    ui->pricelabel->setVisible(false);
+
+    ui->mainPageScrollArea->scroll(0, 0);
+    ui->mediaScrollArea->scroll(0, 0);
     ui->descriptionView->setUrl(QUrl("about:blank"));
     ui->editionsComboBox->clear();
 
@@ -131,6 +163,19 @@ void CatalogProductPage::clear()
         item->widget()->deleteLater();
         delete item;
     }
+
+    ui->userReviewsLabel->setVisible(false);
+    ui->userReviewsHeader->setVisible(false);
+    ui->ownersRatingLabel->setVisible(false);
+    ui->userReviewsStackedWidget->setVisible(false);
+    while (!ui->userReviewsResultsPageLayout->isEmpty())
+    {
+        auto item = ui->userReviewsResultsPageLayout->itemAt(0);
+        ui->userReviewsResultsPageLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+
     id = 0;
 }
 
@@ -177,12 +222,140 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
 
 void CatalogProductPage::initialize()
 {
-    auto networkReply = apiClient->getCatalogProductInfo(id, "en-US");
-    connect(networkReply, &QNetworkReply::finished, this, [this, networkReply]()
+    auto averageRatingResponse = apiClient->getProductAverageRating(id);
+    connect(averageRatingResponse, &QNetworkReply::finished, this, [this, averageRatingResponse]()
     {
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (averageRatingResponse->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(averageRatingResponse->readAll()).toUtf8()).object();
+            api::GetRatingResponse data;
+            parseRatingResponse(resultJson, data);
+
+            if (data.count > 0)
+            {
+                ui->starLabel->setVisible(true);
+                ui->ratingLabel->setText(QString::number(data.value, 'g', 2) + "/5");
+                ui->ratingLabel->setVisible(true);
+            }
+
+            averageRatingResponse->deleteLater();
+        }
+    });
+    connect(averageRatingResponse, &QNetworkReply::errorOccurred, this, [this, averageRatingResponse](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            averageRatingResponse->deleteLater();
+        }
+    });
+
+    auto averageOwnerRatingResponse = apiClient->getProductAverageRating(id, "verified_owner");
+    connect(averageOwnerRatingResponse, &QNetworkReply::finished, this, [this, averageOwnerRatingResponse]()
+    {
+        if (averageOwnerRatingResponse->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(averageOwnerRatingResponse->readAll()).toUtf8()).object();
+            api::GetRatingResponse data;
+            parseRatingResponse(resultJson, data);
+
+            ui->ownersRatingLabel->setText(QString("Verified owners rating: %1/5").arg(QString::number(data.value, 'g', 2)));
+            ui->ownersRatingLabel->setVisible(true);
+
+            averageOwnerRatingResponse->deleteLater();
+        }
+    });
+    connect(averageOwnerRatingResponse, &QNetworkReply::errorOccurred, this, [this, averageOwnerRatingResponse](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            averageOwnerRatingResponse->deleteLater();
+        }
+    });
+
+    auto countryCode = QLocale::territoryToCode(QLocale::system().territory());
+    auto pricesNetworkReply = apiClient->getProductPrices(id, countryCode);
+    connect(pricesNetworkReply, &QNetworkReply::finished, this, [this, pricesNetworkReply]()
+    {
+        if (pricesNetworkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(pricesNetworkReply->readAll()).toUtf8()).object();
+            api::GetPricesResponse data;
+            parseGetPricesResponse(resultJson, data);
+            if (!data.prices.isEmpty())
+            {
+                auto systemLocale = QLocale::system();
+                auto currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
+                auto currencySymbol = systemLocale.currencySymbol();
+                if (!data.prices.contains(currencyCode))
+                {
+                    auto usaLocale = QLocale(QLocale::English, QLocale::UnitedStates);
+                    currencyCode = usaLocale.currencySymbol(QLocale::CurrencyIsoCode);
+                    currencySymbol = usaLocale.currencySymbol();
+                }
+
+                auto price = data.prices[currencyCode];
+                if (price.basePrice != price.finalPrice)
+                {
+                    auto discount = round((1.0 - price.finalPrice * 1.0 / price.basePrice) * 100);
+                    ui->oldPriceLabel->setText(systemLocale.toCurrencyString(price.basePrice / 100.0));
+                    ui->oldPriceLabel->setVisible(true);
+                    ui->discountLabel->setText(QString("-%1%").arg(QString::number(discount)));
+                    ui->discountLabel->setVisible(true);
+                }
+                ui->pricelabel->setText(systemLocale.toCurrencyString(price.finalPrice / 100.0, currencySymbol));
+                ui->pricelabel->setVisible(true);
+            }
+            pricesNetworkReply->deleteLater();
+        }
+    });
+    connect(pricesNetworkReply, &QNetworkReply::errorOccurred, this, [this, pricesNetworkReply](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            pricesNetworkReply->deleteLater();
+        }
+    });
+
+    auto reviewsReply = apiClient->getProductReviews(id, QStringList(), {"votes", false}, 5, 1);
+    connect(reviewsReply, &QNetworkReply::finished, this, [this, reviewsReply]()
+    {
+        if (reviewsReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(reviewsReply->readAll()).toUtf8()).object();
+            api::GetReviewsResponse data;
+            parseReviewsResponse(resultJson, data);
+
+            ui->userReviewsLabel->setVisible(data.reviewable);
+            ui->userReviewsHeader->setVisible(data.reviewable);
+            ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
+            ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
+            api::Review review;
+            foreach (review, data.items)
+            {
+                auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
+                                                 apiClient,
+                                                 ui->userReviewsResultsPage);
+                ui->userReviewsResultsPageLayout->addWidget(reviewItem);
+            }
+            ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            ui->userReviewsStackedWidget->setVisible(data.reviewable);
+            reviewsReply->deleteLater();
+        }
+    });
+    connect(reviewsReply, &QNetworkReply::errorOccurred, this, [this, reviewsReply](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            reviewsReply->deleteLater();
+        }
+    });
+
+    auto mainNetworkReply = apiClient->getCatalogProductInfo(id, "en-US");
+    connect(mainNetworkReply, &QNetworkReply::finished, this, [this, mainNetworkReply]()
+    {
+        if (mainNetworkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(mainNetworkReply->readAll()).toUtf8()).object();
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
@@ -297,7 +470,7 @@ void CatalogProductPage::initialize()
                     else
                     {
                         auto editionId = data.editions[i].id;
-                        connect(editionCheckbox, &QCheckBox::setChecked, this, [this, editionId](bool checked)
+                        connect(editionCheckbox, &QCheckBox::toggled, this, [this, editionId](bool checked)
                         {
                             if (checked)
                             {
@@ -348,11 +521,6 @@ void CatalogProductPage::initialize()
             }
 
             ui->titleLabel->setText(data.title);
-
-            ui->ratingLabel->setText("0/5");
-
-            ui->discountLabel->setVisible(false);
-            ui->oldPriceLabel->setVisible(false);
 
             ui->libraryButton->setVisible(false);
 
@@ -432,13 +600,29 @@ void CatalogProductPage::initialize()
             {
                 ui->gameFeaturesLayout->addWidget(new FeatureItem(data.features[i], ui->gameDetails));
             }
+
+            QLocale systemLocale = QLocale::system();
+            QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
+            bool foundPreferredLanguage = false;
             for (int i = 0; i < data.localizations.count(); i++)
             {
                 auto languageLabel = new QLabel(data.localizations[i].language.name, ui->gameDetails);
+                foundPreferredLanguage = foundPreferredLanguage || data.localizations[i].language.code == systemLanguage;
                 languageLabel->setStyleSheet("font-size: 11pt;");
+                languageLabel->setWordWrap(true);
                 ui->languagesLayout->addWidget(languageLabel, i, 0);
                 ui->languagesLayout->addWidget(new CheckedItem("audio", data.localizations[i].localizedAuio, ui->gameDetails), i, 1);
                 ui->languagesLayout->addWidget(new CheckedItem("text", data.localizations[i].localizedText, ui->gameDetails), i, 2);
+            }
+            QString firstLanguage = foundPreferredLanguage ? systemLocale.nativeLanguageName() :"English";
+            if (data.localizations.count() > 1)
+            {
+                ui->supportedLanguagesLabel->setText(QString("%1 & %2 others").arg(firstLanguage,
+                                                                          QString::number(data.localizations.count() - 1)));
+            }
+            else
+            {
+                ui->supportedLanguagesLabel->setText(firstLanguage);
             }
 
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
@@ -446,18 +630,17 @@ void CatalogProductPage::initialize()
             ui->featuresLabel->setVisible(!data.featuresDescription.isNull());
             ui->copyrightsLabel->setText(data.copyrights);
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
-            ui->criticsReviewLabel->setVisible(false);
 
             ui->contentStack->setCurrentWidget(ui->mainPage);
 
-            networkReply->deleteLater();
+            mainNetworkReply->deleteLater();
         }
     });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [this, networkReply](QNetworkReply::NetworkError error)
+    connect(mainNetworkReply, &QNetworkReply::errorOccurred, this, [this, mainNetworkReply](QNetworkReply::NetworkError error)
     {
         if (error != QNetworkReply::NoError)
         {
-            networkReply->deleteLater();
+            mainNetworkReply->deleteLater();
         }
     });
 }
