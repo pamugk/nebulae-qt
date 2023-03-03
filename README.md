@@ -21,6 +21,9 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 * offline mode;
 * localization & internatiolization;
 * account management functionality;
+* extended store functionality:
+	- manage wishlist,
+	- use cart;
 * "Discover" page (whatever it is);
 * UI/UX improvements where necessary;
 * social functionality;
