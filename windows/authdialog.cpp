@@ -16,8 +16,10 @@ protected:
             QUrl localUrl("http://127.0.0.1:6543");
             localUrl.setQuery(url.query());
             setUrl(localUrl);
+            return false;
         } else {
             QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
+            return true;
         }
     }
 };

@@ -13,12 +13,12 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QCoreApplication::setOrganizationName("pamugk.github.com");
-    QCoreApplication::setApplicationName("GOG Galaxy (Unofficial)");
+    QCoreApplication::setApplicationName("Nebulae");
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
-        const QString baseName = "unofficial-gog-client_" + QLocale(locale).name();
+        const QString baseName = "nebulae_" + QLocale(locale).name();
         if (translator.load(":/i18n/" + baseName)) {
             a.installTranslator(&translator);
             break;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         a.exit();
     });
     trayIcon.setContextMenu(&trayMenu);
-    trayIcon.setToolTip("GOG Galaxy (Unofficial)");
+    trayIcon.setToolTip("Nebulae");
     trayIcon.show();
 
     return a.exec();

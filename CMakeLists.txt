@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(unofficial-gog-client VERSION 0.1 LANGUAGES CXX)
+project(nebulae VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets WebEngineWidgets Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets Widgets WebEngineWidgets LinguistTools)
 
-set(TS_FILES unofficial-gog-client_en_US.ts)
+set(TS_FILES nebulae_en_US.ts)
 
 set(QRC_FILES resources.qrc)
 
@@ -79,7 +79,7 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(unofficial-gog-client
+    qt_add_executable(nebulae
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
@@ -91,13 +91,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
     if(ANDROID)
-        add_library(unofficial-gog-client SHARED
+        add_library(nebulae SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(unofficial-gog-client
+        add_executable(nebulae
             ${PROJECT_SOURCES}
         )
     endif()
@@ -105,9 +105,9 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(unofficial-gog-client PRIVATE Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::SvgWidgets Qt${QT_VERSION_MAJOR}::NetworkAuth Qt${QT_VERSION_MAJOR}::WebEngineWidgets Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(nebulae PRIVATE Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::SvgWidgets Qt${QT_VERSION_MAJOR}::NetworkAuth Qt${QT_VERSION_MAJOR}::WebEngineWidgets Qt${QT_VERSION_MAJOR}::Widgets)
 
-set_target_properties(unofficial-gog-client PROPERTIES
+set_target_properties(nebulae PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -115,10 +115,10 @@ set_target_properties(unofficial-gog-client PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-install(TARGETS unofficial-gog-client
+install(TARGETS nebulae
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(unofficial-gog-client)
+    qt_finalize_executable(nebulae)
 endif()
