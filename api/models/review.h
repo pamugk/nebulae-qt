@@ -38,9 +38,9 @@ namespace api
     struct GetReviewsResponse
     {
         bool reviewable;
-        quint32 page;
-        quint32 limit;
-        quint32 pages;
+        quint16 page;
+        quint16 limit;
+        quint16 pages;
         quint32 reviewCount;
         qreal overallAvgRating;
         qreal filteredAvgRating;

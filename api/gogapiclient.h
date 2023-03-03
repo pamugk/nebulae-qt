@@ -29,7 +29,7 @@ namespace api
         QNetworkReply *getProductReviews(quint64 productId,
                                          const QStringList &languages,
                                          const SortOrder &order,
-                                         quint32 limit, quint32 page);
+                                         quint16 limit, quint16 page);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    quint16 page = 1);

@@ -17,6 +17,7 @@
 #include "../widgets/checkeditem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
+#include "../widgets/pagination.h"
 #include "../widgets/reviewitem.h"
 #include "../widgets/videoholder.h"
 
@@ -61,6 +62,15 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->ownersRatingLabel->setVisible(false);
     ui->userReviewsStackedWidget->setVisible(false);
     ui->userReviewsLoaderPageLayout->setAlignment(Qt::AlignTop);
+    ui->userReviewsContentsLayout->setAlignment(Qt::AlignTop);
+    ui->userReviewsFiltersLayout->setAlignment(Qt::AlignTop);
+    reviewsPage = 1;
+    reviewsPageSize = 5;
+    reviewsOrder = {"votes", false};
+    auto reviewsPaginator = new Pagination(ui->userReviewsResultsPage);
+    connect(reviewsPaginator, &Pagination::changedPage, this, &CatalogProductPage::changeUserReviewsPage);
+    connect(this, &CatalogProductPage::userReviewsResultsUpdated, reviewsPaginator, &Pagination::changePages);
+    ui->userReviewsResultsPageLayout->addWidget(reviewsPaginator, 2, 0,  Qt::AlignHCenter);
 
     connect(ui->descriptionView->page(), &QWebEnginePage::contentsSizeChanged,
             this, &CatalogProductPage::descriptionViewContentsSizeChanged);
@@ -163,15 +173,16 @@ void CatalogProductPage::clear()
         item->widget()->deleteLater();
         delete item;
     }
+    ui->additonalRequirementsLabel->clear();
 
     ui->userReviewsLabel->setVisible(false);
     ui->userReviewsHeader->setVisible(false);
     ui->ownersRatingLabel->setVisible(false);
     ui->userReviewsStackedWidget->setVisible(false);
-    while (!ui->userReviewsResultsPageLayout->isEmpty())
+    while (!ui->userReviewsContentsLayout->isEmpty())
     {
-        auto item = ui->userReviewsResultsPageLayout->itemAt(0);
-        ui->userReviewsResultsPageLayout->removeItem(item);
+        auto item = ui->userReviewsContentsLayout->itemAt(0);
+        ui->userReviewsContentsLayout->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
@@ -316,39 +327,7 @@ void CatalogProductPage::initialize()
         }
     });
 
-    auto reviewsReply = apiClient->getProductReviews(id, QStringList(), {"votes", false}, 5, 1);
-    connect(reviewsReply, &QNetworkReply::finished, this, [this, reviewsReply]()
-    {
-        if (reviewsReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(reviewsReply->readAll()).toUtf8()).object();
-            api::GetReviewsResponse data;
-            parseReviewsResponse(resultJson, data);
-
-            ui->userReviewsLabel->setVisible(data.reviewable);
-            ui->userReviewsHeader->setVisible(data.reviewable);
-            ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
-            ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            api::Review review;
-            foreach (review, data.items)
-            {
-                auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
-                                                 apiClient,
-                                                 ui->userReviewsResultsPage);
-                ui->userReviewsResultsPageLayout->addWidget(reviewItem);
-            }
-            ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
-            ui->userReviewsStackedWidget->setVisible(data.reviewable);
-            reviewsReply->deleteLater();
-        }
-    });
-    connect(reviewsReply, &QNetworkReply::errorOccurred, this, [this, reviewsReply](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
-        {
-            reviewsReply->deleteLater();
-        }
-    });
+    updateUserReviews();
 
     auto mainNetworkReply = apiClient->getCatalogProductInfo(id, "en-US");
     connect(mainNetworkReply, &QNetworkReply::finished, this, [this, mainNetworkReply]()
@@ -429,6 +408,9 @@ void CatalogProductPage::initialize()
             {
                 ui->systemRequirementsTabWidget->setCurrentWidget(ui->windowsTab);
             }
+            ui->additonalRequirementsLabel->setText(data.additionalRequirements);
+            ui->additonalRequirementsLabel->setVisible(!data.additionalRequirements.isEmpty());
+            ui->dosboxLabel->setVisible(data.usingDosBox);
 
             if (data.editions.isEmpty())
             {
@@ -661,3 +643,94 @@ void CatalogProductPage::descriptionViewContentsSizeChanged(const QSizeF &size)
     ui->descriptionView->setFixedHeight(size.height());
 }
 
+void CatalogProductPage::updateUserReviews()
+{
+    ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsLoaderPage);
+    while (!ui->userReviewsContentsLayout->isEmpty())
+    {
+        auto item = ui->userReviewsContentsLayout->itemAt(0);
+        ui->userReviewsContentsLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+    auto reviewsReply = apiClient->getProductReviews(id, QStringList(), reviewsOrder, reviewsPageSize, reviewsPage);
+    connect(reviewsReply, &QNetworkReply::finished, this, [this, reviewsReply]()
+    {
+        if (reviewsReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(reviewsReply->readAll()).toUtf8()).object();
+            api::GetReviewsResponse data;
+            parseReviewsResponse(resultJson, data);
+
+            ui->userReviewsLabel->setVisible(data.reviewable);
+            ui->userReviewsHeader->setVisible(data.reviewable);
+            ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
+            ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
+            api::Review review;
+            foreach (review, data.items)
+            {
+                auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
+                                                 apiClient,
+                                                 ui->userReviewsResultsPage);
+                ui->userReviewsContentsLayout->addWidget(reviewItem);
+            }
+            ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            emit userReviewsResultsUpdated(data.page, data.pages);
+            ui->userReviewsStackedWidget->setVisible(data.reviewable);
+            reviewsReply->deleteLater();
+        }
+    });
+    connect(reviewsReply, &QNetworkReply::errorOccurred, this, [this, reviewsReply](QNetworkReply::NetworkError error)
+    {
+        if (error != QNetworkReply::NoError)
+        {
+            reviewsReply->deleteLater();
+        }
+    });
+}
+
+void CatalogProductPage::changeUserReviewsPage(quint16 page)
+{
+    reviewsPage = page;
+    updateUserReviews();
+}
+
+void CatalogProductPage::on_userReviewsPageSizeComboBox_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 0:
+        reviewsPageSize = 5;
+        break;
+    case 1:
+        reviewsPageSize = 15;
+        break;
+    case 2:
+        reviewsPageSize = 30;
+        break;
+    case 3:
+        reviewsPageSize = 60;
+        break;
+    }
+    updateUserReviews();
+}
+
+void CatalogProductPage::on_userReviewsSortOrderComboBox_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 0:
+        reviewsOrder = {"votes", false};
+        break;
+    case 1:
+        reviewsOrder = {"rating", false};
+        break;
+    case 2:
+        reviewsOrder = {"rating", true};
+        break;
+    case 3:
+        reviewsOrder = {"date", false};
+        break;
+    }
+    updateUserReviews();
+}

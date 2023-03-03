@@ -112,7 +112,7 @@ QNetworkReply *api::GogApiClient::getProductPrices(quint64 productId, const QStr
 QNetworkReply *api::GogApiClient::getProductReviews(quint64 productId,
                                                     const QStringList &languages,
                                                     const SortOrder &order,
-                                                    quint32 limit, quint32 page)
+                                                    quint16 limit, quint16 page)
 {
     QVariantMap parameters;
     if (!languages.isEmpty())

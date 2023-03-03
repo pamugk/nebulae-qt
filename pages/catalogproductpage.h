@@ -22,6 +22,9 @@ public slots:
     virtual void initialize() override;
     void setProductId(quint64 id);
 
+signals:
+    void userReviewsResultsUpdated(quint16 page, quint16 totalPages);
+
 private slots:
     void on_acceptContentWarningButton_clicked();
 
@@ -29,10 +32,22 @@ private slots:
 
     void descriptionViewContentsSizeChanged(const QSizeF &size);
 
+    void updateUserReviews();
+
+    void changeUserReviewsPage(quint16 page);
+
+    void on_userReviewsPageSizeComboBox_currentIndexChanged(int index);
+
+    void on_userReviewsSortOrderComboBox_currentIndexChanged(int index);
+
 private:
     api::GogApiClient *apiClient;
     quint64 id;
     Ui::CatalogProductPage *ui;
+
+    quint16 reviewsPage;
+    quint16 reviewsPageSize;
+    api::SortOrder reviewsOrder;
 };
 
 #endif // CATALOGPRODUCTPAGE_H
