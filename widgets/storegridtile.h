@@ -21,7 +21,14 @@ public:
                            QWidget *parent = nullptr);
     ~StoreGridTile();
 
+signals:
+    void navigateToProduct(quint64 id);
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+
 private:
+    quint64 itemId;
     QNetworkReply *imageReply;
     Ui::StoreGridTile *ui;
 };

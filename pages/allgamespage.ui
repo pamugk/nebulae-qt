@@ -238,13 +238,13 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>373</width>
-            <height>484</height>
+            <width>382</width>
+            <height>468</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="resultsScrollAreaLayout">
            <property name="spacing">
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="leftMargin">
             <number>24</number>
@@ -258,6 +258,30 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <widget class="QStackedWidget" name="resultsStackedWidget">
+             <widget class="QWidget" name="resultsListPage">
+              <layout class="QVBoxLayout" name="resultsListLayout">
+               <property name="spacing">
+                <number>1</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="resultsGridPage"/>
+            </widget>
+           </item>
           </layout>
          </widget>
         </widget>

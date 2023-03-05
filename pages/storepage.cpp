@@ -20,7 +20,7 @@ void StorePage::setApiClient(api::GogApiClient *apiClient)
 
 void StorePage::clear()
 {
-
+    ui->webView->scroll(0, 0);
 }
 
 void StorePage::initialize()

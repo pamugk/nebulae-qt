@@ -10,6 +10,7 @@
 #include "../api/models/catalog.h"
 #include "../api/models/metatag.h"
 #include "../api/utils/catalogserialization.h"
+#include "../layouts/flowlayout.h"
 #include "../widgets/collapsiblearea.h"
 #include "../widgets/filtercheckbox.h"
 #include "../widgets/storegridtile.h"
@@ -22,6 +23,9 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
     ui->setupUi(this);
     ui->filtersScrollAreaLayout->setAlignment(Qt::AlignTop);
     ui->resultsScrollAreaLayout->setAlignment(Qt::AlignTop);
+    ui->resultsGridPage->setLayout(new FlowLayout(ui->resultsGridPage));
+    ui->resultsListLayout->setAlignment(Qt::AlignTop);
+    gridLayout = true;
 
     currentSortOrder = 0;
     orders =
@@ -67,10 +71,18 @@ void AllGamesPage::fetchData()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     paginator->setVisible(false);
-    while (!ui->resultsScrollAreaLayout->isEmpty())
+    data.products.clear();
+    while (!ui->resultsListLayout->isEmpty())
     {
-        auto item = ui->resultsScrollAreaLayout->itemAt(0);
-        ui->resultsScrollAreaLayout->removeItem(item);
+        auto item = ui->resultsListLayout->itemAt(0);
+        ui->resultsListLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+    while (!ui->resultsGridPage->layout()->isEmpty())
+    {
+        auto item = ui->resultsGridPage->layout()->itemAt(0);
+        ui->resultsGridPage->layout()->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
@@ -79,7 +91,6 @@ void AllGamesPage::fetchData()
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::SearchCatalogResponse data;
             parseSearchCatalogResponse(resultJson, data);
 
             ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(data.productCount)));
@@ -91,18 +102,8 @@ void AllGamesPage::fetchData()
             }
             else
             {
-                api::CatalogProduct product;
-                foreach (product, data.products)
-                {
-                    auto storeListItem = new StoreListItem(product, apiClient, ui->resultsScrollAreaContents);
-                    connect(storeListItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
-                    {
-                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
-                    });
-                    ui->resultsScrollAreaLayout->addWidget(storeListItem);
-                }
                 paginator->changePages(page, data.pages);
-                ui->contentsStack->setCurrentWidget(ui->resultsPage);
+                layoutResults();
             }
 
             networkReply->deleteLater();
@@ -118,6 +119,39 @@ void AllGamesPage::fetchData()
     });
 }
 
+void AllGamesPage::layoutResults()
+{
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    api::CatalogProduct product;
+    if (gridLayout)
+    {
+        foreach (product, data.products)
+        {
+            auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
+            connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
+            {
+                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+            });
+            ui->resultsGridPage->layout()->addWidget(storeItem);
+        }
+        ui->resultsStackedWidget->setCurrentWidget(ui->resultsGridPage);
+    }
+    else
+    {
+        foreach (product, data.products)
+        {
+            auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
+            connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
+            {
+                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+            });
+            ui->resultsListLayout->addWidget(storeItem);
+        }
+        ui->resultsStackedWidget->setCurrentWidget(ui->resultsListPage);
+    }
+    ui->contentsStack->setCurrentWidget(ui->resultsPage);
+}
+
 void AllGamesPage::clear()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
@@ -129,13 +163,21 @@ void AllGamesPage::clear()
         item->widget()->deleteLater();
         delete item;
     }
-    while (!ui->resultsScrollAreaLayout->isEmpty())
+    while (!ui->resultsListLayout->isEmpty())
     {
-        auto item = ui->resultsScrollAreaLayout->itemAt(0);
-        ui->resultsScrollAreaLayout->removeItem(item);
+        auto item = ui->resultsListLayout->itemAt(0);
+        ui->resultsListLayout->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
+    while (!ui->resultsGridPage->layout()->isEmpty())
+    {
+        auto item = ui->resultsGridPage->layout()->itemAt(0);
+        ui->resultsGridPage->layout()->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+    data.products.clear();
 }
 
 void AllGamesPage::initialize()
@@ -147,7 +189,6 @@ void AllGamesPage::initialize()
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::SearchCatalogResponse data;
             parseSearchCatalogResponse(resultJson, data);
 
             int maxWidth = 0;
@@ -441,18 +482,8 @@ void AllGamesPage::initialize()
             }
             else
             {
-                api::CatalogProduct product;
-                foreach (product, data.products)
-                {
-                    auto storeListItem = new StoreListItem(product, apiClient, ui->resultsScrollAreaContents);
-                    connect(storeListItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
-                    {
-                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
-                    });
-                    ui->resultsScrollAreaLayout->addWidget(storeListItem);
-                }
                 paginator->changePages(page, data.pages);
-                ui->contentsStack->setCurrentWidget(ui->resultsPage);
+                layoutResults();
             }
 
             networkReply->deleteLater();
@@ -485,5 +516,25 @@ void AllGamesPage::on_sortOrderComboBox_currentIndexChanged(int index)
     page = 1;
     currentSortOrder = index;
     fetchData();
+}
+
+
+void AllGamesPage::on_gridModeButton_clicked()
+{
+    if (!gridLayout)
+    {
+        gridLayout = true;
+        layoutResults();
+    }
+}
+
+
+void AllGamesPage::on_listModeButton_clicked()
+{
+    if (gridLayout)
+    {
+        gridLayout = false;
+        layoutResults();
+    }
 }
 

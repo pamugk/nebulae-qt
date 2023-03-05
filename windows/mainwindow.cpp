@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    pages[Page::DISCOVER] = new StorePage(ui->pagesStack);
+    pages[Page::STORE] = new StorePage(ui->pagesStack);
     pages[Page::ALL_GAMES] = new AllGamesPage(ui->pagesStack);
     pages[Page::WISHLIST] = new WishlistPage(ui->pagesStack);
     pages[Page::ORDER_HISTORY] = new OrdersPage(ui->pagesStack);

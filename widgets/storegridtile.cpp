@@ -31,6 +31,8 @@ StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
         imageReply->deleteLater();
         imageReply = nullptr;
     });
+
+    itemId = data.id.toLongLong();
 }
 
 StoreGridTile::~StoreGridTile()
@@ -40,4 +42,9 @@ StoreGridTile::~StoreGridTile()
         imageReply->deleteLater();
     }
     delete ui;
+}
+
+void StoreGridTile::mousePressEvent(QMouseEvent *event)
+{
+    emit navigateToProduct(itemId);
 }
