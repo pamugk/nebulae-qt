@@ -4,7 +4,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMenu>
-#include <QMenuBar>
 #include <QNetworkReply>
 
 #include "../api/utils/serialization.h"

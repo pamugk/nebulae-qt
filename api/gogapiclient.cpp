@@ -85,11 +85,25 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, qu
     parameters["pending"] = filter.pending ? "1" : "0";
     parameters["redeemed"] = filter.redeemed ? "1" : "0";
     parameters["page"] = QString::number(page);
-    if (!filter.query.isNull() && !filter.query.isEmpty())
+    if (!filter.query.isEmpty())
     {
         parameters["search"] = filter.query;
     }
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
+}
+
+QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, quint16 page)
+{
+    QVariantMap parameters;
+    parameters["hiddenFlag"] = "0";
+    parameters["mediaType"] = "1";
+    parameters["sortBy"] = order;
+    parameters["page"] = QString::number(page);
+    if (!query.isEmpty())
+    {
+        parameters["search"] = query;
+    }
+    return client.get(QUrl("https://embed.gog.com/account/getFilteredProducts"), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getProductAverageRating(quint64 productId, const QString &reviewer)
@@ -132,7 +146,7 @@ QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QStrin
     parameters["mediaType"] = "1";
     parameters["sortBy"] = order;
     parameters["page"] = QString::number(page);
-    if (!query.isNull() && !query.isEmpty())
+    if (!query.isEmpty())
     {
         parameters["search"] = query;
     }
@@ -148,7 +162,7 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
 {
     QVariantMap parameters;
     parameters["limit"] = QString::number(limit);
-    if (!filter.query.isNull() && !filter.query.isEmpty())
+    if (!filter.query.isEmpty())
     {
         parameters["query"] = "like:" + filter.query;
     }

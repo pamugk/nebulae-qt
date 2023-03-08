@@ -4,6 +4,7 @@
 #include "../pages/allgamespage.h"
 #include "../pages/catalogproductpage.h"
 #include "../pages/orderspage.h"
+#include "../pages/ownedgamespage.h"
 #include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
 
@@ -28,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::navigatingToCatalogProduct,
             catalogProductPage, &CatalogProductPage::setProductId);
     pages[Page::CATALOG_PRODUCT_PAGE] = catalogProductPage;
+
+    pages[Page::OWNED_GAMES] = new OwnedGamesPage(ui->pagesStack);
 
     BasePage *item;
     foreach (item, pages.values())

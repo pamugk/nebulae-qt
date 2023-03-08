@@ -24,6 +24,9 @@ namespace api
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(quint64 id, const QString &locale);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, quint16 page = 1);
+        QNetworkReply *getOwnedProducts(const QString &query = QString(),
+                                   const QString &order = "title",
+                                   quint16 page = 1);
         QNetworkReply *getProductAverageRating(quint64 productId, const QString &reviewer = QString());
         QNetworkReply *getProductPrices(quint64 productId, const QString &countryCode);
         QNetworkReply *getProductReviews(quint64 productId,
