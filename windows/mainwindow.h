@@ -27,9 +27,6 @@ public:
 public slots:
     void setDestination(NavigationDestination destination);
 
-signals:
-    void navigatingToCatalogProduct(quint64 id);
-
 private slots:
     void on_discoverButton_clicked();
 
@@ -61,6 +58,6 @@ private:
     Page currentPage;
     QMap<Page, BasePage *> pages;
 
-    void navigate(Page newPage);
+    void navigate(Page newPage, const QVariant &data = QVariant());
 };
 #endif // MAINWINDOW_H

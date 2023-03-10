@@ -37,7 +37,7 @@ private:
 
 public slots:
     virtual void clear() override;
-    virtual void initialize() override;
+    virtual void initialize(const QVariant &data) override;
 private slots:
     void on_lineEdit_textChanged(const QString &arg1);
     void on_sortOrderComboBox_currentIndexChanged(int index);

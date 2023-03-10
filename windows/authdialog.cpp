@@ -17,7 +17,9 @@ protected:
             localUrl.setQuery(url.query());
             setUrl(localUrl);
             return false;
-        } else {
+        }
+        else
+        {
             QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
             return true;
         }

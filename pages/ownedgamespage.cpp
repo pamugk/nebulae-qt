@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QMenu>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/utils/ownedproductserialization.h"
 #include "../layouts/flowlayout.h"
@@ -41,7 +42,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
         }
         listModeItem->setChecked(!toggled);
-        settingsSubmenu->setVisible(toggled);
+        settingsSubmenu->menuAction()->setVisible(toggled);
     });
 
     settingsSubmenu = settingsMenu->addMenu("Customize list view");
@@ -71,7 +72,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     gridCustomizationItem->setCheckable(true);
     gridCustomizationItem = settingsSubmenu->addAction("Tags");
     gridCustomizationItem->setCheckable(true);
-    settingsSubmenu->setVisible(false);
+    settingsSubmenu->menuAction()->setVisible(false);
 
     connect(listModeItem, &QAction::toggled, this, [this, settingsSubmenu, gridModeItem](bool toggled)
     {
@@ -80,7 +81,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
         }
         gridModeItem->setChecked(!toggled);
-        settingsSubmenu->setVisible(toggled);
+        settingsSubmenu->menuAction()->setVisible(toggled);
     });
 
     settingsMenu->addSeparator();
@@ -144,10 +145,15 @@ void OwnedGamesPage::updateData()
             }
             else
             {
-                api::OwnedProduct item;
-                foreach (item, data.products)
+                foreach (api::OwnedProduct item, data.products)
                 {
-                    ui->resultsGridScrollAreaContents->layout()->addWidget(new OwnedProductGridItem(item, apiClient, ui->resultsGridPage));
+                    auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
+                    auto productId = item.id;
+                    connect(gridItem, &OwnedProductGridItem::navigateToProduct, this, [this, productId]()
+                    {
+                        emit navigateToDestination({Page::OWNED_PRODUCT_PAGE, productId});
+                    });
+                    ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
                 }
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
@@ -167,6 +173,7 @@ void OwnedGamesPage::updateData()
 void OwnedGamesPage::clear()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
     while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
     {
         auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
@@ -176,7 +183,7 @@ void OwnedGamesPage::clear()
     }
 }
 
-void OwnedGamesPage::initialize()
+void OwnedGamesPage::initialize(const QVariant &data)
 {
     updateData();
 }

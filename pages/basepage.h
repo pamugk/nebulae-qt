@@ -21,7 +21,7 @@ signals:
 
 public slots:
     virtual void clear() = 0;
-    virtual void initialize() = 0;
+    virtual void initialize(const QVariant &data) = 0;
 };
 
 #endif // BASEPAGE_H

@@ -40,20 +40,37 @@ api::GogApiClient::GogApiClient(QObject *parent)
         });
     connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
 
-    client.setRefreshToken(settings.value("/credentials/refresh_token", QString()).toString());
-    client.setToken(settings.value("/credentials/token", QString()).toString());
+    if (settings.contains("/credentials/refresh_token"))
+    {
+        client.setRefreshToken(settings.value("/credentials/refresh_token").toString());
+        client.setToken(settings.value("/credentials/token", QString()).toString());
+    }
 
     connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken){
         if (storeTokens)
         {
-            settings.setValue("/credentials/token", newToken);
+            if (newToken.isEmpty())
+            {
+                settings.remove("/credentials/token");
+            }
+            else
+            {
+                settings.setValue("/credentials/token", newToken);
+            }
         }
     });
 
     connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, this, [this](const QString & newToken){
         if (storeTokens)
         {
-            settings.setValue("/credentials/refresh_token", newToken);
+            if (newToken.isEmpty())
+            {
+                settings.remove("/credentials/refresh_token");
+            }
+            else
+            {
+                settings.setValue("/credentials/refresh_token", newToken);
+            }
         }
     });
 }
@@ -61,6 +78,11 @@ api::GogApiClient::GogApiClient(QObject *parent)
 bool api::GogApiClient::isAuthenticated()
 {
     return !client.token().isNull();
+}
+
+QNetworkReply *api::GogApiClient::getAchievements()
+{
+    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg("")));
 }
 
 QNetworkReply *api::GogApiClient::getAnything(const QString &url)
@@ -92,6 +114,14 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, qu
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getOwnedProductInfo(quint64 id, const QString &locale)
+{
+    QVariantMap parameters;
+    parameters["expand"] = "downloads,expanded_dlcs,description,screenshots,videos,related_products,changelog";
+    parameters["locale"] = locale;
+    return client.get(QUrl("https://api.gog.com/products/" + QString::number(id)), parameters);
+}
+
 QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, quint16 page)
 {
     QVariantMap parameters;
@@ -104,6 +134,16 @@ QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const Q
         parameters["search"] = query;
     }
     return client.get(QUrl("https://embed.gog.com/account/getFilteredProducts"), parameters);
+}
+
+QNetworkReply *api::GogApiClient::getPlayTime()
+{
+    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg("")));
+}
+
+QNetworkReply *api::GogApiClient::getProductAchievements(quint64 productId)
+{
+    return client.get(QUrl(QString("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(QString::number(productId), "")));
 }
 
 QNetworkReply *api::GogApiClient::getProductAverageRating(quint64 productId, const QString &reviewer)

@@ -19,8 +19,7 @@ public:
 
 public slots:
     virtual void clear() override;
-    virtual void initialize() override;
-    void setProductId(quint64 id);
+    virtual void initialize(const QVariant &data) override;
 
 signals:
     void userReviewsResultsUpdated(quint16 page, quint16 totalPages);

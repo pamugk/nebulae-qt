@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QMenu>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/utils/serialization.h"
 #include "../widgets/wishlistitem.h"
@@ -59,8 +60,7 @@ void WishlistPage::fetchData()
             }
             else
             {
-                api::Product product;
-                foreach (product, data.products)
+                foreach (api::Product product, data.products)
                 {
                     auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
                     connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)
@@ -88,6 +88,7 @@ void WishlistPage::fetchData()
 void WishlistPage::clear()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    ui->resultsScrollArea->verticalScrollBar()->setValue(0);
     paginator->setVisible(false);
     while (!ui->resultsScrollAreaContentsLayout->isEmpty())
     {
@@ -98,7 +99,7 @@ void WishlistPage::clear()
     }
 }
 
-void WishlistPage::initialize()
+void WishlistPage::initialize(const QVariant &data)
 {
     fetchData();
 }

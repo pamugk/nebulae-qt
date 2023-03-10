@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QLocale>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/utils/catalogproductserialization.h"
 #include "../api/utils/priceserialization.h"
@@ -86,11 +87,6 @@ void CatalogProductPage::setApiClient(api::GogApiClient *apiClient)
     this->apiClient = apiClient;
 }
 
-void CatalogProductPage::setProductId(quint64 id)
-{
-    this->id = id;
-}
-
 void CatalogProductPage::clear()
 {
     ui->contentStack->setCurrentWidget(ui->loaderPage);
@@ -102,8 +98,8 @@ void CatalogProductPage::clear()
     ui->oldPriceLabel->setVisible(false);
     ui->pricelabel->setVisible(false);
 
-    ui->mainPageScrollArea->scroll(0, 0);
-    ui->mediaScrollArea->scroll(0, 0);
+    ui->mainPageScrollArea->verticalScrollBar()->setValue(0);
+    ui->mediaScrollArea->horizontalScrollBar()->setValue(0);
     ui->descriptionView->setUrl(QUrl("about:blank"));
     ui->editionsComboBox->clear();
 
@@ -186,8 +182,6 @@ void CatalogProductPage::clear()
         item->widget()->deleteLater();
         delete item;
     }
-
-    id = 0;
 }
 
 void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const api::SupportedOperatingSystem data)
@@ -231,8 +225,9 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
     }
 }
 
-void CatalogProductPage::initialize()
+void CatalogProductPage::initialize(const QVariant &initialData)
 {
+    id = initialData.toULongLong();
     auto averageRatingResponse = apiClient->getProductAverageRating(id);
     connect(averageRatingResponse, &QNetworkReply::finished, this, [this, averageRatingResponse]()
     {
@@ -344,14 +339,12 @@ void CatalogProductPage::initialize()
             }
             else
             {
-                api::ThumbnailedVideo video;
-                foreach (video, data.videos)
+                foreach (api::ThumbnailedVideo video, data.videos)
                 {
                     auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
                 }
-                api::FormattedLink screenshotLink;
-                foreach (screenshotLink, data.screenshots)
+                foreach (api::FormattedLink screenshotLink, data.screenshots)
                 {
                     auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
@@ -426,8 +419,7 @@ void CatalogProductPage::initialize()
                     ui->goodiesStackWidget->setVisible(true);
                     ui->goodiesStackWidget->setCurrentWidget(ui->productGoodiesSection);
 
-                    api::Bonus bonus;
-                    foreach (bonus, data.bonuses)
+                    foreach (api::Bonus bonus, data.bonuses)
                     {
                         ui->productGoodiesSection->layout()->addWidget(
                                     new BonusItem(bonus, ui->productGoodiesSection));
@@ -666,8 +658,7 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsHeader->setVisible(data.reviewable);
             ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
             ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            api::Review review;
-            foreach (review, data.items)
+            foreach (api::Review review, data.items)
             {
                 auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
                                                  apiClient,
@@ -684,6 +675,7 @@ void CatalogProductPage::updateUserReviews()
     {
         if (error != QNetworkReply::NoError)
         {
+            qDebug() << error;
             reviewsReply->deleteLater();
         }
     });

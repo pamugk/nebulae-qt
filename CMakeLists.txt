@@ -27,11 +27,13 @@ set(PROJECT_SOURCES
         api/models/metatag.h
         api/models/order.h api/models/orderfilter.h
         api/models/ownedproduct.h
+        api/models/ownedproductinfo.h
         api/models/price.h
         api/models/product.h
         api/models/productshared.h
         api/models/review.h
         api/models/sort.h
+        api/models/statistics.h
         api/models/tag.h
         api/models/user.h
         api/models/wishlist.h
@@ -40,9 +42,11 @@ set(PROJECT_SOURCES
         api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
+        api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
         api/utils/reviewserialization.h api/utils/reviewserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
+        api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
 
         internals/navigationdestination.h
         internals/pages.h
@@ -54,6 +58,7 @@ set(PROJECT_SOURCES
         pages/basepage.h pages/basepage.cpp
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
+        pages/ownedgamepage.h pages/ownedgamepage.cpp pages/ownedgamepage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui

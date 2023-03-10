@@ -6,6 +6,7 @@
 #include <QCheckBox>
 #include <QJsonDocument>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/models/catalog.h"
 #include "../api/models/metatag.h"
@@ -122,10 +123,9 @@ void AllGamesPage::fetchData()
 void AllGamesPage::layoutResults()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    api::CatalogProduct product;
     if (gridLayout)
     {
-        foreach (product, data.products)
+        foreach (api::CatalogProduct product, data.products)
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
@@ -138,7 +138,7 @@ void AllGamesPage::layoutResults()
     }
     else
     {
-        foreach (product, data.products)
+        foreach (api::CatalogProduct product, data.products)
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
@@ -177,10 +177,11 @@ void AllGamesPage::clear()
         item->widget()->deleteLater();
         delete item;
     }
+    ui->resultsScrollArea->horizontalScrollBar()->setValue(0);
     data.products.clear();
 }
 
-void AllGamesPage::initialize()
+void AllGamesPage::initialize(const QVariant &data)
 {
     auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
     ui->filtersScrollArea->setVisible(false);
@@ -189,7 +190,7 @@ void AllGamesPage::initialize()
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            parseSearchCatalogResponse(resultJson, data);
+            parseSearchCatalogResponse(resultJson, this->data);
 
             int maxWidth = 0;
             CollapsibleArea *area;
@@ -237,12 +238,11 @@ void AllGamesPage::initialize()
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            api::MetaTag item;
             area = new CollapsibleArea("Release Status", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.releaseStatuses)
+            foreach (api::MetaTag item, this->data.filters.releaseStatuses)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.releaseStatuses.contains(item.slug));
@@ -285,7 +285,7 @@ void AllGamesPage::initialize()
             area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.genres)
+            foreach (api::MetaTag item, this->data.filters.genres)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.genres.contains(item.slug));
@@ -328,7 +328,7 @@ void AllGamesPage::initialize()
             area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.tags)
+            foreach (api::MetaTag item, this->data.filters.tags)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.tags.contains(item.slug));
@@ -372,7 +372,7 @@ void AllGamesPage::initialize()
             area->setChangedFilters(filter.systems.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.systems)
+            foreach (api::MetaTag item, this->data.filters.systems)
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.systems.contains(item.slug));
@@ -400,7 +400,7 @@ void AllGamesPage::initialize()
             area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.features)
+            foreach (api::MetaTag item, this->data.filters.features)
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.features.contains(item.slug));
@@ -446,7 +446,7 @@ void AllGamesPage::initialize()
             area->setChangedFilters(filter.languages.count());
             layout = new QVBoxLayout(area);
             layout->setAlignment(Qt::AlignTop);
-            foreach (item, data.filters.languages)
+            foreach (api::MetaTag item, this->data.filters.languages)
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.languages.contains(item.slug));
@@ -473,16 +473,16 @@ void AllGamesPage::initialize()
             ui->filtersScrollArea->setFixedWidth(maxWidth + 20);
             ui->filtersScrollArea->setVisible(true);
 
-            ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(data.productCount)));
-            ui->pagesLabel->setText(QString("%1 of %2").arg(QString::number(page), QString::number(data.pages)));
+            ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(this->data.productCount)));
+            ui->pagesLabel->setText(QString("%1 of %2").arg(QString::number(page), QString::number(this->data.pages)));
 
-            if (data.products.isEmpty())
+            if (this->data.products.isEmpty())
             {
                 ui->contentsStack->setCurrentWidget(ui->emptyPage);
             }
             else
             {
-                paginator->changePages(page, data.pages);
+                paginator->changePages(page, this->data.pages);
                 layoutResults();
             }
 

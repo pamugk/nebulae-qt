@@ -4,6 +4,7 @@
 #include "../pages/allgamespage.h"
 #include "../pages/catalogproductpage.h"
 #include "../pages/orderspage.h"
+#include "../pages/ownedgamepage.h"
 #include "../pages/ownedgamespage.h"
 #include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
@@ -24,16 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
     pages[Page::ALL_GAMES] = new AllGamesPage(ui->pagesStack);
     pages[Page::WISHLIST] = new WishlistPage(ui->pagesStack);
     pages[Page::ORDER_HISTORY] = new OrdersPage(ui->pagesStack);
-
-    auto catalogProductPage = new CatalogProductPage(ui->pagesStack);
-    connect(this, &MainWindow::navigatingToCatalogProduct,
-            catalogProductPage, &CatalogProductPage::setProductId);
-    pages[Page::CATALOG_PRODUCT_PAGE] = catalogProductPage;
-
+    pages[Page::CATALOG_PRODUCT_PAGE] = new CatalogProductPage(ui->pagesStack);
     pages[Page::OWNED_GAMES] = new OwnedGamesPage(ui->pagesStack);
+    pages[Page::OWNED_PRODUCT_PAGE] = new OwnedGamePage(ui->pagesStack);
 
-    BasePage *item;
-    foreach (item, pages.values())
+    foreach (BasePage *item, pages.values())
     {
         ui->pagesStack->addWidget(item);
         connect(item, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
@@ -45,13 +41,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::navigate(Page newPage)
+void MainWindow::navigate(Page newPage, const QVariant &data)
 {
     if (pages.contains(newPage))
     {
         auto page = pages[newPage];
         ui->pagesStack->setCurrentWidget(page);
-        page->initialize();
+        page->initialize(data);
         if (pages.contains(currentPage))
         {
             pages[currentPage]->clear();
@@ -74,8 +70,7 @@ void MainWindow::setApiClient(api::GogApiClient *apiClient)
         dialog.exec();
     });
 
-    BasePage *item;
-    foreach (item, pages.values())
+    foreach (BasePage *item, pages.values())
     {
         item->setApiClient(apiClient);
     }
@@ -88,13 +83,7 @@ void MainWindow::setSettingsManager(SettingsManager *settingsManager)
 
 void MainWindow::setDestination(NavigationDestination destination)
 {
-    switch (destination.page)
-    {
-    case Page::CATALOG_PRODUCT_PAGE:
-        emit navigatingToCatalogProduct(destination.parameters.toULongLong());
-        break;
-    }
-    navigate(destination.page);
+    navigate(destination.page, destination.parameters);
 }
 
 void MainWindow::on_discoverButton_clicked()

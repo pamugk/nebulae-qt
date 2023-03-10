@@ -32,7 +32,7 @@ private:
 
 public slots:
     virtual void clear() override;
-    virtual void initialize() override;
+    virtual void initialize(const QVariant &data) override;
 private slots:
     void onSearchTextChanged(const QString &arg1);
     void onCurrentOrderChanged(int index);

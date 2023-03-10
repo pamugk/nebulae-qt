@@ -120,8 +120,7 @@ void OrdersPage::fetchData()
             }
             else
             {
-                api::Order item;
-                foreach (item, data.orders)
+                foreach (api::Order item, data.orders)
                 {
                     ui->resultsScrollContentsLayout->addWidget(new OrderGroup(item, apiClient, ui->resultsScrollContents));
                 }
@@ -154,7 +153,7 @@ void OrdersPage::clear()
     }
 }
 
-void OrdersPage::initialize()
+void OrdersPage::initialize(const QVariant &data)
 {
     fetchData();
 }

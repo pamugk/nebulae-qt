@@ -19,7 +19,8 @@ FilterCheckbox::~FilterCheckbox()
 void FilterCheckbox::on_hideButton_toggled(bool checked)
 {
     ui->filterCheckbox->setEnabled(!checked);
-    if (checked) {
+    if (checked)
+    {
         ui->filterCheckbox->setCheckState(Qt::CheckState::Unchecked);
     }
 }
