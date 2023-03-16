@@ -26,6 +26,8 @@ private:
 public slots:
     virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+private slots:
+    void on_expandDescriptionButton_clicked();
 };
 
 #endif // OWNEDGAMEPAGE_H

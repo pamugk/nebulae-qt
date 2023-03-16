@@ -55,27 +55,70 @@ void parseGameDownload(const QJsonObject &json, api::GameDownload &data)
 
 void parseDownloads(const QJsonObject &json, api::Downloads &data)
 {
+    QMap<QString, api::GameDownload*> installers;
     QJsonArray downloads;
     downloads = json["installers"].toArray();
-    data.installers.resize(downloads.count());
-    for (int i = 0; i < downloads.count(); i++)
+    data.installers.clear();
+    foreach (QJsonValue item, downloads)
     {
-        parseGameDownload(downloads[i].toObject(), data.installers[i]);
+        api::GameDownload download;
+        parseGameDownload(item.toObject(), download);
+        if (installers.contains(download.name))
+        {
+            foreach (api::DownloadFile downloadFile, download.files)
+            {
+                installers[download.name]->files.append(downloadFile);
+            }
+        }
+        else
+        {
+            data.installers.append(download);
+            installers[download.name] = &data.installers.last();
+        }
     }
+    installers.clear();
 
     downloads = json["patches"].toArray();
-    data.patches.resize(downloads.count());
-    for (int i = 0; i < downloads.count(); i++)
+    data.patches.clear();
+    foreach (QJsonValue item, downloads)
     {
-        parseGameDownload(downloads[i].toObject(), data.patches[i]);
+        api::GameDownload download;
+        parseGameDownload(item.toObject(), download);
+        if (installers.contains(download.name))
+        {
+            foreach (api::DownloadFile downloadFile, download.files)
+            {
+                installers[download.name]->files.append(downloadFile);
+            }
+        }
+        else
+        {
+            data.patches.append(download);
+            installers[download.name] = &data.patches.last();
+        }
     }
+    installers.clear();
 
     downloads = json["language_packs"].toArray();
-    data.languagePacks.resize(downloads.count());
-    for (int i = 0; i < downloads.count(); i++)
+    data.languagePacks.clear();
+    foreach (QJsonValue item, downloads)
     {
-        parseGameDownload(downloads[i].toObject(), data.languagePacks[i]);
+        api::GameDownload download;
+        parseGameDownload(item.toObject(), download);
+        if (installers.contains(download.name))
+        {
+            foreach (api::DownloadFile downloadFile, download.files)
+            {
+                installers[download.name]->files.append(downloadFile);
+            }
+        }
+        else
+        {
+            data.languagePacks.append(download);
+            installers[download.name] = &data.languagePacks.last();
+        }
     }
+    installers.clear();
 
     downloads = json["bonus_content"].toArray();
     data.bonusContent.resize(downloads.count());

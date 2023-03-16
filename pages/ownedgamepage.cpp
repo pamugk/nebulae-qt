@@ -15,7 +15,7 @@ OwnedGamePage::OwnedGamePage(QWidget *parent) :
     ui->setupUi(this);
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsPageTabWidget->setCurrentWidget(ui->overviewTab);
-    ui->extrasTabLayout->setAlignment(Qt::AlignTop);
+    ui->extrasTabScrollAreaContentsLayout->setAlignment(Qt::AlignTop);
 }
 
 OwnedGamePage::~OwnedGamePage()
@@ -33,12 +33,13 @@ void OwnedGamePage::clear()
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsPageTabWidget->setCurrentWidget(ui->overviewTab);
     ui->descriptionLabel->clear();
+    ui->descriptionLabel->setProperty("fullText", QVariant());
     ui->changelogTextBrowser->clear();
     ui->overviewTabScrollArea->verticalScrollBar()->setValue(0);
-    while (!ui->extrasTabLayout->isEmpty())
+    while (!ui->extrasTabScrollAreaContentsLayout->isEmpty())
     {
-        auto item = ui->extrasTabLayout->itemAt(0);
-        ui->extrasTabLayout->removeItem(item);
+        auto item = ui->extrasTabScrollAreaContentsLayout->itemAt(0);
+        ui->extrasTabScrollAreaContentsLayout->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
@@ -50,46 +51,96 @@ void OwnedGamePage::initialize(const QVariant &data)
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
         {
+            auto locale = QLocale::system();
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetOwnedProductInfoResponse data;
             parseGetOwnedProductInfoResponse(resultJson, data);
 
             ui->titleLabel->setText(data.mainProductInfo.title);
-            ui->descriptionLabel->setText(data.descriptionFull);
+            ui->descriptionLabel->setText(data.descriptionLead);
+            ui->descriptionLabel->setProperty("fullText", data.descriptionFull);
+            ui->expandDescriptionButton->setVisible(true);
+            ui->genresLabel->setVisible(false);
+            ui->styleLabel->setVisible(false);
+            if (data.mainProductInfo.releaseDate.isNull())
+            {
+                ui->releaseDateLabel->setVisible(false);
+            }
+            else
+            {
+                ui->releaseDateLabel->setText("<b>Release date:</b> " + locale.toString(data.mainProductInfo.releaseDate.date(), QLocale::ShortFormat));
+                ui->releaseDateLabel->setVisible(true);
+            }
+            ui->developerLabel->setVisible(false);
 
             ui->resultsPageTabWidget->setTabVisible(ui->resultsPageTabWidget->indexOf(ui->changelogTab), !data.changelog.isEmpty());
             ui->changelogTextBrowser->setHtml(data.changelog);
 
             bool showDownloads = false;
-            if (!data.mainProductInfo.downloads.bonusContent.isEmpty())
+            QVector<api::BonusDownload*> goodies;
+            for(int i = 0; i < data.mainProductInfo.downloads.bonusContent.count(); i++)
             {
-                ui->extrasTabLayout->addWidget(new QLabel("Goodies", ui->extrasTab));
-                foreach (api::Download item, data.mainProductInfo.downloads.bonusContent)
+                goodies.append(&data.mainProductInfo.downloads.bonusContent[i]);
+            }
+            QVector<api::GameDownload*> installers;
+            for(int i = 0; i < data.mainProductInfo.downloads.installers.count(); i++)
+            {
+                installers.append(&data.mainProductInfo.downloads.installers[i]);
+            }
+            QVector<api::GameDownload*> patches;
+            for(int i = 0; i < data.mainProductInfo.downloads.patches.count(); i++)
+            {
+                patches.append(&data.mainProductInfo.downloads.patches[i]);
+            }
+            QVector<api::GameDownload*> languagePacks;
+            for(int i = 0; i < data.mainProductInfo.downloads.languagePacks.count(); i++)
+            {
+                languagePacks.append(&data.mainProductInfo.downloads.languagePacks[i]);
+            }
+            for (int i = 0; i < data.expandedDlcs.count(); i++)
+            {
+                for(int j = 0; j < data.expandedDlcs[i].downloads.bonusContent.count(); j++)
                 {
-                    ui->extrasTabLayout->addWidget(new QLabel(item.name, ui->extrasTab));
+                    goodies.append(&data.expandedDlcs[i].downloads.bonusContent[j]);
+                }
+                for(int j = 0; j < data.expandedDlcs[i].downloads.installers.count(); j++)
+                {
+                    installers.append(&data.expandedDlcs[i].downloads.installers[j]);
+                }
+                for(int j = 0; j < data.expandedDlcs[i].downloads.patches.count(); j++)
+                {
+                    patches.append(&data.expandedDlcs[i].downloads.patches[j]);
+                }
+                for(int j = 0; j < data.expandedDlcs[i].downloads.languagePacks.count(); j++)
+                {
+                    languagePacks.append(&data.expandedDlcs[i].downloads.languagePacks[j]);
+                }
+            }
+
+            if (!goodies.isEmpty())
+            {
+                ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel("Goodies", ui->extrasTab));
+                foreach (api::Download *item, goodies)
+                {
+                    ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
                 showDownloads = true;
             }
-            if (!data.mainProductInfo.downloads.installers.isEmpty())
+            if (!installers.isEmpty())
             {
-                ui->extrasTabLayout->addWidget(new QLabel("Backup offline installers", ui->extrasTab));
-                foreach (api::Download item, data.mainProductInfo.downloads.installers)
+                ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel("Offline backup installers", ui->extrasTab));
+                foreach (api::Download *item, installers)
                 {
-                    ui->extrasTabLayout->addWidget(new QLabel(item.name, ui->extrasTab));
+                    ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
-                showDownloads = true;
-            }
-            if (!data.mainProductInfo.downloads.patches.isEmpty())
-            {
-                ui->extrasTabLayout->addWidget(new QLabel("Patches", ui->extrasTab));
-                foreach (api::Download item, data.mainProductInfo.downloads.installers)
+                foreach (api::Download *item, languagePacks)
                 {
-                    ui->extrasTabLayout->addWidget(new QLabel(item.name, ui->extrasTab));
+                    ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
-                showDownloads = true;
-            }
-            if (!data.mainProductInfo.downloads.languagePacks.isEmpty())
-            {
+                foreach (api::Download *item, patches)
+                {
+                    ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
+                }
                 showDownloads = true;
             }
             ui->resultsPageTabWidget->setTabVisible(ui->resultsPageTabWidget->indexOf(ui->extrasTab), showDownloads);
@@ -108,3 +159,10 @@ void OwnedGamePage::initialize(const QVariant &data)
         }
     });
 }
+
+void OwnedGamePage::on_expandDescriptionButton_clicked()
+{
+    ui->descriptionLabel->setText(ui->descriptionLabel->property("fullText").toString());
+    ui->expandDescriptionButton->setVisible(false);
+}
+

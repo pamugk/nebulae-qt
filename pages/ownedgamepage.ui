@@ -124,19 +124,48 @@
                <property name="spacing">
                 <number>0</number>
                </property>
-               <item row="0" column="0" colspan="2">
-                <widget class="QLabel" name="titleLabel">
+               <item row="6" column="0">
+                <widget class="QLabel" name="releaseDateLabel">
                  <property name="font">
                   <font>
-                   <pointsize>12</pointsize>
-                   <bold>true</bold>
+                   <pointsize>11</pointsize>
                   </font>
                  </property>
                  <property name="text">
                   <string notr="true"/>
                  </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                </widget>
+               </item>
+               <item row="1" column="1" rowspan="2">
+                <widget class="QWidget" name="additionalContent" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <layout class="QVBoxLayout" name="additionalContentLayout"/>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QPushButton" name="expandDescriptionButton">
+                 <property name="text">
+                  <string>Read more</string>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="styleLabel">
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string notr="true"/>
                  </property>
                 </widget>
                </item>
@@ -165,21 +194,50 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label">
+                <widget class="QLabel" name="overviewTitleLabel">
                  <property name="text">
                   <string>Overview</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1" rowspan="2">
-                <widget class="QWidget" name="additionalContent" native="true">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+               <item row="4" column="0">
+                <widget class="QLabel" name="genresLabel">
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
                  </property>
-                 <layout class="QVBoxLayout" name="additionalContentLayout"/>
+                 <property name="text">
+                  <string notr="true"/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="QLabel" name="titleLabel">
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string notr="true"/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="developerLabel">
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string notr="true"/>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -270,6 +328,37 @@ li.checked::marker { content: &quot;\2612&quot;; }
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <widget class="QScrollArea" name="extrasTabScrollArea">
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="extrasTabScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>776</width>
+                <height>549</height>
+               </rect>
+              </property>
+              <layout class="QVBoxLayout" name="extrasTabScrollAreaContentsLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
           </layout>
          </widget>
         </widget>
