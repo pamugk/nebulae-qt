@@ -26,14 +26,17 @@ protected:
     }
 };
 
-AuthDialog::AuthDialog(QWidget *parent) :
+AuthDialog::AuthDialog(const QUrl &authUrl, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AuthDialog)
 {
     ui->setupUi(this);
+    connect(ui->webEngineView, &QWebEngineView::loadProgress,
+            ui->progressBar, &QProgressBar::setValue);
 
     auto authPage = new AuthPage(ui->webEngineView);
     ui->webEngineView->setPage(authPage);
+    ui->webEngineView->setUrl(authUrl);
 }
 
 AuthDialog::~AuthDialog()
@@ -41,7 +44,22 @@ AuthDialog::~AuthDialog()
     delete ui;
 }
 
-void AuthDialog::setUrl(const QUrl &authUrl)
+void AuthDialog::on_webEngineView_loadFinished(bool success)
 {
-    ui->webEngineView->setUrl(authUrl);
+    if (success)
+    {
+        ui->contentStack->setCurrentWidget(ui->mainPage);
+    }
+    else
+    {
+        ui->contentStack->setCurrentWidget(ui->errorPage);
+    }
 }
+
+
+void AuthDialog::on_reloadButton_clicked()
+{
+    ui->contentStack->setCurrentWidget(ui->loadingPage);
+    ui->webEngineView->reload();
+}
+

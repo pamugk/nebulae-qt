@@ -28,14 +28,14 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
 
     connect(ui->loginButton, &QPushButton::clicked, apiClient, &api::GogApiClient::grant);
     connect(apiClient, &api::GogApiClient::authorize, this, [this](const QUrl &authUrl){
-        AuthDialog dialog(this);
-        dialog.setUrl(authUrl);
+        AuthDialog dialog(authUrl, this);
         dialog.exec();
     });
 
     NavigationDestination startDestination = NavigationDestination { Page::STORE };
     QWidget *startPage = initializePage(startDestination);
     navigationHistory.push(startDestination);
+    updateCheckedDrawerDestination(startDestination.page);
     ui->scaffoldLayout->addWidget(startPage, 1, 1);
 }
 
@@ -102,6 +102,18 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
     ui->friendsButton->setVisible(authenticated);
 }
 
+void MainWindow::updateCheckedDrawerDestination(Page currentPage)
+{
+    ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
+    ui->recentButton->setChecked(currentPage == Page::RECENT);
+    ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::CATALOG_PRODUCT_PAGE);
+    ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
+    ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
+    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES || currentPage == Page::OWNED_PRODUCT_PAGE);
+    ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
+    ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
+}
+
 void MainWindow::navigate(NavigationDestination destination)
 {
     if (navigationHistory.top().page != destination.page)
@@ -116,6 +128,7 @@ void MainWindow::navigate(NavigationDestination destination)
         navigationHistoryReplay.clear();
         ui->navigateBackButton->setEnabled(true);
         ui->navigateForwardButton->setEnabled(false);
+        updateCheckedDrawerDestination(destination.page);
     }
 }
 
@@ -131,6 +144,7 @@ void MainWindow::navigateBack()
     navigationHistoryReplay.push(poppedDestination);
     ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
     ui->navigateForwardButton->setEnabled(true);
+    updateCheckedDrawerDestination(navigationHistory.top().page);
 }
 
 void MainWindow::navigateForward()
@@ -145,6 +159,7 @@ void MainWindow::navigateForward()
     navigationHistory.push(pushedDestination);
     ui->navigateBackButton->setEnabled(true);
     ui->navigateForwardButton->setEnabled(navigationHistoryReplay.size() > 0);
+    updateCheckedDrawerDestination(pushedDestination.page);
 }
 
 void MainWindow::on_discoverButton_clicked()

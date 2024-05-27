@@ -62,5 +62,6 @@ private:
 
     QWidget *initializePage(const NavigationDestination &destination);
     void switchUiAuthenticatedState(bool authenticated);
+    void updateCheckedDrawerDestination(Page currentPage);
 };
 #endif // MAINWINDOW_H
