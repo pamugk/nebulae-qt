@@ -3,11 +3,11 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QStack>
 
 #include "../api/gogapiclient.h"
 #include "../internals/navigationdestination.h"
 #include "../internals/settingsmanager.h"
-#include "../pages/basepage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,11 +18,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(api::GogApiClient *, SettingsManager *settingsManager, QWidget *parent = nullptr);
     ~MainWindow();
-
-    void setApiClient(api::GogApiClient *apiClient);
-    void setSettingsManager(SettingsManager *settingsManager);
 
 public slots:
     void setDestination(NavigationDestination destination);
@@ -52,11 +49,11 @@ private slots:
 
 private:
     api::GogApiClient *apiClient;
+    QStack<NavigationDestination> navigationHistory;
+    QStack<NavigationDestination> navigationHistoryReplay;
     SettingsManager *settingsManager;
 
     Ui::MainWindow *ui;
-    Page currentPage;
-    QMap<Page, BasePage *> pages;
 
     void navigate(Page newPage, const QVariant &data = QVariant());
 };

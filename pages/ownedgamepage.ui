@@ -10,6 +10,12 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -39,7 +45,7 @@
           <string>Product not found</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -53,7 +59,7 @@
           <string>An error occurred</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -94,7 +100,7 @@
               </sizepolicy>
              </property>
              <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
              </property>
              <property name="widgetResizable">
               <bool>true</bool>
@@ -104,8 +110,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>758</width>
-                <height>531</height>
+                <width>100</width>
+                <height>179</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="overviewTabScrollAreaLayout">
@@ -186,7 +192,7 @@
                   <string notr="true"/>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                  <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -224,7 +230,7 @@
                   <string notr="true"/>
                  </property>
                  <property name="alignment">
-                  <set>Qt::AlignCenter</set>
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
                  </property>
                 </widget>
                </item>
@@ -275,7 +281,7 @@
               </sizepolicy>
              </property>
              <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
              </property>
              <property name="documentTitle">
               <string>Product changelog</string>
@@ -338,8 +344,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>776</width>
-                <height>549</height>
+                <width>100</width>
+                <height>30</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="extrasTabScrollAreaContentsLayout">

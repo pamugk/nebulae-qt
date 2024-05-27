@@ -33,9 +33,7 @@ int main(int argc, char *argv[])
     QObject::connect(&settingsManager, &SettingsManager::autoLoginChanged,
             &apiClient, &api::GogApiClient::setStoreCredentials);
 
-    MainWindow w;
-    w.setApiClient(&apiClient);
-    w.setSettingsManager(&settingsManager);
+    MainWindow w(&apiClient, &settingsManager);
     w.show();
 
     QSystemTrayIcon trayIcon(QIcon(":/icons/gog-galaxy.png"), &a);

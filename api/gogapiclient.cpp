@@ -1,7 +1,9 @@
 #include "gogapiclient.h"
 
+#include <QNetworkRequest>
 #include <QOAuthHttpServerReplyHandler>
 #include <QProcessEnvironment>
+#include <QUrlQuery>
 
 api::GogApiClient::GogApiClient(QObject *parent)
     : QObject{parent}
@@ -200,70 +202,73 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
                                            QString currencyCode,
                                            quint16 page, quint32 limit)
 {
-    QVariantMap parameters;
-    parameters["limit"] = QString::number(limit);
+    QUrlQuery query;
+    query.addQueryItem("limit", QString::number(limit));
     if (!filter.query.isEmpty())
     {
-        parameters["query"] = "like:" + filter.query;
+        query.addQueryItem("query", "like:" + filter.query);
     }
-    parameters["order"] = QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field);
+    query.addQueryItem("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field));
     if (!filter.genres.isEmpty())
     {
-        parameters["genres"] = "in:" + filter.genres.join(',');
+        query.addQueryItem("genres", filter.genres.join(','));
     }
     if (!filter.excludeGenres.isEmpty())
     {
-        parameters["excludeGenres"] = "in:" + filter.excludeGenres.join(',');
+        query.addQueryItem("excludeGenres", "in:" + filter.excludeGenres.join(','));
     }
     if (!filter.languages.isEmpty())
     {
-        parameters["languages"] = "in:" + filter.languages.join(',');
+        query.addQueryItem("languages", "in:" + filter.languages.join(','));
     }
     if (!filter.systems.isEmpty())
     {
-        parameters["systems"] = "in:" + filter.systems.join(',');
+        query.addQueryItem("systems", "in:" + filter.systems.join(','));
     }
     if (!filter.tags.isEmpty())
     {
-        parameters["tags"] = "in:" + filter.tags.join(',');
+        query.addQueryItem("tags", "in:" + filter.tags.join(','));
     }
     if (!filter.excludeTags.isEmpty())
     {
-        parameters["excludeTags"] = "in:" + filter.excludeTags.join(',');
+        query.addQueryItem("excludeTags", "in:" + filter.excludeTags.join(','));
     }
     if (!filter.features.isEmpty())
     {
-        parameters["features"] = "in:" + filter.features.join(',');
+        query.addQueryItem("features", "in:" + filter.features.join(','));
     }
     if (!filter.excludeFeatures.isEmpty())
     {
-        parameters["excludeFeatures"] = "in:" + filter.excludeFeatures.join(',');
+        query.addQueryItem("excludeFeatures", "in:" + filter.excludeFeatures.join(','));
     }
     if (!filter.releaseStatuses.isEmpty())
     {
-        parameters["releaseStatuses"] = "in:" + filter.releaseStatuses.join(',');
+        query.addQueryItem("releaseStatuses", "in:" + filter.releaseStatuses.join(','));
     }
     if (!filter.excludeReleaseStatuses.isEmpty())
     {
-        parameters["excludeReleaseStatuses"] = "in:" + filter.excludeReleaseStatuses.join(',');
+        query.addQueryItem("excludeReleaseStatuses", "in:" + filter.excludeReleaseStatuses.join(','));
     }
     if (!filter.productTypes.isEmpty())
     {
-        parameters["productType"] = "in:" + filter.productTypes.join(',');
+        query.addQueryItem("productType", "in:" + filter.productTypes.join(','));
     }
     if(filter.discounted)
     {
-        parameters["discounted"] = "eq:true";
+        query.addQueryItem("discounted", "eq:true");
     }
     if(filter.hideOwned)
     {
-        parameters["hideOwned"] = "true";
+        query.addQueryItem("hideOwned", "true");
     }
-    parameters["page"] = QString::number(page);
-    parameters["countryCode"] = countryCode;
-    parameters["locale"] = locale;
-    parameters["currencyCode"] = currencyCode;
-    return client.get(QUrl("https://catalog.gog.com/v1/catalog"), parameters);
+    query.addQueryItem("page", QString::number(page));
+    query.addQueryItem("countryCode", countryCode);
+    query.addQueryItem("locale", locale);
+    query.addQueryItem("currencyCode", currencyCode);
+
+    QUrl url("https://catalog.gog.com/v1/catalog");
+    url.setQuery(query);
+    return client_tmp.get(QNetworkRequest(url));
 }
 
 void api::GogApiClient::grant()

@@ -10,6 +10,12 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -96,7 +102,7 @@ QLineEdit:focus
             <x>0</x>
             <y>0</y>
             <width>784</width>
-            <height>508</height>
+            <height>503</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="resultsScrollContentsLayout">
@@ -163,7 +169,7 @@ QLineEdit:focus
           <string>No results found</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -183,16 +189,16 @@ QLineEdit:focus
       <string>ORDERS HISTORY</string>
      </property>
      <property name="popupMode">
-      <enum>QToolButton::MenuButtonPopup</enum>
+      <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
      </property>
      <property name="toolButtonStyle">
-      <enum>Qt::ToolButtonTextBesideIcon</enum>
+      <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
      </property>
      <property name="autoRaise">
       <bool>true</bool>
      </property>
      <property name="arrowType">
-      <enum>Qt::NoArrow</enum>
+      <enum>Qt::ArrowType::NoArrow</enum>
      </property>
     </widget>
    </item>

@@ -3,6 +3,7 @@
 
 #include <QtGlobal>
 
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QSettings>
@@ -56,6 +57,7 @@ namespace api
         void authenticated();
 
     private:
+        QNetworkAccessManager client_tmp;
         QOAuth2AuthorizationCodeFlow client;
         QSettings settings;
         bool storeTokens;

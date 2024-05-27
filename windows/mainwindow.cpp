@@ -13,52 +13,16 @@
 #include "searchdialog.h"
 #include "settingsdialog.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(api::GogApiClient * apiClient,
+                       SettingsManager *settingsManager,
+                       QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),
-      apiClient(nullptr),
-      settingsManager(nullptr)
+      apiClient(apiClient),
+      settingsManager(settingsManager)
 {
     ui->setupUi(this);
 
-    pages[Page::STORE] = new StorePage(ui->pagesStack);
-    pages[Page::ALL_GAMES] = new AllGamesPage(ui->pagesStack);
-    pages[Page::WISHLIST] = new WishlistPage(ui->pagesStack);
-    pages[Page::ORDER_HISTORY] = new OrdersPage(ui->pagesStack);
-    pages[Page::CATALOG_PRODUCT_PAGE] = new CatalogProductPage(ui->pagesStack);
-    pages[Page::OWNED_GAMES] = new OwnedGamesPage(ui->pagesStack);
-    pages[Page::OWNED_PRODUCT_PAGE] = new OwnedGamePage(ui->pagesStack);
-
-    foreach (BasePage *item, pages)
-    {
-        ui->pagesStack->addWidget(item);
-        connect(item, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
-    }
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-
-void MainWindow::navigate(Page newPage, const QVariant &data)
-{
-    if (pages.contains(newPage))
-    {
-        auto page = pages[newPage];
-        ui->pagesStack->setCurrentWidget(page);
-        page->initialize(data);
-        if (pages.contains(currentPage))
-        {
-            pages[currentPage]->clear();
-        }
-        currentPage = newPage;
-    }
-}
-
-void MainWindow::setApiClient(api::GogApiClient *apiClient)
-{
-    this->apiClient = apiClient;
     ui->loginButton->setVisible(!apiClient->isAuthenticated());
     connect(apiClient, &api::GogApiClient::authenticated, this, [this]{
         ui->loginButton->setVisible(false);
@@ -70,15 +34,62 @@ void MainWindow::setApiClient(api::GogApiClient *apiClient)
         dialog.exec();
     });
 
-    foreach (BasePage *item, pages)
-    {
-        item->setApiClient(apiClient);
-    }
+    navigationHistory.push(NavigationDestination { Page::STORE });
+    BasePage *startPage = new StorePage(ui->scaffold);
+    startPage->setApiClient(apiClient);
+    ui->scaffoldLayout->addWidget(startPage, 1, 1);
 }
 
-void MainWindow::setSettingsManager(SettingsManager *settingsManager)
+MainWindow::~MainWindow()
 {
-    this->settingsManager = settingsManager;
+    delete ui;
+}
+
+void MainWindow::navigate(Page newPage, const QVariant &data)
+{
+    NavigationDestination currentDestination = navigationHistory.top();
+    if (currentDestination.page != newPage) {
+        BasePage *nextPage = nullptr;
+        switch (newPage) {
+        case DISCOVER:
+        case RECENT:
+        case STORE:
+            nextPage = new StorePage(ui->scaffold);
+            break;
+        case ALL_GAMES:
+            nextPage = new AllGamesPage(ui->scaffold);
+            break;
+        case WISHLIST:
+            nextPage = new WishlistPage(ui->scaffold);
+            break;
+        case ORDER_HISTORY:
+            nextPage = new OrdersPage(ui->scaffold);
+            break;
+        case OWNED_GAMES:
+            nextPage = new OwnedGamesPage(ui->scaffold);
+            break;
+        case INSTALLED_GAMES:
+        case FRIENDS:
+        case CATALOG_PRODUCT_PAGE:
+            nextPage = new CatalogProductPage(ui->scaffold);
+            break;
+        case OWNED_PRODUCT_PAGE:
+            nextPage = new OwnedGamePage(ui->scaffold);
+            break;
+        }
+
+        if (nextPage != nullptr) {
+            QWidget *previousPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
+            nextPage->setApiClient(apiClient);
+            nextPage->initialize(data);
+            connect(nextPage, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
+            QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(previousPage, nextPage);
+            delete replacedItem;
+            previousPage->deleteLater();
+            navigationHistory.push(NavigationDestination { newPage, data });
+            ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
+        }
+    }
 }
 
 void MainWindow::setDestination(NavigationDestination destination)

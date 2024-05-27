@@ -10,6 +10,12 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -86,7 +92,7 @@
           <string>This game contains mature content recommended only for ages 18+</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -110,7 +116,7 @@
           <string>By clicking “Continue” below, you confirm that you are aged 18 years or older.</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -170,10 +176,10 @@
           <string notr="true">background: rgba(217, 217, 217, 127);</string>
          </property>
          <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
          </property>
          <property name="sizeAdjustPolicy">
-          <enum>QAbstractScrollArea::AdjustToContents</enum>
+          <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
          </property>
          <property name="widgetResizable">
           <bool>true</bool>
@@ -183,8 +189,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>766</width>
-            <height>1368</height>
+            <width>428</width>
+            <height>1365</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -361,7 +367,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <set>Qt::AlignmentFlag::AlignCenter</set>
                 </property>
                </widget>
               </item>
@@ -416,7 +422,7 @@ padding: 16px 20px 24px 20px;</string>
               <string notr="true">font-size: 11pt;</string>
              </property>
              <property name="tabPosition">
-              <enum>QTabWidget::North</enum>
+              <enum>QTabWidget::TabPosition::North</enum>
              </property>
              <property name="currentIndex">
               <number>0</number>
@@ -509,7 +515,7 @@ padding: 16px 20px 24px 20px;</string>
              <property name="font">
               <font>
                <pointsize>9</pointsize>
-               <bold>false</bold>
+               <fontweight>Light</fontweight>
               </font>
              </property>
              <property name="styleSheet">
@@ -556,7 +562,7 @@ padding: 16px 20px 24px 20px;</string>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarAlwaysOff</enum>
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
              </property>
              <property name="widgetResizable">
               <bool>true</bool>
@@ -566,8 +572,8 @@ padding: 16px 20px 24px 20px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>764</width>
-                <height>188</height>
+                <width>428</width>
+                <height>190</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="mediaScrollAreaContentsLayout"/>
@@ -600,7 +606,7 @@ padding: 16px 20px 24px 20px;</string>
               <string notr="true"/>
              </property>
              <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
@@ -634,7 +640,7 @@ padding: 16px 20px 24px 20px;</string>
               <string notr="true"/>
              </property>
              <property name="alignment">
-              <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
@@ -694,7 +700,7 @@ padding: 16px 20px 24px 20px;</string>
                   <item>
                    <spacer name="userReviewsPaginationLayoutSpacer">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -714,7 +720,7 @@ padding: 16px 20px 24px 20px;</string>
                   <item>
                    <widget class="QComboBox" name="userReviewsPageSizeComboBox">
                     <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
+                     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>
                     <item>
                      <property name="text">
@@ -748,7 +754,7 @@ padding: 16px 20px 24px 20px;</string>
                   <item>
                    <widget class="QComboBox" name="userReviewsSortOrderComboBox">
                     <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
+                     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>
                     <item>
                      <property name="text">
@@ -1019,7 +1025,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Release date:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1034,7 +1040,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1055,7 +1061,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Tags:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1073,7 +1079,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string> Game features </string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1110,7 +1116,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1128,7 +1134,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1146,7 +1152,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1167,7 +1173,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Genre:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1182,7 +1188,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1203,7 +1209,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Rating:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1221,7 +1227,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Links:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1236,7 +1242,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1260,7 +1266,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Company:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1278,7 +1284,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Works on:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1293,7 +1299,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1311,7 +1317,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string notr="true"/>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
@@ -1332,7 +1338,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Size:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
@@ -1350,7 +1356,7 @@ padding: 16px 20px 24px 20px;</string>
                  <string>Languages</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                 </property>
                </widget>
               </item>
