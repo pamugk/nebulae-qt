@@ -114,6 +114,7 @@ void AllGamesPage::fetchData()
     {
         if (error != QNetworkReply::NoError)
         {
+            ui->contentsStack->setCurrentWidget(ui->errorPage);
             qDebug() << error;
             networkReply->deleteLater();
         }

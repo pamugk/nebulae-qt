@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     pages[Page::OWNED_GAMES] = new OwnedGamesPage(ui->pagesStack);
     pages[Page::OWNED_PRODUCT_PAGE] = new OwnedGamePage(ui->pagesStack);
 
-    foreach (BasePage *item, pages.values())
+    foreach (BasePage *item, pages)
     {
         ui->pagesStack->addWidget(item);
         connect(item, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
@@ -70,7 +70,7 @@ void MainWindow::setApiClient(api::GogApiClient *apiClient)
         dialog.exec();
     });
 
-    foreach (BasePage *item, pages.values())
+    foreach (BasePage *item, pages)
     {
         item->setApiClient(apiClient);
     }

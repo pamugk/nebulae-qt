@@ -77,7 +77,7 @@ QLayoutItem *FlowLayout::itemAt(int index) const
 QSize FlowLayout::minimumSize() const
 {
     QSize size;
-    for (const QLayoutItem *item : std::as_const(itemList))
+    foreach (const QLayoutItem *item, itemList)
     {
         size = size.expandedTo(item->minimumSize());
     }
@@ -115,20 +115,20 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
     int x = effectiveRect.x();
     int y = effectiveRect.y();
     int lineHeight = 0;
-    for (QLayoutItem *item : std::as_const(itemList))
+    foreach (QLayoutItem *item, itemList)
     {
         const QWidget *wid = item->widget();
         int spaceX = horizontalSpacing();
         if (spaceX == -1)
         {
             spaceX = wid->style()->layoutSpacing(
-                    QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
+                    QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Orientation::Horizontal);
         }
         int spaceY = verticalSpacing();
         if (spaceY == -1)
         {
             spaceY = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Orientation::Vertical);
         }
 
         int nextX = x + item->sizeHint().width() + spaceX;

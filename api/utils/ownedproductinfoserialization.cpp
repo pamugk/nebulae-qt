@@ -59,7 +59,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
     QJsonArray downloads;
     downloads = json["installers"].toArray();
     data.installers.clear();
-    foreach (QJsonValue item, downloads)
+    foreach (const QJsonValue &item, downloads)
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
@@ -80,7 +80,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
 
     downloads = json["patches"].toArray();
     data.patches.clear();
-    foreach (QJsonValue item, downloads)
+    foreach (const QJsonValue &item, downloads)
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
@@ -101,7 +101,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
 
     downloads = json["language_packs"].toArray();
     data.languagePacks.clear();
-    foreach (QJsonValue item, downloads)
+    foreach (const QJsonValue &item, downloads)
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
@@ -134,7 +134,7 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.title = json["title"].toString();
     data.slug = json["slug"].toString();
     auto languages = json["languages"].toVariant().toMap();
-    foreach (QString language, languages.keys())
+    foreach (const QString &language, languages.keys())
     {
         data.languages[language] = languages[language].toString();
     }
@@ -153,7 +153,7 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.preOrder = json["is_pre_order"].toBool();
     data.releaseDate = QDateTime::fromString(json["release_date"].toString(), Qt::ISODate);
     auto images = json["images"].toVariant().toMap();
-    foreach (QString image, images.keys())
+    foreach (const QString &image, images.keys())
     {
         data.images[image] = images[image].toString();
     }
@@ -168,7 +168,7 @@ void parseProductScreenshot(const QJsonObject &json, api::ProductScreenshot &dat
     if (json["formatted_images"].isArray())
     {
         auto images = json["formatted_images"].toArray();
-        foreach (QJsonValue image, images)
+        foreach (const QJsonValue &image, images)
         {
             data.formattedImages[image["formatter_name"].toString()] = image["image_url"].toString();
         }
