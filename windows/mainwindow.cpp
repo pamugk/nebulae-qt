@@ -13,7 +13,7 @@
 #include "searchdialog.h"
 #include "settingsdialog.h"
 
-MainWindow::MainWindow(api::GogApiClient * apiClient,
+MainWindow::MainWindow(api::GogApiClient *apiClient,
                        SettingsManager *settingsManager,
                        QWidget *parent)
     : QMainWindow(parent)
@@ -23,10 +23,9 @@ MainWindow::MainWindow(api::GogApiClient * apiClient,
 {
     ui->setupUi(this);
 
-    ui->loginButton->setVisible(!apiClient->isAuthenticated());
-    connect(apiClient, &api::GogApiClient::authenticated, this, [this]{
-        ui->loginButton->setVisible(false);
-    });
+    connect(apiClient, &api::GogApiClient::authenticated, this, &MainWindow::switchUiAuthenticatedState);
+    switchUiAuthenticatedState(apiClient->isAuthenticated());
+
     connect(ui->loginButton, &QPushButton::clicked, apiClient, &api::GogApiClient::grant);
     connect(apiClient, &api::GogApiClient::authorize, this, [this](const QUrl &authUrl){
         AuthDialog dialog(this);
@@ -34,9 +33,9 @@ MainWindow::MainWindow(api::GogApiClient * apiClient,
         dialog.exec();
     });
 
-    navigationHistory.push(NavigationDestination { Page::STORE });
-    BasePage *startPage = new StorePage(ui->scaffold);
-    startPage->setApiClient(apiClient);
+    NavigationDestination startDestination = NavigationDestination { Page::STORE };
+    QWidget *startPage = initializePage(startDestination);
+    navigationHistory.push(startDestination);
     ui->scaffoldLayout->addWidget(startPage, 1, 1);
 }
 
@@ -45,107 +44,158 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::navigate(Page newPage, const QVariant &data)
+QWidget *MainWindow::initializePage(const NavigationDestination &destination)
 {
-    NavigationDestination currentDestination = navigationHistory.top();
-    if (currentDestination.page != newPage) {
-        BasePage *nextPage = nullptr;
-        switch (newPage) {
-        case DISCOVER:
-        case RECENT:
-        case STORE:
-            nextPage = new StorePage(ui->scaffold);
-            break;
-        case ALL_GAMES:
-            nextPage = new AllGamesPage(ui->scaffold);
-            break;
-        case WISHLIST:
-            nextPage = new WishlistPage(ui->scaffold);
-            break;
-        case ORDER_HISTORY:
-            nextPage = new OrdersPage(ui->scaffold);
-            break;
-        case OWNED_GAMES:
-            nextPage = new OwnedGamesPage(ui->scaffold);
-            break;
-        case INSTALLED_GAMES:
-        case FRIENDS:
-        case CATALOG_PRODUCT_PAGE:
-            nextPage = new CatalogProductPage(ui->scaffold);
-            break;
-        case OWNED_PRODUCT_PAGE:
-            nextPage = new OwnedGamePage(ui->scaffold);
-            break;
-        }
+    BasePage *page = nullptr;
+    switch (destination.page) {
+    case DISCOVER:
+        break;
+    case RECENT:
+        break;
+    case STORE:
+        page = new StorePage(ui->scaffold);
+        break;
+    case ALL_GAMES:
+        page = new AllGamesPage(ui->scaffold);
+        break;
+    case WISHLIST:
+        page = new WishlistPage(ui->scaffold);
+        break;
+    case ORDER_HISTORY:
+        page = new OrdersPage(ui->scaffold);
+        break;
+    case OWNED_GAMES:
+        page = new OwnedGamesPage(ui->scaffold);
+        break;
+    case INSTALLED_GAMES:
+        break;
+    case FRIENDS:
+        break;
+    case CATALOG_PRODUCT_PAGE:
+        page = new CatalogProductPage(ui->scaffold);
+        break;
+    case OWNED_PRODUCT_PAGE:
+        page = new OwnedGamePage(ui->scaffold);
+        break;
+    }
+    connect(page, &BasePage::navigate, this, &MainWindow::navigate);
+    connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
+    connect(apiClient, &api::GogApiClient::authenticated, page, &BasePage::switchUiAuthenticatedState);
+    page->switchUiAuthenticatedState(apiClient->isAuthenticated());
+    page->setApiClient(apiClient);
+    page->initialize(destination.parameters);
+    return page;
+}
 
-        if (nextPage != nullptr) {
-            QWidget *previousPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
-            nextPage->setApiClient(apiClient);
-            nextPage->initialize(data);
-            connect(nextPage, &BasePage::navigateToDestination, this, &MainWindow::setDestination);
-            QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(previousPage, nextPage);
-            delete replacedItem;
-            previousPage->deleteLater();
-            navigationHistory.push(NavigationDestination { newPage, data });
-            ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
-        }
+void MainWindow::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->loginButton->setVisible(!authenticated);
+    ui->galaxyLabel->setVisible(authenticated);
+    ui->discoverButton->setVisible(authenticated);
+    ui->recentButton->setVisible(authenticated);
+    ui->wishlistButton->setVisible(authenticated);
+    ui->ordersButton->setVisible(authenticated);
+    ui->gamesLabel->setVisible(authenticated);
+    ui->libraryButton->setVisible(authenticated);
+    ui->installedButton->setVisible(authenticated);
+    ui->friendsLabel->setVisible(authenticated);
+    ui->friendsButton->setVisible(authenticated);
+}
+
+void MainWindow::navigate(NavigationDestination destination)
+{
+    if (navigationHistory.top().page != destination.page)
+    {
+        QWidget *nextPage = initializePage(destination);
+        QWidget *previousPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
+        QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(previousPage, nextPage);
+        delete replacedItem;
+        previousPage->deleteLater();
+
+        navigationHistory.push(destination);
+        navigationHistoryReplay.clear();
+        ui->navigateBackButton->setEnabled(true);
+        ui->navigateForwardButton->setEnabled(false);
     }
 }
 
-void MainWindow::setDestination(NavigationDestination destination)
+void MainWindow::navigateBack()
 {
-    navigate(destination.page, destination.parameters);
+    const NavigationDestination poppedDestination = navigationHistory.pop();
+    QWidget *currentPage = initializePage(navigationHistory.top());
+    QWidget *replacedPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
+    QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(replacedPage, currentPage);
+    delete replacedItem;
+    replacedPage->deleteLater();
+
+    navigationHistoryReplay.push(poppedDestination);
+    ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
+    ui->navigateForwardButton->setEnabled(true);
+}
+
+void MainWindow::navigateForward()
+{
+    const NavigationDestination pushedDestination = navigationHistoryReplay.pop();
+    QWidget *currentPage = initializePage(pushedDestination);
+    QWidget *replacedPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
+    QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(replacedPage, currentPage);
+    delete replacedItem;
+    replacedPage->deleteLater();
+
+    navigationHistory.push(pushedDestination);
+    ui->navigateBackButton->setEnabled(true);
+    ui->navigateForwardButton->setEnabled(navigationHistoryReplay.size() > 0);
 }
 
 void MainWindow::on_discoverButton_clicked()
 {
-    navigate(Page::DISCOVER);
+    navigate(NavigationDestination { Page::DISCOVER });
 }
 
 void MainWindow::on_recentButton_clicked()
 {
-    navigate(Page::RECENT);
+    navigate(NavigationDestination { Page::RECENT });
 }
 
 void MainWindow::on_storeButton_clicked()
 {
-    navigate(Page::STORE);
+    navigate(NavigationDestination { Page::STORE });
 }
 
 
 void MainWindow::on_allGamesButton_clicked()
 {
-    navigate(Page::ALL_GAMES);
+    navigate(NavigationDestination { Page::ALL_GAMES });
 }
 
 
 void MainWindow::on_wishlistButton_clicked()
 {
-    navigate(Page::WISHLIST);
+    navigate(NavigationDestination { Page::WISHLIST });
 }
 
 
 void MainWindow::on_ordersButton_clicked()
 {
-    navigate(Page::ORDER_HISTORY);
+    navigate(NavigationDestination { Page::ORDER_HISTORY });
 }
 
 
 void MainWindow::on_libraryButton_clicked()
 {
-    navigate(Page::OWNED_GAMES);
+    navigate(NavigationDestination { Page::OWNED_GAMES });
 }
 
 
 void MainWindow::on_installedButton_clicked()
 {
-    navigate(Page::INSTALLED_GAMES);
+    navigate(NavigationDestination { Page::INSTALLED_GAMES });
 }
 
 
 void MainWindow::on_friendsButton_clicked()
 {
-    navigate(Page::FRIENDS);
+    navigate(NavigationDestination { Page::FRIENDS });
 }
 
 
@@ -161,5 +211,17 @@ void MainWindow::on_actionButton_clicked()
 {
     SearchDialog dialog(this);
     dialog.exec();
+}
+
+
+void MainWindow::on_navigateBackButton_clicked()
+{
+    navigateBack();
+}
+
+
+void MainWindow::on_navigateForwardButton_clicked()
+{
+    navigateForward();
 }
 

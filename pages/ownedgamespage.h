@@ -27,8 +27,8 @@ private:
     void updateData();
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_searchLineEdit_textChanged(const QString &arg1);
 };

@@ -106,8 +106,17 @@ void OrdersPage::setApiClient(api::GogApiClient *apiClient)
 
 void OrdersPage::fetchData()
 {
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    paginator->setVisible(false);
+    while (!ui->resultsScrollContentsLayout->isEmpty())
+    {
+        auto item = ui->resultsScrollContentsLayout->itemAt(0);
+        ui->resultsScrollContentsLayout->removeItem(item);
+        delete item->widget();
+        delete item;
+    }
+
     auto networkReply = apiClient->getOrdersHistory(filter, page);
-    clear();
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
         {
@@ -140,22 +149,14 @@ void OrdersPage::fetchData()
     });
 }
 
-void OrdersPage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    paginator->setVisible(false);
-    while (!ui->resultsScrollContentsLayout->isEmpty())
-    {
-        auto item = ui->resultsScrollContentsLayout->itemAt(0);
-        ui->resultsScrollContentsLayout->removeItem(item);
-        delete item->widget();
-        delete item;
-    }
-}
-
 void OrdersPage::initialize(const QVariant &data)
 {
     fetchData();
+}
+
+void OrdersPage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void OrdersPage::on_searchEdit_textChanged(const QString &arg1)

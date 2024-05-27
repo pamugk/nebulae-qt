@@ -87,6 +87,7 @@ void AllGamesPage::fetchData()
         item->widget()->deleteLater();
         delete item;
     }
+
     auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
@@ -131,7 +132,7 @@ void AllGamesPage::layoutResults()
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
             });
             ui->resultsGridPage->layout()->addWidget(storeItem);
         }
@@ -144,42 +145,13 @@ void AllGamesPage::layoutResults()
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
             });
             ui->resultsListLayout->addWidget(storeItem);
         }
         ui->resultsStackedWidget->setCurrentWidget(ui->resultsListPage);
     }
     ui->contentsStack->setCurrentWidget(ui->resultsPage);
-}
-
-void AllGamesPage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    paginator->setVisible(false);
-    while (!ui->filtersScrollAreaLayout->isEmpty())
-    {
-        auto item = ui->filtersScrollAreaLayout->itemAt(0);
-        ui->filtersScrollAreaLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->resultsListLayout->isEmpty())
-    {
-        auto item = ui->resultsListLayout->itemAt(0);
-        ui->resultsListLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->resultsGridPage->layout()->isEmpty())
-    {
-        auto item = ui->resultsGridPage->layout()->itemAt(0);
-        ui->resultsGridPage->layout()->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->resultsScrollArea->horizontalScrollBar()->setValue(0);
-    data.products.clear();
 }
 
 void AllGamesPage::initialize(const QVariant &data)
@@ -498,6 +470,11 @@ void AllGamesPage::initialize(const QVariant &data)
             networkReply->deleteLater();
         }
     });
+}
+
+void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void AllGamesPage::on_lineEdit_textChanged(const QString &arg1)

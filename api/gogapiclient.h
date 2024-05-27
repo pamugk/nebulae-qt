@@ -54,7 +54,7 @@ namespace api
 
     signals:
         void authorize(const QUrl &authUrl);
-        void authenticated();
+        void authenticated(bool authenticated);
 
     private:
         QNetworkAccessManager client_tmp;

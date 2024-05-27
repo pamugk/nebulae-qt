@@ -18,8 +18,8 @@ public:
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 
 signals:
     void userReviewsResultsUpdated(quint16 page, quint16 totalPages);

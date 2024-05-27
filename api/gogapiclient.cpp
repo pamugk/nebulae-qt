@@ -37,7 +37,7 @@ api::GogApiClient::GogApiClient(QObject *parent)
     connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged, this, [this](
                 QAbstractOAuth::Status status) {
             if (status == QAbstractOAuth::Status::Granted) {
-                emit authenticated();
+                emit authenticated(true);
             }
         });
     connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);

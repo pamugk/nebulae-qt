@@ -18,12 +18,12 @@ void StorePage::setApiClient(api::GogApiClient *apiClient)
 
 }
 
-void StorePage::clear()
+void StorePage::initialize(const QVariant &data)
 {
-    ui->webView->scroll(0, 0);
+
 }
 
-void StorePage::initialize(const QVariant &data)
+void StorePage::switchUiAuthenticatedState(bool authenticated)
 {
 
 }

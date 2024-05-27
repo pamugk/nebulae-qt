@@ -28,23 +28,6 @@ void OwnedGamePage::setApiClient(api::GogApiClient *apiClient)
     this->apiClient = apiClient;
 }
 
-void OwnedGamePage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    ui->resultsPageTabWidget->setCurrentWidget(ui->overviewTab);
-    ui->descriptionLabel->clear();
-    ui->descriptionLabel->setProperty("fullText", QVariant());
-    ui->changelogTextBrowser->clear();
-    ui->overviewTabScrollArea->verticalScrollBar()->setValue(0);
-    while (!ui->extrasTabScrollAreaContentsLayout->isEmpty())
-    {
-        auto item = ui->extrasTabScrollAreaContentsLayout->itemAt(0);
-        ui->extrasTabScrollAreaContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-}
-
 void OwnedGamePage::initialize(const QVariant &data)
 {
     auto networkReply = apiClient->getOwnedProductInfo(data.toLongLong(), "en-US");
@@ -158,6 +141,11 @@ void OwnedGamePage::initialize(const QVariant &data)
             networkReply->deleteLater();
         }
     });
+}
+
+void OwnedGamePage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void OwnedGamePage::on_expandDescriptionButton_clicked()

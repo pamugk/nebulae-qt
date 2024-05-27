@@ -87,103 +87,6 @@ void CatalogProductPage::setApiClient(api::GogApiClient *apiClient)
     this->apiClient = apiClient;
 }
 
-void CatalogProductPage::clear()
-{
-    ui->contentStack->setCurrentWidget(ui->loaderPage);
-
-    ui->starLabel->setVisible(false);
-    ui->ratingLabel->setVisible(false);
-
-    ui->discountLabel->setVisible(false);
-    ui->oldPriceLabel->setVisible(false);
-    ui->pricelabel->setVisible(false);
-
-    ui->mainPageScrollArea->verticalScrollBar()->setValue(0);
-    ui->mediaScrollArea->horizontalScrollBar()->setValue(0);
-    ui->descriptionView->setUrl(QUrl("about:blank"));
-    ui->editionsComboBox->clear();
-
-    ui->windowsLabel->setVisible(false);
-    ui->macOsLabel->setVisible(false);
-    ui->linuxLabel->setVisible(false);
-
-    while (!ui->mediaScrollAreaContentsLayout->isEmpty())
-    {
-        auto item = ui->mediaScrollAreaContentsLayout->itemAt(0);
-        ui->mediaScrollAreaContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    while (!ui->gameFeaturesLayout->isEmpty())
-    {
-        auto item = ui->gameFeaturesLayout->itemAt(0);
-        ui->gameFeaturesLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->languagesLayout->isEmpty())
-    {
-        auto item = ui->languagesLayout->itemAt(0);
-        ui->languagesLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    while (!ui->productGoodiesSection->layout()->isEmpty())
-    {
-        auto item = ui->productGoodiesSection->layout()->itemAt(0);
-        ui->productGoodiesSection->layout()->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->goodiesComparisonSectionGrid->isEmpty())
-    {
-        auto item = ui->goodiesComparisonSectionGrid->itemAt(0);
-        ui->goodiesComparisonSectionGrid->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->windowsTab), false);
-    while (!ui->windowsTabLayout->isEmpty())
-    {
-        auto item = ui->windowsTabLayout->itemAt(0);
-        ui->windowsTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->macOsTab), false);
-    while (!ui->macOsTabLayout->isEmpty())
-    {
-        auto item = ui->macOsTabLayout->itemAt(0);
-        ui->macOsTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->linuxTab), false);
-    while (!ui->linuxTabLayout->isEmpty())
-    {
-        auto item = ui->linuxTabLayout->itemAt(0);
-        ui->linuxTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->additonalRequirementsLabel->clear();
-
-    ui->userReviewsLabel->setVisible(false);
-    ui->userReviewsHeader->setVisible(false);
-    ui->ownersRatingLabel->setVisible(false);
-    ui->userReviewsStackedWidget->setVisible(false);
-    while (!ui->userReviewsContentsLayout->isEmpty())
-    {
-        auto item = ui->userReviewsContentsLayout->itemAt(0);
-        ui->userReviewsContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-}
-
 void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const api::SupportedOperatingSystem data)
 {
     int column = 0;
@@ -448,7 +351,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         {
                             if (checked)
                             {
-                                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, editionId});
+                                emit navigate({Page::CATALOG_PRODUCT_PAGE, editionId});
                             }
                         });
                     }
@@ -619,6 +522,12 @@ void CatalogProductPage::initialize(const QVariant &initialData)
     });
 }
 
+void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->cartButton->setVisible(authenticated);
+    ui->wishlistButton->setVisible(authenticated);
+}
+
 void CatalogProductPage::on_acceptContentWarningButton_clicked()
 {
     ui->contentStack->setCurrentWidget(ui->mainPage);
@@ -627,7 +536,7 @@ void CatalogProductPage::on_acceptContentWarningButton_clicked()
 
 void CatalogProductPage::on_goBackButton_clicked()
 {
-    emit navigateToDestination({Page::ALL_GAMES, QVariant()});
+    emit navigateBack();
 }
 
 void CatalogProductPage::descriptionViewContentsSizeChanged(const QSizeF &size)

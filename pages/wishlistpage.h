@@ -31,8 +31,8 @@ private:
     void fetchData();
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void onSearchTextChanged(const QString &arg1);
     void onCurrentOrderChanged(int index);

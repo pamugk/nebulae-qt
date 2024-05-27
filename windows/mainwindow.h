@@ -21,10 +21,11 @@ public:
     MainWindow(api::GogApiClient *, SettingsManager *settingsManager, QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
-    void setDestination(NavigationDestination destination);
-
 private slots:
+    void navigate(NavigationDestination destination);
+    void navigateBack();
+    void navigateForward();
+
     void on_discoverButton_clicked();
 
     void on_recentButton_clicked();
@@ -47,6 +48,10 @@ private slots:
 
     void on_actionButton_clicked();
 
+    void on_navigateBackButton_clicked();
+
+    void on_navigateForwardButton_clicked();
+
 private:
     api::GogApiClient *apiClient;
     QStack<NavigationDestination> navigationHistory;
@@ -55,6 +60,7 @@ private:
 
     Ui::MainWindow *ui;
 
-    void navigate(Page newPage, const QVariant &data = QVariant());
+    QWidget *initializePage(const NavigationDestination &destination);
+    void switchUiAuthenticatedState(bool authenticated);
 };
 #endif // MAINWINDOW_H
