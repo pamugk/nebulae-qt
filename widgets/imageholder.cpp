@@ -17,14 +17,15 @@ ImageHolder::ImageHolder(QSize size,
     }
     imageReply = apiClient->getAnything(url);
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        if (imageReply->error() == QNetworkReply::NoError)
+        auto networkReply = imageReply;
+        imageReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(imageReply->readAll());
+            image.loadFromData(networkReply->readAll());
             ui->imageLabel->setPixmap(image.scaled(ui->imageLabel->size()));
         }
-        imageReply->deleteLater();
-        imageReply = nullptr;
+        networkReply->deleteLater();
     });
 }
 
@@ -32,7 +33,7 @@ ImageHolder::~ImageHolder()
 {
     if (imageReply != nullptr)
     {
-        imageReply->deleteLater();
+        imageReply->abort();
     }
     delete ui;
 }

@@ -18,14 +18,15 @@ OwnedProductGridItem::OwnedProductGridItem(const api::OwnedProduct &data,
 
     imageReply = apiClient->getAnything(QString("https:%1_glx_logo_2x.png").arg(data.image));
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        if (imageReply->error() == QNetworkReply::NoError)
+        auto networkReply = imageReply;
+        imageReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(imageReply->readAll());
+            image.loadFromData(networkReply->readAll());
             ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size()));
         }
-        imageReply->deleteLater();
-        imageReply = nullptr;
+        networkReply->deleteLater();
     });
 
     itemId = data.id;
@@ -35,7 +36,7 @@ OwnedProductGridItem::~OwnedProductGridItem()
 {
     if (imageReply != nullptr)
     {
-        imageReply->deleteLater();
+        imageReply->abort();
     }
     delete ui;
 }

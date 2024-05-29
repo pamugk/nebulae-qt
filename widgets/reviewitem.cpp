@@ -28,14 +28,15 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
     ui->userLayout->setAlignment(Qt::AlignTop);
     avatarReply = apiClient->getAnything(data.reviewer.avatar["medium_2x"]);
     connect(avatarReply, &QNetworkReply::finished, this, [this]() {
-        if (avatarReply->error() == QNetworkReply::NoError)
+        auto networkReply = avatarReply;
+        avatarReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(avatarReply->readAll());
+            image.loadFromData(networkReply->readAll());
             ui->userAvatarLabel->setPixmap(image.scaled(ui->userAvatarLabel->size()));
         }
-        avatarReply->deleteLater();
-        avatarReply = nullptr;
+        networkReply->deleteLater();
     });
     ui->userNameLabel->setText(data.reviewer.username);
     ui->userGamesLabel->setText("Games: " + QString::number(data.reviewer.counters.games));
@@ -46,7 +47,7 @@ ReviewItem::~ReviewItem()
 {
     if (avatarReply != nullptr)
     {
-        avatarReply->deleteLater();
+        avatarReply->abort();
     }
     delete ui;
 }

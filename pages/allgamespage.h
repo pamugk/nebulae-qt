@@ -32,6 +32,8 @@ private:
     Pagination *paginator;
     Ui::AllGamesPage *ui;
 
+    QNetworkReply *lastCatalogReply;
+
     void fetchData();
     void layoutResults();
 

@@ -19,6 +19,7 @@
 
 AllGamesPage::AllGamesPage(QWidget *parent) :
     BasePage(parent),
+    lastCatalogReply(nullptr),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);
@@ -60,6 +61,10 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
 
 AllGamesPage::~AllGamesPage()
 {
+    if (lastCatalogReply != nullptr)
+    {
+        lastCatalogReply->abort();
+    }
     delete ui;
 }
 
@@ -88,8 +93,15 @@ void AllGamesPage::fetchData()
         delete item;
     }
 
-    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
-    connect(networkReply, &QNetworkReply::finished, this, [=](){
+    if (lastCatalogReply != nullptr)
+    {
+        lastCatalogReply->abort();
+    }
+    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
+    connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
+        auto networkReply = lastCatalogReply;
+        lastCatalogReply = nullptr;
+
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -107,18 +119,13 @@ void AllGamesPage::fetchData()
                 paginator->changePages(page, data.pages);
                 layoutResults();
             }
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {   ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+        }
 
-            networkReply->deleteLater();
-        }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
-        {
-            ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << error << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
-            networkReply->deleteLater();
-        }
+        networkReply->deleteLater();
     });
 }
 
