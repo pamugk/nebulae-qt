@@ -123,7 +123,7 @@
          </property>
         </widget>
        </item>
-       <item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QPushButton" name="acceptContentWarningButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -144,7 +144,7 @@
          </property>
         </widget>
        </item>
-       <item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QPushButton" name="goBackButton">
          <property name="font">
           <font>
@@ -188,9 +188,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>428</width>
-            <height>1365</height>
+            <y>-344</y>
+            <width>767</width>
+            <height>1364</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -572,7 +572,7 @@ padding: 16px 20px 24px 20px;</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>428</width>
+                <width>767</width>
                 <height>190</height>
                </rect>
               </property>
@@ -620,6 +620,9 @@ padding: 16px 20px 24px 20px;</string>
                <width>0</width>
                <height>80</height>
               </size>
+             </property>
+             <property name="acceptDrops">
+              <bool>false</bool>
              </property>
              <property name="url">
               <url>
@@ -685,7 +688,7 @@ padding: 16px 20px 24px 20px;</string>
                <item row="1" column="1">
                 <layout class="QVBoxLayout" name="userReviewsFiltersLayout"/>
                </item>
-               <item row="0" column="0">
+               <item row="0" column="0" alignment="Qt::AlignmentFlag::AlignRight">
                 <widget class="QWidget" name="userReviewsPagination" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -697,19 +700,6 @@ padding: 16px 20px 24px 20px;</string>
                   <property name="spacing">
                    <number>10</number>
                   </property>
-                  <item>
-                   <spacer name="userReviewsPaginationLayoutSpacer">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
                   <item>
                    <widget class="QLabel" name="userReviewsPageSizeLabel">
                     <property name="text">
@@ -1008,7 +998,7 @@ padding: 16px 20px 24px 20px;</string>
              </property>
             </widget>
            </item>
-           <item row="7" column="2" rowspan="9">
+           <item row="7" column="2" rowspan="9" alignment="Qt::AlignmentFlag::AlignTop">
             <widget class="QWidget" name="gameDetails" native="true">
              <layout class="QGridLayout" name="gameDetailsLayout">
               <item row="3" column="0">
