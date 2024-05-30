@@ -154,7 +154,7 @@ void OwnedGamesPage::updateData()
             }
             else
             {
-                foreach (api::OwnedProduct item, data.products)
+                for (const api::OwnedProduct &item : std::as_const(data.products))
                 {
                     auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
                     auto productId = item.id;

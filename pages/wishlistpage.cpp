@@ -70,7 +70,7 @@ void WishlistPage::fetchData()
             }
             else
             {
-                foreach (api::Product product, data.products)
+                for (const api::Product &product : std::as_const(data.products))
                 {
                     auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
                     connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)

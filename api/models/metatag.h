@@ -1,8 +1,6 @@
 #ifndef METATAG_H
 #define METATAG_H
 
-#include <QtGlobal>
-
 #include <QString>
 
 namespace api
@@ -15,7 +13,7 @@ namespace api
 
     struct HierarchicalMetaTag: public MetaTag
     {
-        quint8 level;
+        unsigned char level;
     };
 }
 

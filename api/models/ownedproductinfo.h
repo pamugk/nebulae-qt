@@ -1,8 +1,6 @@
 #ifndef OWNEDPRODUCTINFO_H
 #define OWNEDPRODUCTINFO_H
 
-#include <QtGlobal>
-
 #include <QDateTime>
 #include <QMap>
 #include <QString>
@@ -13,7 +11,7 @@ namespace api
     struct DownloadFile
     {
         QString id;
-        quint32 size;
+        unsigned int size;
         QString downloadLink;
     };
 
@@ -21,14 +19,14 @@ namespace api
     {
         QString id;
         QString name;
-        quint32 totalSize;
+        unsigned int totalSize;
         QVector<DownloadFile> files;
     };
 
     struct BonusDownload: Download
     {
         QString type;
-        quint8 count;
+        unsigned char count;
     };
 
     struct GameDownload: Download
@@ -49,7 +47,7 @@ namespace api
 
     struct ProductInfo
     {
-        quint64 id;
+        unsigned long long id;
         QString slug;
         QString title;
         QMap<QString, QString> languages;

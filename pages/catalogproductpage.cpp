@@ -242,12 +242,12 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
-                foreach (api::ThumbnailedVideo video, data.videos)
+                for (const api::ThumbnailedVideo &video : std::as_const(data.videos))
                 {
                     auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
                 }
-                foreach (api::FormattedLink screenshotLink, data.screenshots)
+                for (const api::FormattedLink &screenshotLink : std::as_const(data.screenshots))
                 {
                     auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
@@ -322,7 +322,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     ui->goodiesStackWidget->setVisible(true);
                     ui->goodiesStackWidget->setCurrentWidget(ui->productGoodiesSection);
 
-                    foreach (api::Bonus bonus, data.bonuses)
+                    for (const api::Bonus &bonus : std::as_const(data.bonuses))
                     {
                         ui->productGoodiesSection->layout()->addWidget(
                                     new BonusItem(bonus, ui->productGoodiesSection));
@@ -473,9 +473,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->contentRatingInfoLabel->clear();
                 ui->contentRatingIconLabel->clear();
             }
-            for (int i = 0; i < data.features.count(); i++)
+            for (const api::MetaTag &feature : std::as_const(data.features))
             {
-                ui->gameFeaturesLayout->addWidget(new FeatureItem(data.features[i], ui->gameDetails));
+                ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
             }
 
             QLocale systemLocale = QLocale::system();
@@ -567,7 +567,7 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsHeader->setVisible(data.reviewable);
             ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
             ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            foreach (api::Review review, data.items)
+            for (const api::Review &review : std::as_const(data.items))
             {
                 auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
                                                  apiClient,

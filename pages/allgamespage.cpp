@@ -136,7 +136,7 @@ void AllGamesPage::layoutResults()
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     if (gridLayout)
     {
-        foreach (api::CatalogProduct product, data.products)
+        for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
@@ -149,7 +149,7 @@ void AllGamesPage::layoutResults()
     }
     else
     {
-        foreach (api::CatalogProduct product, data.products)
+        for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
@@ -223,7 +223,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.releaseStatuses)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.releaseStatuses))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.releaseStatuses.contains(item.slug));
@@ -266,7 +266,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.genres)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.genres))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.genres.contains(item.slug));
@@ -309,7 +309,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.tags)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.tags))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.tags.contains(item.slug));
@@ -353,7 +353,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.systems.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.systems)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.systems))
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.systems.contains(item.slug));
@@ -381,7 +381,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.features)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.features))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.features.contains(item.slug));
@@ -427,7 +427,7 @@ void AllGamesPage::initialize(const QVariant &data)
             area->setChangedFilters(filter.languages.count());
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.languages)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.languages))
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.languages.contains(item.slug));

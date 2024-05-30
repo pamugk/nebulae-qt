@@ -1,8 +1,6 @@
 #ifndef OWNEDPRODUCT_H
 #define OWNEDPRODUCT_H
 
-#include <QtGlobal>
-
 #include <QString>
 
 #include "./productshared.h"
@@ -23,31 +21,31 @@ namespace api
         bool isNew;
         Availability availability;
         PlatformAvailability worksOn;
-        quint8 rating;
+        unsigned char rating;
 
-        quint64 id;
+        unsigned long long id;
         QVector<QString> tags;
         QString title;
         QString image;
         QString url;
         QString category;
         QString slug;
-        quint32 updates;
-        quint32 dlcCount;
+        unsigned int updates;
+        unsigned int dlcCount;
         ZonedDateTime releaseDate;
     };
 
     struct GetOwnedProductsResponse
     {
-        quint16 moviesCount;
-        quint16 productsPerPage;
-        quint16 page;
-        quint16 totalPages;
-        quint32 totalProducts;
+        unsigned short moviesCount;
+        unsigned short productsPerPage;
+        unsigned short page;
+        unsigned short totalPages;
+        unsigned int totalProducts;
         QVector<Tag> tags;
         QVector<OwnedProduct> products;
-        quint32 updatedProductsCount;
-        quint32 hiddenUpdatedProductsCount;
+        unsigned int updatedProductsCount;
+        unsigned int hiddenUpdatedProductsCount;
         bool hasHiddenProducts;
     };
 }

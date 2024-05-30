@@ -1,8 +1,6 @@
 #ifndef PRODUCTSHARED_H
 #define PRODUCTSHARED_H
 
-#include <QtGlobal>
-
 #include <QDateTime>
 #include <QString>
 
@@ -24,7 +22,7 @@ namespace api
     struct ZonedDateTime
     {
         QDateTime date;
-        quint8 timezoneType;
+        signed char timezoneType;
         QString timezone;
     };
 }

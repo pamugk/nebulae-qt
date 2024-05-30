@@ -1,8 +1,6 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
-#include <QtGlobal>
-
 #include <QDateTime>
 #include <QMap>
 #include <QVector>
@@ -27,9 +25,9 @@ namespace api
 
     struct GetAchievementsResponse
     {
-        quint32 totalCount;
-        quint32 limit;
-        quint32 pageToken;
+        unsigned int totalCount;
+        unsigned int limit;
+        unsigned int pageToken;
         bool hasNextPage;
         QString achievementsMode;
         QVector<Achievement> items;
@@ -37,7 +35,7 @@ namespace api
 
     struct GetPlaySessionsResponse
     {
-        quint32 totalSum;
+        unsigned int totalSum;
         QMap<quint64, quint32> gameTime;
     };
 }

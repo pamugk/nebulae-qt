@@ -92,14 +92,14 @@ QNetworkReply *api::GogApiClient::getAnything(const QString &url)
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getCatalogProductInfo(quint64 id, const QString &locale)
+QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, const QString &locale)
 {
     QVariantMap parameters;
     parameters["locale"] = locale;
     return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, quint16 page)
+QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;
     parameters["canceled"] = filter.cancelled ? "1" : "0";
@@ -116,7 +116,7 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, qu
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getOwnedProductInfo(quint64 id, const QString &locale)
+QNetworkReply *api::GogApiClient::getOwnedProductInfo(unsigned long long id, const QString &locale)
 {
     QVariantMap parameters;
     parameters["expand"] = "downloads,expanded_dlcs,description,screenshots,videos,related_products,changelog";
@@ -124,7 +124,7 @@ QNetworkReply *api::GogApiClient::getOwnedProductInfo(quint64 id, const QString 
     return client.get(QUrl("https://api.gog.com/products/" + QString::number(id)), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, quint16 page)
+QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, unsigned short page)
 {
     QVariantMap parameters;
     parameters["hiddenFlag"] = "0";
@@ -143,12 +143,12 @@ QNetworkReply *api::GogApiClient::getPlayTime()
     return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg("")));
 }
 
-QNetworkReply *api::GogApiClient::getProductAchievements(quint64 productId)
+QNetworkReply *api::GogApiClient::getProductAchievements(unsigned long long productId)
 {
     return client.get(QUrl(QString("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(QString::number(productId), "")));
 }
 
-QNetworkReply *api::GogApiClient::getProductAverageRating(quint64 productId, const QString &reviewer)
+QNetworkReply *api::GogApiClient::getProductAverageRating(unsigned long long productId, const QString &reviewer)
 {
     QVariantMap parameters;
     if (!reviewer.isEmpty())
@@ -158,17 +158,45 @@ QNetworkReply *api::GogApiClient::getProductAverageRating(quint64 productId, con
     return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/averageRating").arg(QString::number(productId))), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getProductPrices(quint64 productId, const QString &countryCode)
+QNetworkReply *api::GogApiClient::getProductPrices(unsigned long long productId, const QString &countryCode)
 {
     QVariantMap parameters;
     parameters["countryCode"] = countryCode;
     return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(QString::number(productId))), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getProductReviews(quint64 productId,
+QNetworkReply *api::GogApiClient::getProducRecommendationsPurchasedTogether(unsigned long long productId,
+                                                                            const QString &countryCode,
+                                                                            const QString &currency,
+                                                                            unsigned char limit)
+{
+    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(QString::number(productId)));
+    url.setQuery(QUrlQuery({
+                               std::pair("country_code", countryCode),
+                               std::pair("currency", currency),
+                               std::pair("limit", QString::number(limit)),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getProducRecommendationsSimilar(unsigned long long productId,
+                                                                  const QString &countryCode,
+                                                                  const QString &currency,
+                                                                  unsigned char limit)
+{
+    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(QString::number(productId)));
+    url.setQuery(QUrlQuery({
+                               std::pair("country_code", countryCode),
+                               std::pair("currency", currency),
+                               std::pair("limit", QString::number(limit)),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getProductReviews(unsigned long long productId,
                                                     const QStringList &languages,
                                                     const SortOrder &order,
-                                                    quint16 limit, quint16 page)
+                                                    unsigned short limit, unsigned short page)
 {
     QVariantMap parameters;
     if (!languages.isEmpty())
@@ -181,7 +209,7 @@ QNetworkReply *api::GogApiClient::getProductReviews(quint64 productId,
     return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId))), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, quint16 page)
+QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
 {
     QVariantMap parameters;
     parameters["hiddenFlag"] = "0";
@@ -196,11 +224,11 @@ QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QStrin
 }
 
 QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
-                                           const CatalogFilter &filter,
-                                           QString countryCode,
-                                           QString locale,
-                                           QString currencyCode,
-                                           quint16 page, quint32 limit)
+                                                const CatalogFilter &filter,
+                                                QString countryCode,
+                                                QString locale,
+                                                QString currencyCode,
+                                                unsigned short page, unsigned int limit)
 {
     QUrlQuery query;
     query.addQueryItem("limit", QString::number(limit));

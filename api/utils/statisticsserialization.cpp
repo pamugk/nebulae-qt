@@ -39,7 +39,7 @@ void parseGetSessionsResponse(const QJsonObject &json, api::GetPlaySessionsRespo
 {
     data.totalSum = json["total_sum"].toInt();
     auto gameTime = json["game_time"].toArray();
-    foreach (const QJsonValue &item, gameTime)
+    for (const QJsonValue &item : std::as_const(gameTime))
     {
         data.gameTime[item["game_id"].toInteger()] = item["time_sum"].toInt();
     }

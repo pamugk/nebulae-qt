@@ -1,8 +1,6 @@
 #ifndef CATALOGPRODUCTINFO_H
 #define CATALOGPRODUCTINFO_H
 
-#include <QtGlobal>
-
 #include <QDateTime>
 #include <QMap>
 #include <QSet>
@@ -16,14 +14,14 @@ namespace api
 {
     struct Bonus
     {
-        quint64 id;
+        unsigned long long id;
         QString name;
         MetaTag type;
     };
 
     struct Edition
     {
-        quint64 id;
+        unsigned long long id;
         QString name;
         QString link;
         bool hasProductCard;
@@ -33,7 +31,7 @@ namespace api
 
     struct ContentRating
     {
-        quint8 ageRating;
+        unsigned char ageRating;
         QString category;
         QStringList contentDescriptors;
     };
@@ -88,13 +86,13 @@ namespace api
 
     struct Series
     {
-        quint64 id;
+        unsigned long long id;
         QString name;
     };
 
     struct GetCatalogProductInfoResponse
     {
-        quint64 id;
+        unsigned long long id;
         QDateTime globalReleaseDate;
         QDateTime gogReleaseDate;
         QMap<QString, ContentRating> ratings;
@@ -132,7 +130,7 @@ namespace api
         QVector<Edition> editions;
         Series series;
         FormattedLink imageLink;
-        quint32 size;
+        unsigned int size;
 
         bool inDevelopment;
         bool usingDosBox;

@@ -13,7 +13,7 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
     ui->titleLabel->setText(data.contentTitle);
     QStringList subheader;
     subheader.append(data.date.toString("MMMM, d yyyy"));
-    foreach (const QString &label, data.labels)
+    for (const QString &label : std::as_const(data.labels))
     {
         if (label == "verified_owner")
         {

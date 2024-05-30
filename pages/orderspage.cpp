@@ -129,7 +129,7 @@ void OrdersPage::fetchData()
             }
             else
             {
-                foreach (api::Order item, data.orders)
+                for (const api::Order &item : std::as_const(data.orders))
                 {
                     ui->resultsScrollContentsLayout->addWidget(new OrderGroup(item, apiClient, ui->resultsScrollContents));
                 }

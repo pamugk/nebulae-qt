@@ -31,6 +31,7 @@ set(PROJECT_SOURCES
         api/models/price.h
         api/models/product.h
         api/models/productshared.h
+        api/models/recommendation.h
         api/models/review.h
         api/models/sort.h
         api/models/statistics.h
@@ -44,6 +45,7 @@ set(PROJECT_SOURCES
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
+        api/utils/recommendationserialization.h api/utils/recommendationserialization.cpp
         api/utils/reviewserialization.h api/utils/reviewserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp

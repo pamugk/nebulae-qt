@@ -60,50 +60,50 @@ void OwnedGamePage::initialize(const QVariant &data)
             ui->changelogTextBrowser->setHtml(data.changelog);
 
             bool showDownloads = false;
-            QVector<api::BonusDownload*> goodies;
-            for(int i = 0; i < data.mainProductInfo.downloads.bonusContent.count(); i++)
+            QVector<const api::BonusDownload *> goodies;
+            for (const api::BonusDownload &bonusDownload : std::as_const(data.mainProductInfo.downloads.bonusContent))
             {
-                goodies.append(&data.mainProductInfo.downloads.bonusContent[i]);
+                goodies.append(&bonusDownload);
             }
-            QVector<api::GameDownload*> installers;
-            for(int i = 0; i < data.mainProductInfo.downloads.installers.count(); i++)
+            QVector<const api::GameDownload *> installers;
+            for (const api::GameDownload &installerDownload : std::as_const(data.mainProductInfo.downloads.installers))
             {
-                installers.append(&data.mainProductInfo.downloads.installers[i]);
+                installers.append(&installerDownload);
             }
-            QVector<api::GameDownload*> patches;
-            for(int i = 0; i < data.mainProductInfo.downloads.patches.count(); i++)
+            QVector<const api::GameDownload *> patches;
+            for (const api::GameDownload &patchDownload : std::as_const(data.mainProductInfo.downloads.patches))
             {
-                patches.append(&data.mainProductInfo.downloads.patches[i]);
+                patches.append(&patchDownload);
             }
-            QVector<api::GameDownload*> languagePacks;
-            for(int i = 0; i < data.mainProductInfo.downloads.languagePacks.count(); i++)
+            QVector<const api::GameDownload *> languagePacks;
+            for (const api::GameDownload &languagePackDownload : std::as_const(data.mainProductInfo.downloads.languagePacks))
             {
-                languagePacks.append(&data.mainProductInfo.downloads.languagePacks[i]);
+                languagePacks.append(&languagePackDownload);
             }
-            for (int i = 0; i < data.expandedDlcs.count(); i++)
+            for (const api::ProductInfo &dlc : std::as_const(data.expandedDlcs))
             {
-                for(int j = 0; j < data.expandedDlcs[i].downloads.bonusContent.count(); j++)
+                for (const api::BonusDownload &bonusDownload : std::as_const(dlc.downloads.bonusContent))
                 {
-                    goodies.append(&data.expandedDlcs[i].downloads.bonusContent[j]);
+                    goodies.append(&bonusDownload);
                 }
-                for(int j = 0; j < data.expandedDlcs[i].downloads.installers.count(); j++)
+                for (const api::GameDownload &installerDownload: std::as_const(dlc.downloads.installers))
                 {
-                    installers.append(&data.expandedDlcs[i].downloads.installers[j]);
+                    installers.append(&installerDownload);
                 }
-                for(int j = 0; j < data.expandedDlcs[i].downloads.patches.count(); j++)
+                for (const api::GameDownload &patchDownload : std::as_const(dlc.downloads.patches))
                 {
-                    patches.append(&data.expandedDlcs[i].downloads.patches[j]);
+                    patches.append(&patchDownload);
                 }
-                for(int j = 0; j < data.expandedDlcs[i].downloads.languagePacks.count(); j++)
+                for (const api::GameDownload &languagePackDownload : std::as_const(dlc.downloads.languagePacks))
                 {
-                    languagePacks.append(&data.expandedDlcs[i].downloads.languagePacks[j]);
+                    languagePacks.append(&languagePackDownload);
                 }
             }
 
             if (!goodies.isEmpty())
             {
                 ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel("Goodies", ui->extrasTab));
-                foreach (api::Download *item, goodies)
+                for (const api::Download *item : std::as_const(goodies))
                 {
                     ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
@@ -112,15 +112,15 @@ void OwnedGamePage::initialize(const QVariant &data)
             if (!installers.isEmpty())
             {
                 ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel("Offline backup installers", ui->extrasTab));
-                foreach (api::Download *item, installers)
+                for (const api::Download *item : std::as_const(installers))
                 {
                     ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
-                foreach (api::Download *item, languagePacks)
+                for (const api::Download *item : std::as_const(languagePacks))
                 {
                     ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
-                foreach (api::Download *item, patches)
+                for (const api::Download *item : std::as_const(patches))
                 {
                     ui->extrasTabScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->extrasTab));
                 }
