@@ -134,7 +134,7 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.title = json["title"].toString();
     data.slug = json["slug"].toString();
     auto languages = json["languages"].toVariant().toMap();
-    for (auto [language, value] : languages.asKeyValueRange())
+    for (const auto& [language, value] : languages.asKeyValueRange())
     {
         data.languages[language] = value.toString();
     }
@@ -153,7 +153,7 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.preOrder = json["is_pre_order"].toBool();
     data.releaseDate = QDateTime::fromString(json["release_date"].toString(), Qt::ISODate);
     auto images = json["images"].toVariant().toMap();
-    for (auto [image, value] : images.asKeyValueRange())
+    for (const auto &[image, value] : images.asKeyValueRange())
     {
         data.images[image] = value.toString();
     }

@@ -23,7 +23,7 @@ public:
 private:
     api::GogApiClient *apiClient;
     api::OrderFilter filter;
-    quint16 page;
+    unsigned short page;
     Pagination *paginator;
     Ui::OrdersPage *ui;
 

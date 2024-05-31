@@ -165,7 +165,7 @@ QNetworkReply *api::GogApiClient::getProductPrices(unsigned long long productId,
     return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(QString::number(productId))), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getProducRecommendationsPurchasedTogether(unsigned long long productId,
+QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(unsigned long long productId,
                                                                             const QString &countryCode,
                                                                             const QString &currency,
                                                                             unsigned char limit)
@@ -179,7 +179,7 @@ QNetworkReply *api::GogApiClient::getProducRecommendationsPurchasedTogether(unsi
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getProducRecommendationsSimilar(unsigned long long productId,
+QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(unsigned long long productId,
                                                                   const QString &countryCode,
                                                                   const QString &currency,
                                                                   unsigned char limit)

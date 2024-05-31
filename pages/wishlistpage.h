@@ -23,8 +23,8 @@ private:
     api::GogApiClient *apiClient;
     QString query;
     QVector<QString> orders;
-    quint8 currentOrder;
-    quint16 page;
+    unsigned char currentOrder;
+    unsigned short page;
     Pagination *paginator;
     Ui::WishlistPage *ui;
 

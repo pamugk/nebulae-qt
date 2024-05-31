@@ -22,7 +22,7 @@ public slots:
     virtual void switchUiAuthenticatedState(bool authenticated) override;
 
 signals:
-    void userReviewsResultsUpdated(quint16 page, quint16 totalPages);
+    void userReviewsResultsUpdated(unsigned short page, unsigned short totalPages);
 
 private slots:
     void on_acceptContentWarningButton_clicked();
@@ -33,7 +33,7 @@ private slots:
 
     void updateUserReviews();
 
-    void changeUserReviewsPage(quint16 page);
+    void changeUserReviewsPage(unsigned short page);
 
     void on_userReviewsPageSizeComboBox_currentIndexChanged(int index);
 
@@ -41,11 +41,19 @@ private slots:
 
 private:
     api::GogApiClient *apiClient;
-    quint64 id;
+    unsigned long long id;
     Ui::CatalogProductPage *ui;
 
-    quint16 reviewsPage;
-    quint16 reviewsPageSize;
+    QNetworkReply *averageRatingReply;
+    QNetworkReply *averageOwnerRatingReply;
+    QNetworkReply *lastReviewsReply;
+    QNetworkReply *mainReply;
+    QNetworkReply *pricesReply;
+    QNetworkReply *recommendedPurchasedTogetherReply;
+    QNetworkReply *recommendedSimilarReply;
+
+    unsigned short reviewsPage;
+    unsigned short reviewsPageSize;
     api::SortOrder reviewsOrder;
 };
 

@@ -5,6 +5,6 @@
 
 #include "../models/recommendation.h"
 
-void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetRecommendationsResponse &data);
+void parseRecommendationsResponse(const QJsonObject &json, api::GetRecommendationsResponse &data);
 
 #endif // RECOMMENDATIONSERIALIZATION_H

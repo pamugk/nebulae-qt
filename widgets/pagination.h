@@ -17,10 +17,10 @@ public:
     ~Pagination();
 
 signals:
-    void changedPage(quint16 newPage);
+    void changedPage(unsigned short newPage);
 
 public slots:
-    void changePages(quint16 page, quint16 totalPages);
+    void changePages(unsigned short page, unsigned short totalPages);
 
 private slots:
     void on_firstPageButton_clicked();

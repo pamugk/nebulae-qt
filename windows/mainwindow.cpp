@@ -106,8 +106,9 @@ void MainWindow::updateCheckedDrawerDestination(Page currentPage)
 {
     ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
     ui->recentButton->setChecked(currentPage == Page::RECENT);
-    ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::CATALOG_PRODUCT_PAGE);
+    ui->storeButton->setChecked(currentPage == Page::STORE);
     ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
+    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES || currentPage == Page::CATALOG_PRODUCT_PAGE);
     ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
     ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES || currentPage == Page::OWNED_PRODUCT_PAGE);
     ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
@@ -116,7 +117,7 @@ void MainWindow::updateCheckedDrawerDestination(Page currentPage)
 
 void MainWindow::navigate(NavigationDestination destination)
 {
-    if (navigationHistory.top().page != destination.page)
+    if (navigationHistory.top() != destination)
     {
         QWidget *nextPage = initializePage(destination);
         QWidget *previousPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();

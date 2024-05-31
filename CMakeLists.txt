@@ -75,6 +75,7 @@ set(PROJECT_SOURCES
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
+        widgets/recommendationitem.h widgets/recommendationitem.cpp widgets/recommendationitem.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui

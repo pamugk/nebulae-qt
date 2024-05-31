@@ -28,7 +28,7 @@ private:
     QVector<api::SortOrder> orders;
     api::CatalogFilter filter;
     bool gridLayout;
-    quint16 page;
+    unsigned short page;
     Pagination *paginator;
     Ui::AllGamesPage *ui;
 

@@ -53,8 +53,8 @@ void Pagination::changePages(quint16 page, quint16 totalPages)
         pages[6] = totalPages;
         pages[7] = page + 1;
 
-        quint8 j = 1;
-        for (qint32 i = std::max(std::min(page - 2, totalPages - 5), 2); i < std::min(std::max(page + 3, 7), static_cast<qint32>(totalPages)) && j < 6; i++, j++)
+        unsigned char j = 1;
+        for (int i = std::max(std::min(page - 2, totalPages - 5), 2); i < std::min(std::max(page + 3, 7), static_cast<int>(totalPages)) && j < 6; i++, j++)
         {
             pages[j] = i;
         }

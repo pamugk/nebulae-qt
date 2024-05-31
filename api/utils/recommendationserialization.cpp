@@ -11,7 +11,7 @@ void parseRecommendation(const QJsonObject &json, api::Recommendation &data)
     data.details.title = details["title"].toString();
     data.details.available = details["is_available"].toBool();
     data.details.imageUrl = details["image_url"].toString();
-    data.details.imageHorizontalUrl = details["image_horizontal_url"].toString();
+    data.details.imageHorizontalUrl = details["image_horizontal_url"].toString().replace("_product_630.png", "_product_tile_256.png");
     data.details.storeUrl = details["store_url"].toString();
     data.details.feedback = details["feedback"].toDouble();
 
@@ -26,7 +26,7 @@ void parseRecommendation(const QJsonObject &json, api::Recommendation &data)
 
 }
 
-void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetRecommendationsResponse &data)
+void parseRecommendationsResponse(const QJsonObject &json, api::GetRecommendationsResponse &data)
 {
     data.context = json["context"].toString();
     data.requestId = json["request_id"].toString();

@@ -32,11 +32,11 @@ namespace api
         QNetworkReply *getProductAchievements(unsigned long long productId);
         QNetworkReply *getProductAverageRating(unsigned long long productId, const QString &reviewer = QString());
         QNetworkReply *getProductPrices(unsigned long long productId, const QString &countryCode);
-        QNetworkReply *getProducRecommendationsPurchasedTogether(unsigned long long productId,
+        QNetworkReply *getProductRecommendationsPurchasedTogether(unsigned long long productId,
                                                                  const QString &countryCode,
                                                                  const QString &currency,
                                                                  unsigned char limit = 8);
-        QNetworkReply *getProducRecommendationsSimilar(unsigned long long productId,
+        QNetworkReply *getProductRecommendationsSimilar(unsigned long long productId,
                                                        const QString &countryCode,
                                                        const QString &currency,
                                                        unsigned char limit = 8);
