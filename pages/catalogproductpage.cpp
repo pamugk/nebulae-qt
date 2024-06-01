@@ -13,6 +13,7 @@
 #include "../api/utils/priceserialization.h"
 #include "../api/utils/recommendationserialization.h"
 #include "../api/utils/reviewserialization.h"
+#include "../api/utils/seriesgameserialization.h"
 
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
@@ -20,8 +21,8 @@
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
 #include "../widgets/pagination.h"
-#include "../widgets/recommendationitem.h"
 #include "../widgets/reviewitem.h"
+#include "../widgets/simpleproductitem.h"
 #include "../widgets/videoholder.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
@@ -33,6 +34,8 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     pricesReply(nullptr),
     recommendedPurchasedTogetherReply(nullptr),
     recommendedSimilarReply(nullptr),
+    seriesGamesReply(nullptr),
+    seriesTotalPriceReply(nullptr),
     ui(new Ui::CatalogProductPage)
 {
     ui->setupUi(this);
@@ -65,6 +68,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->linuxTab), false);
     ui->linuxTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
+    ui->seriesResultPage->setLayout(new FlowLayout(ui->seriesResultPage, -1, 24, 24));
     ui->similarProductsResultPage->setLayout(new FlowLayout(ui->similarProductsResultPage, -1, 24, 24));
     ui->purchasedTogetherResultPage->setLayout(new FlowLayout(ui->purchasedTogetherResultPage, -1, 24, 24));
 
@@ -118,6 +122,14 @@ CatalogProductPage::~CatalogProductPage()
     if (recommendedPurchasedTogetherReply != nullptr)
     {
         recommendedPurchasedTogetherReply->abort();
+    }
+    if (seriesGamesReply != nullptr)
+    {
+        seriesGamesReply->abort();
+    }
+    if (seriesTotalPriceReply != nullptr)
+    {
+        seriesTotalPriceReply->abort();
     }
     delete ui;
 }
@@ -524,6 +536,8 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
 
             QLocale systemLocale = QLocale::system();
+            QString countryCode = QLocale::territoryToCode(systemLocale.territory());
+            QString currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
             QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
             bool foundPreferredLanguage = false;
             for (int i = 0; i < data.localizations.count(); i++)
@@ -545,6 +559,95 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             else
             {
                 ui->supportedLanguagesLabel->setText(firstLanguage);
+            }
+
+            if (data.series.name.isNull())
+            {
+                ui->seriesLabel->setVisible(false);
+                ui->seriesBuyButton->setVisible(false);
+                ui->seriesStackedWidget->setVisible(false);
+            }
+            else
+            {
+                seriesGamesReply = apiClient->getSeriesGames(data.series.id);
+                connect(seriesGamesReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = seriesGamesReply;
+                    seriesGamesReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetSeriesGamesResponse data;
+                        parseGetSeriesGamesResponse(resultJson, data);
+
+                        unsigned int count = 0;
+                        for (const api::SeriesGame &item : std::as_const(data.items))
+                        {
+                            if (item.visibleInCatalog)
+                            {
+                                count++;
+                                auto productItem = new SimpleProductItem(item.id, ui->seriesResultPage);
+                                productItem->setCover(item.imageLink, apiClient);
+                                productItem->setTitle(item.title);
+
+                                connect(apiClient, &api::GogApiClient::authenticated,
+                                        productItem, &SimpleProductItem::switchUiAuthenticatedState);
+                                productItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                                connect(productItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                                {
+                                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                                });
+                                ui->seriesResultPage->layout()->addWidget(productItem);
+                            }
+                        }
+
+                        ui->seriesLabel->setText(QString("%1 (%2)")
+                                                 .arg(ui->seriesLabel->text())
+                                                 .arg(count));
+                        ui->seriesStackedWidget->setCurrentWidget(ui->seriesResultPage);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+
+                seriesTotalPriceReply = apiClient->getSeriesPrices(data.series.id, countryCode, currencyCode);
+                connect(seriesTotalPriceReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = seriesTotalPriceReply;
+                    seriesTotalPriceReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetPricesResponse data;
+                        parseGetPricesResponse(resultJson, data);
+
+                        if (!data.currencies.isEmpty())
+                        {
+                            QLocale systemLocale = QLocale::system();
+                            QString preferredCurrency = data.currencies[0];
+                            auto preferredPrice = data.prices[preferredCurrency];
+                            ui->seriesBuyButton->setEnabled(apiClient->isAuthenticated());
+                            ui->seriesBuyButton->setText(QString("Buy whole series for %1")
+                                                         .arg(systemLocale.toCurrencyString(preferredPrice.finalPrice / 100., preferredCurrency)));
+                            ui->seriesBuyButton->setVisible(true);
+                        }
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
             }
 
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
@@ -580,8 +683,20 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             for (const api::Recommendation &recommendation : std::as_const(data.products))
             {
-                auto recommendationItem = new RecommendationItem(recommendation, apiClient, ui->purchasedTogetherResultPage);
-                connect(recommendationItem, &RecommendationItem::navigateToProduct, this, [this](unsigned long long productId)
+                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
+                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                recommendationItem->setTitle(recommendation.details.title);
+                if (recommendation.pricing.priceSet)
+                {
+                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                                                 recommendation.pricing.currency);
+                }
+
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
                 {
                     emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
                 });
@@ -611,8 +726,20 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             for (const api::Recommendation &recommendation : std::as_const(data.products))
             {
-                auto recommendationItem = new RecommendationItem(recommendation, apiClient, ui->similarProductsResultPage);
-                connect(recommendationItem, &RecommendationItem::navigateToProduct, this, [this](unsigned long long productId)
+                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
+                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                recommendationItem->setTitle(recommendation.details.title);
+                if (recommendation.pricing.priceSet)
+                {
+                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                                                 recommendation.pricing.currency);
+                }
+
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
                 {
                     emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
                 });
@@ -633,6 +760,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
 {
     ui->cartButton->setEnabled(authenticated);
+    ui->seriesBuyButton->setEnabled(authenticated);
     ui->wishlistButton->setEnabled(authenticated);
 }
 

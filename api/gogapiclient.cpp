@@ -209,6 +209,28 @@ QNetworkReply *api::GogApiClient::getProductReviews(unsigned long long productId
     return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId))), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
+{
+    QUrl url("https://api.gog.com/v2/games");
+    url.setQuery(QUrlQuery({
+                               std::pair("seriesId", QString::number(seriesId)),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
+                                                  const QString &countryCode,
+                                                  const QString &currencyCode)
+{
+    QUrl url("https://api.gog.com/products/prices");
+    url.setQuery(QUrlQuery({
+                               std::pair("seriesId", QString::number(seriesId)),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currency", currencyCode),
+                           }));
+    return client.get(url);
+}
+
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
 {
     QVariantMap parameters;

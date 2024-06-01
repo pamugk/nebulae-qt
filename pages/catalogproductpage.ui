@@ -188,9 +188,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-755</y>
             <width>767</width>
-            <height>1931</height>
+            <height>2242</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -215,7 +215,176 @@
            <property name="spacing">
             <number>0</number>
            </property>
-           <item row="24" column="0" colspan="3">
+           <item row="13" column="0">
+            <widget class="QTabWidget" name="systemRequirementsTabWidget">
+             <property name="styleSheet">
+              <string notr="true">font-size: 11pt;</string>
+             </property>
+             <property name="tabPosition">
+              <enum>QTabWidget::TabPosition::North</enum>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <property name="usesScrollButtons">
+              <bool>false</bool>
+             </property>
+             <widget class="QWidget" name="windowsTab">
+              <attribute name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/windows.svg</normaloff>:/icons/windows.svg</iconset>
+              </attribute>
+              <attribute name="title">
+               <string notr="true"/>
+              </attribute>
+              <layout class="QGridLayout" name="windowsTabLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>10</number>
+               </property>
+               <property name="horizontalSpacing">
+                <number>12</number>
+               </property>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="macOsTab">
+              <attribute name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/apple.svg</normaloff>:/icons/apple.svg</iconset>
+              </attribute>
+              <attribute name="title">
+               <string notr="true"/>
+              </attribute>
+              <layout class="QGridLayout" name="macOsTabLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="horizontalSpacing">
+                <number>10</number>
+               </property>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="linuxTab">
+              <attribute name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/linux.svg</normaloff>:/icons/linux.svg</iconset>
+              </attribute>
+              <attribute name="title">
+               <string notr="true"/>
+              </attribute>
+              <layout class="QGridLayout" name="linuxTabLayout">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="horizontalSpacing">
+                <number>10</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="titleLabel">
+             <property name="font">
+              <font>
+               <pointsize>24</pointsize>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="30" column="0" colspan="3">
+            <widget class="QWidget" name="userReviewsHeader" native="true">
+             <property name="styleSheet">
+              <string notr="true">QWidget#userReviewsHeader
+{
+	padding: 16px 0; border-bottom: 1px solid #bfbfbf;
+}</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QLabel" name="filteredRatingLabel"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="ownersRatingLabel">
+                <property name="text">
+                 <string notr="true"/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="overallRatingLabel"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="28" column="0" colspan="3">
+            <widget class="QLabel" name="userReviewsLabel">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+             </property>
+             <property name="text">
+              <string> User reviews</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" colspan="2">
+            <widget class="QLabel" name="descriptionLabel">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+             </property>
+             <property name="text">
+              <string>Description</string>
+             </property>
+            </widget>
+           </item>
+           <item row="31" column="0" colspan="3">
             <widget class="QStackedWidget" name="userReviewsStackedWidget">
              <property name="minimumSize">
               <size>
@@ -340,56 +509,7 @@
              </widget>
             </widget>
            </item>
-           <item row="9" column="0" colspan="2">
-            <widget class="QLabel" name="copyrightsLabel">
-             <property name="font">
-              <font>
-               <pointsize>9</pointsize>
-               <fontweight>Light</fontweight>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">font-weight: 300;</string>
-             </property>
-             <property name="text">
-              <string notr="true"/>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="2">
-            <widget class="QLabel" name="gameDetailsLabel">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
-             </property>
-             <property name="text">
-              <string>Game details</string>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="0" colspan="2">
-            <widget class="QLabel" name="goodiesLabel">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
-             </property>
-             <property name="text">
-              <string>Goodies</string>
-             </property>
-            </widget>
-           </item>
-           <item row="18" column="0" colspan="3">
+           <item row="22" column="0" colspan="3">
             <widget class="QStackedWidget" name="similarProductsStackedWidget">
              <property name="minimumSize">
               <size>
@@ -418,24 +538,6 @@
               </layout>
              </widget>
              <widget class="QWidget" name="similarProductsResultPage"/>
-            </widget>
-           </item>
-           <item row="7" column="0" colspan="2">
-            <widget class="QWebEngineView" name="descriptionView">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>80</height>
-              </size>
-             </property>
-             <property name="acceptDrops">
-              <bool>false</bool>
-             </property>
-             <property name="url">
-              <url>
-               <string>about:blank</string>
-              </url>
-             </property>
             </widget>
            </item>
            <item row="7" column="2" rowspan="9" alignment="Qt::AlignmentFlag::AlignTop">
@@ -814,69 +916,60 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="titleLabel">
+           <item row="23" column="0" colspan="3">
+            <widget class="QLabel" name="purchasedTogetherLabel">
              <property name="font">
               <font>
-               <pointsize>24</pointsize>
+               <pointsize>12</pointsize>
                <bold>true</bold>
               </font>
              </property>
-             <property name="text">
-              <string notr="true"/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="23" column="0" colspan="3">
-            <widget class="QWidget" name="userReviewsHeader" native="true">
              <property name="styleSheet">
-              <string notr="true">QWidget#userReviewsHeader
-{
-	padding: 16px 0; border-bottom: 1px solid #bfbfbf;
-}</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QLabel" name="filteredRatingLabel"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="ownersRatingLabel">
-                <property name="text">
-                 <string notr="true"/>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="overallRatingLabel"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="8" column="0" colspan="2">
-            <widget class="QLabel" name="featuresLabel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
+              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
              </property>
              <property name="text">
-              <string notr="true"/>
+              <string> Users also bought </string>
              </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+            </widget>
+           </item>
+           <item row="20" column="0" colspan="3">
+            <widget class="QStackedWidget" name="seriesStackedWidget">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>256</height>
+              </size>
              </property>
+             <widget class="QWidget" name="seriesLoadingPage">
+              <layout class="QVBoxLayout" name="seriesLoadingPageLayout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>24</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>24</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QProgressBar" name="seriesProgressBar">
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                 <property name="value">
+                  <number>-1</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="seriesResultPage"/>
             </widget>
            </item>
            <item row="15" column="0">
@@ -891,21 +984,46 @@
              </property>
             </widget>
            </item>
-           <item row="14" column="0">
-            <widget class="QLabel" name="additonalRequirementsLabel">
+           <item row="3" column="0" colspan="3">
+            <widget class="QScrollArea" name="mediaScrollArea">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>190</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="mediaScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>767</width>
+                <height>190</height>
+               </rect>
+              </property>
+              <layout class="QHBoxLayout" name="mediaScrollAreaContentsLayout"/>
+             </widget>
+            </widget>
+           </item>
+           <item row="21" column="0" colspan="3">
+            <widget class="QLabel" name="similarProductsLabel">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>12</pointsize>
+               <bold>true</bold>
               </font>
              </property>
+             <property name="styleSheet">
+              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+             </property>
              <property name="text">
-              <string notr="true"/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+              <string> You may like these products </string>
              </property>
             </widget>
            </item>
@@ -933,8 +1051,8 @@
              </widget>
             </widget>
            </item>
-           <item row="16" column="0" colspan="3">
-            <widget class="QLabel" name="criticsReviewLabel">
+           <item row="10" column="0" colspan="2">
+            <widget class="QLabel" name="goodiesLabel">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
@@ -944,22 +1062,96 @@
               <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
              </property>
              <property name="text">
-              <string> Critics reviews</string>
+              <string>Goodies</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="0" colspan="2">
-            <widget class="QLabel" name="descriptionLabel">
+           <item row="8" column="0" colspan="2">
+            <widget class="QLabel" name="featuresLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="26" column="0" colspan="3">
+            <widget class="QStackedWidget" name="purchasedTogetherStackedWidget">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>256</height>
+              </size>
+             </property>
+             <widget class="QWidget" name="purchasedTogetherLoadingPage">
+              <layout class="QVBoxLayout" name="purchasedTogetherLoadingPageLayout">
+               <property name="leftMargin">
+                <number>24</number>
+               </property>
+               <property name="rightMargin">
+                <number>24</number>
+               </property>
+               <item>
+                <widget class="QProgressBar" name="purchasedTogetherProgressBar">
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                 <property name="value">
+                  <number>-1</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="purchasedTogetherResultPage"/>
+            </widget>
+           </item>
+           <item row="9" column="0" colspan="2">
+            <widget class="QLabel" name="copyrightsLabel">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <fontweight>Light</fontweight>
               </font>
              </property>
              <property name="styleSheet">
-              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+              <string notr="true">font-weight: 300;</string>
              </property>
              <property name="text">
-              <string>Description</string>
+              <string notr="true"/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0" colspan="2">
+            <widget class="QWebEngineView" name="descriptionView">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>80</height>
+              </size>
+             </property>
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+             <property name="url">
+              <url>
+               <string>about:blank</string>
+              </url>
              </property>
             </widget>
            </item>
@@ -1105,145 +1297,26 @@
              </layout>
             </widget>
            </item>
-           <item row="17" column="0" colspan="3">
-            <widget class="QLabel" name="similarProductsLabel">
+           <item row="14" column="0">
+            <widget class="QLabel" name="additonalRequirementsLabel">
              <property name="font">
               <font>
-               <pointsize>12</pointsize>
-               <bold>true</bold>
+               <pointsize>9</pointsize>
               </font>
              </property>
-             <property name="styleSheet">
-              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
-             </property>
              <property name="text">
-              <string> You may like these products </string>
+              <string notr="true"/>
              </property>
-            </widget>
-           </item>
-           <item row="13" column="0">
-            <widget class="QTabWidget" name="systemRequirementsTabWidget">
-             <property name="styleSheet">
-              <string notr="true">font-size: 11pt;</string>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
              </property>
-             <property name="tabPosition">
-              <enum>QTabWidget::TabPosition::North</enum>
-             </property>
-             <property name="currentIndex">
-              <number>0</number>
-             </property>
-             <property name="usesScrollButtons">
-              <bool>false</bool>
-             </property>
-             <widget class="QWidget" name="windowsTab">
-              <attribute name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/icons/windows.svg</normaloff>:/icons/windows.svg</iconset>
-              </attribute>
-              <attribute name="title">
-               <string notr="true"/>
-              </attribute>
-              <layout class="QGridLayout" name="windowsTabLayout">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>10</number>
-               </property>
-               <property name="horizontalSpacing">
-                <number>12</number>
-               </property>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="macOsTab">
-              <attribute name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/icons/apple.svg</normaloff>:/icons/apple.svg</iconset>
-              </attribute>
-              <attribute name="title">
-               <string notr="true"/>
-              </attribute>
-              <layout class="QGridLayout" name="macOsTabLayout">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <property name="horizontalSpacing">
-                <number>10</number>
-               </property>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="linuxTab">
-              <attribute name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/icons/linux.svg</normaloff>:/icons/linux.svg</iconset>
-              </attribute>
-              <attribute name="title">
-               <string notr="true"/>
-              </attribute>
-              <layout class="QGridLayout" name="linuxTabLayout">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <property name="horizontalSpacing">
-                <number>10</number>
-               </property>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="3">
-            <widget class="QScrollArea" name="mediaScrollArea">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>190</height>
-              </size>
-             </property>
-             <property name="verticalScrollBarPolicy">
-              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-             </property>
-             <property name="widgetResizable">
+             <property name="wordWrap">
               <bool>true</bool>
              </property>
-             <widget class="QWidget" name="mediaScrollAreaContents">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>767</width>
-                <height>190</height>
-               </rect>
-              </property>
-              <layout class="QHBoxLayout" name="mediaScrollAreaContentsLayout"/>
-             </widget>
             </widget>
            </item>
-           <item row="19" column="0" colspan="3">
-            <widget class="QLabel" name="purchasedTogetherLabel">
+           <item row="12" column="0" colspan="2">
+            <widget class="QLabel" name="systemRequirementsLabel">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
@@ -1254,7 +1327,7 @@
               <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
              </property>
              <property name="text">
-              <string> Users also bought </string>
+              <string> System requirements </string>
              </property>
             </widget>
            </item>
@@ -1417,8 +1490,24 @@ padding: 16px 20px 24px 20px;</string>
              </layout>
             </widget>
            </item>
-           <item row="12" column="0" colspan="2">
-            <widget class="QLabel" name="systemRequirementsLabel">
+           <item row="27" column="0" colspan="3">
+            <widget class="QLabel" name="criticsReviewLabel">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+             </property>
+             <property name="text">
+              <string> Critics reviews</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QLabel" name="gameDetailsLabel">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
@@ -1428,54 +1517,44 @@ padding: 16px 20px 24px 20px;</string>
               <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
              </property>
              <property name="text">
-              <string> System requirements </string>
+              <string>Game details</string>
              </property>
             </widget>
            </item>
-           <item row="21" column="0" colspan="3">
-            <widget class="QLabel" name="userReviewsLabel">
+           <item row="16" column="0" colspan="2">
+            <widget class="QLabel" name="seriesLabel">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
+               <bold>true</bold>
               </font>
              </property>
              <property name="styleSheet">
               <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
              </property>
              <property name="text">
-              <string> User reviews</string>
+              <string>Buy series</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::TextFormat::PlainText</enum>
              </property>
             </widget>
            </item>
-           <item row="20" column="0" colspan="3">
-            <widget class="QStackedWidget" name="purchasedTogetherStackedWidget">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>256</height>
-              </size>
+           <item row="16" column="2" alignment="Qt::AlignmentFlag::AlignRight">
+            <widget class="QPushButton" name="seriesBuyButton">
+             <property name="styleSheet">
+              <string notr="true">color: rgba(33, 33, 33, 179);</string>
              </property>
-             <widget class="QWidget" name="purchasedTogetherLoadingPage">
-              <layout class="QVBoxLayout" name="purchasedTogetherLoadingPageLayout">
-               <property name="leftMargin">
-                <number>24</number>
-               </property>
-               <property name="rightMargin">
-                <number>24</number>
-               </property>
-               <item>
-                <widget class="QProgressBar" name="purchasedTogetherProgressBar">
-                 <property name="maximum">
-                  <number>0</number>
-                 </property>
-                 <property name="value">
-                  <number>-1</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="purchasedTogetherResultPage"/>
+             <property name="text">
+              <string>Buy whole series</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources.qrc">
+               <normaloff>:/icons/cart-plus.svg</normaloff>:/icons/cart-plus.svg</iconset>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
           </layout>

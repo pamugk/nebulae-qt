@@ -44,6 +44,10 @@ namespace api
                                          const QStringList &languages,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
+        QNetworkReply *getSeriesGames(unsigned long long seriesId);
+        QNetworkReply *getSeriesPrices(unsigned long long seriesId,
+                                       const QString &countryCode,
+                                       const QString &currencyCode);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);

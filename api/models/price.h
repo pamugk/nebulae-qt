@@ -16,6 +16,7 @@ namespace api
 
     struct GetPricesResponse
     {
+        QVector<QString> currencies;
         QMap<QString, ProductPrice> prices;
     };
 }

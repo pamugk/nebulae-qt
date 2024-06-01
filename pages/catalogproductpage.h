@@ -51,6 +51,8 @@ private:
     QNetworkReply *pricesReply;
     QNetworkReply *recommendedPurchasedTogetherReply;
     QNetworkReply *recommendedSimilarReply;
+    QNetworkReply *seriesGamesReply;
+    QNetworkReply *seriesTotalPriceReply;
 
     unsigned short reviewsPage;
     unsigned short reviewsPageSize;
