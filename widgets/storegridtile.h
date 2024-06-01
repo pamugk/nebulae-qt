@@ -24,6 +24,9 @@ public:
 signals:
     void navigateToProduct(unsigned long long id);
 
+public slots:
+    void switchUiAuthenticatedState(bool authenticated);
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 

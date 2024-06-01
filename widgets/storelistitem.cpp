@@ -46,6 +46,11 @@ StoreListItem::~StoreListItem()
     delete ui;
 }
 
+void StoreListItem::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->addToCartButton->setEnabled(authenticated);
+}
+
 void StoreListItem::mousePressEvent(QMouseEvent *event)
 {
     emit navigateToProduct(itemId);

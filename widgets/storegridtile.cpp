@@ -45,6 +45,11 @@ StoreGridTile::~StoreGridTile()
     delete ui;
 }
 
+void StoreGridTile::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->addToCartButton->setEnabled(authenticated);
+}
+
 void StoreGridTile::mousePressEvent(QMouseEvent *event)
 {
     emit navigateToProduct(itemId);

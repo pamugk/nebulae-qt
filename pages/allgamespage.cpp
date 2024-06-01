@@ -139,6 +139,9 @@ void AllGamesPage::layoutResults()
         for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
+            connect(apiClient, &api::GogApiClient::authenticated, storeItem,
+                    &StoreGridTile::switchUiAuthenticatedState);
+            storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
             {
                 emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
@@ -152,6 +155,9 @@ void AllGamesPage::layoutResults()
         for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
+            connect(apiClient, &api::GogApiClient::authenticated, storeItem,
+                    &StoreListItem::switchUiAuthenticatedState);
+            storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
             {
                 emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
