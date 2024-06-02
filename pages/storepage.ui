@@ -51,8 +51,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>600</width>
-        <height>488</height>
+        <width>579</width>
+        <height>568</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
@@ -92,24 +92,6 @@
        </item>
        <item>
         <widget class="QStackedWidget" name="newsStackedWidget">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>284</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>284</height>
-          </size>
-         </property>
          <widget class="QWidget" name="newsLoadingPage">
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -135,10 +117,16 @@
            <item>
             <widget class="QScrollArea" name="newsScrollArea">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>425</height>
+              </size>
              </property>
              <property name="verticalScrollBarPolicy">
               <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
@@ -151,13 +139,13 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>572</width>
-                <height>284</height>
+                <width>551</width>
+                <height>425</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="newsScrollAreaContentsLayout">
                <property name="spacing">
-                <number>0</number>
+                <number>24</number>
                </property>
                <property name="leftMargin">
                 <number>0</number>

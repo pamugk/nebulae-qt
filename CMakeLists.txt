@@ -25,6 +25,7 @@ set(PROJECT_SOURCES
         api/models/catalogproductinfo.h
         api/models/filters.h
         api/models/metatag.h
+        api/models/news.h
         api/models/order.h api/models/orderfilter.h
         api/models/ownedproduct.h
         api/models/ownedproductinfo.h
@@ -42,6 +43,7 @@ set(PROJECT_SOURCES
 
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
         api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
+        api/utils/newsserialization.h api/utils/newsserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
@@ -73,6 +75,7 @@ set(PROJECT_SOURCES
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
         widgets/imageholder.h widgets/imageholder.cpp widgets/imageholder.ui
+        widgets/newsitemtile.h widgets/newsitemtile.cpp widgets/newsitemtile.ui
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui

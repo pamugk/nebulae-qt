@@ -20,6 +20,7 @@ public:
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 private:
+    api::GogApiClient *apiClient;
     Ui::StorePage *ui;
 
     QNetworkReply *newsReply;

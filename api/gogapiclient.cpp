@@ -99,6 +99,18 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, c
     return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
+                                          unsigned char limit)
+{
+    QUrl url("https://api.gog.com/news");
+    url.setQuery(QUrlQuery({
+                               std::pair("language_code", locale),
+                               std::pair("page_token", QString::number(pageToken)),
+                               std::pair("limit", QString::number(limit)),
+                           }));
+    return client.get(url);
+}
+
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;
