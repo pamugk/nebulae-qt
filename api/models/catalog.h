@@ -11,7 +11,7 @@ namespace api
 {
     struct Money
     {
-        QString amount;
+        double amount;
         QString currency;
     };
 

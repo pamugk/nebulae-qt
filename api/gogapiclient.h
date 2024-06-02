@@ -23,6 +23,8 @@ namespace api
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getStoreDiscoverNewGames();
+        QNetworkReply *getStoreDiscoverUpcomingGames();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);

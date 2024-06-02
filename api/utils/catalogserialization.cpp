@@ -27,7 +27,7 @@ void parseStringArray(const QJsonArray &json, QVector<QString> &data)
 
 void parseMoney(const QJsonObject &json, api::Money &data)
 {
-    data.amount = json["amount"].toString();
+    data.amount = json["amount"].toString().toDouble();
     data.currency = json["currency"].toString();
 }
 
@@ -58,8 +58,8 @@ void parseProduct(const QJsonObject &json, api::CatalogProduct &data)
         data.price.final = price["final"].toString();
         data.price.base = price["base"].toString();
         data.price.discount = price["discount"].toString();
-        parseMoney(json["finalMoney"].toObject(), data.price.finalMoney);
-        parseMoney(json["baseMoney"].toObject(), data.price.baseMoney);
+        parseMoney(price["finalMoney"].toObject(), data.price.finalMoney);
+        parseMoney(price["baseMoney"].toObject(), data.price.baseMoney);
     }
     data.productState = json["productState"].toString();
     parseMetaTagArray(json["genres"].toArray(), data.genres);

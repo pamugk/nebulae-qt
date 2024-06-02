@@ -43,7 +43,6 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
 void SimpleProductItem::setPrice(unsigned int basePrice, unsigned int finalPrice,
                                  const QString &currency)
 {
-
     auto systemLocale = QLocale::system();
     if (basePrice != finalPrice)
     {

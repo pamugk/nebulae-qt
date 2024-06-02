@@ -30,7 +30,9 @@ void OwnedGamePage::setApiClient(api::GogApiClient *apiClient)
 
 void OwnedGamePage::initialize(const QVariant &data)
 {
-    auto networkReply = apiClient->getOwnedProductInfo(data.toLongLong(), "en-US");
+    auto systemLocale = QLocale::system();
+    auto networkReply = apiClient->getOwnedProductInfo(data.toLongLong(),
+                                                       QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1));
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
         {

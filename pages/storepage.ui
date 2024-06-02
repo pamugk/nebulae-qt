@@ -52,12 +52,12 @@
         <x>0</x>
         <y>0</y>
         <width>579</width>
-        <height>568</height>
+        <height>1452</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
        <property name="spacing">
-        <number>32</number>
+        <number>16</number>
        </property>
        <property name="leftMargin">
         <number>8</number>
@@ -71,6 +71,219 @@
        <property name="bottomMargin">
         <number>16</number>
        </property>
+       <item>
+        <widget class="QLabel" name="discoverLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>Dicover games</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTabWidget" name="discoverTabWidget">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>780</height>
+          </size>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="discoverBestsellingTab">
+          <attribute name="title">
+           <string>Bestselling</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="discoverBestsellingTabLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QStackedWidget" name="discoverBestsellingStackedWidget">
+             <widget class="QWidget" name="discoverBestsellingLoadingPage">
+              <layout class="QVBoxLayout" name="discoverBestsellingLoadingPageLayout">
+               <item>
+                <widget class="QProgressBar" name="discoverBestsellingProgressBar">
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="discoverBestsellingResultsPage">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QVBoxLayout" name="discoverBestsellingResultsPageLayout">
+               <property name="spacing">
+                <number>1</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="discoverNewTab">
+          <attribute name="title">
+           <string>New</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="discoverNewTabLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QStackedWidget" name="discoverNewStackedWidget">
+             <widget class="QWidget" name="discoverNewLoadingPage">
+              <layout class="QVBoxLayout" name="discoverNewLoadingPageLayout">
+               <item>
+                <widget class="QProgressBar" name="discoverNewProgressBar">
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="discoverNewResultsPage">
+              <layout class="QVBoxLayout" name="discoverNewResultsPageLayout">
+               <property name="spacing">
+                <number>1</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="discoverUpcomingTab">
+          <attribute name="title">
+           <string>Upcoming</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="discoverUpcomingTabLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QStackedWidget" name="discoverUpcomingStackedWidget">
+             <widget class="QWidget" name="discoverUpcomingLoadingPage">
+              <layout class="QVBoxLayout" name="discoverUpcomingLoadingPageLayout">
+               <item>
+                <widget class="QProgressBar" name="discoverUpcomingProgressBar">
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="discoverUpcomingResultsPage">
+              <layout class="QVBoxLayout" name="discoverUpcomingResultsPageLayout">
+               <property name="spacing">
+                <number>1</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
+        <widget class="QPushButton" name="showCatalogButton">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>Show more</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLabel" name="newsLabel">
          <property name="font">
@@ -93,7 +306,7 @@
        <item>
         <widget class="QStackedWidget" name="newsStackedWidget">
          <widget class="QWidget" name="newsLoadingPage">
-          <layout class="QVBoxLayout" name="verticalLayout">
+          <layout class="QVBoxLayout" name="newsLoadingPageLayout">
            <item>
             <widget class="QProgressBar" name="newsProgressBar">
              <property name="maximum">
@@ -139,7 +352,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>551</width>
+                <width>88</width>
                 <height>425</height>
                </rect>
               </property>

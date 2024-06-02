@@ -37,6 +37,7 @@ set(PROJECT_SOURCES
         api/models/seriesgame.h
         api/models/sort.h
         api/models/statistics.h
+        api/models/store.h
         api/models/tag.h
         api/models/user.h
         api/models/wishlist.h
@@ -53,6 +54,7 @@ set(PROJECT_SOURCES
         api/utils/serialization.h api/utils/serialization.cpp
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
+        api/utils/storeserialization.h api/utils/storeserialization.cpp
 
         internals/navigationdestination.h
         internals/pages.h
@@ -81,6 +83,7 @@ set(PROJECT_SOURCES
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
+        widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui

@@ -281,7 +281,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
     updateUserReviews();
 
-    mainReply = apiClient->getCatalogProductInfo(id, "en-US");
+    mainReply = apiClient->getCatalogProductInfo(id, QLocale::languageToCode(QLocale::system().language(), QLocale::ISO639Part1));
     connect(mainReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = mainReply;

@@ -99,6 +99,16 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, c
     return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
+{
+    return client.get(QUrl("https://embed.gog.com/discover_games/new"));
+}
+
+QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
+{
+    return client.get(QUrl("https://embed.gog.com/discover_games/upcoming"));
+}
+
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
                                           unsigned char limit)
 {
