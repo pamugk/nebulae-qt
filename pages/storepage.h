@@ -23,11 +23,17 @@ private:
     api::GogApiClient *apiClient;
     Ui::StorePage *ui;
 
+    QNetworkReply *customSectionCDPRReply;
+    QNetworkReply *customSectionExclusivesReply;
+    QNetworkReply *customSectionGOGReply;
     QNetworkReply *discoverBestsellingReply;
     QNetworkReply *discoverNewReply;
     QNetworkReply *discoverUpcomingReply;
     QNetworkReply *newsReply;
 
+    void getCustomSectionCDPRGames();
+    void getCustomSectionExclusiveGames();
+    void getCustomSectionGOGGames();
     void getDiscoverBestsellingGames();
     void getDiscoverNewGames();
     void getDiscoverUpcomingGames();

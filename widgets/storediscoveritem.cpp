@@ -49,10 +49,10 @@ void StoreDiscoverItem::setTitle(const QString &title)
 }
 
 void StoreDiscoverItem::setPrice(double basePrice, double finalPrice,
-              unsigned char discount, bool free, const QString &currency)
+                                 unsigned char discount, bool free, const QString &currency)
 {
     auto systemLocale = QLocale::system();
-    if (basePrice != finalPrice)
+    if (discount > 0)
     {
         ui->discountLabel->setText(QString("-%1%2")
                                    .arg(discount)

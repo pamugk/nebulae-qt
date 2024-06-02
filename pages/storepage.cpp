@@ -8,12 +8,16 @@
 #include "../api/utils/catalogserialization.h"
 #include "../api/utils/newsserialization.h"
 #include "../api/utils/storeserialization.h"
+#include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
 #include "../widgets/newsitemtile.h"
 
 StorePage::StorePage(QWidget *parent) :
     BasePage(parent),
     apiClient(nullptr),
+    customSectionCDPRReply(nullptr),
+    customSectionExclusivesReply(nullptr),
+    customSectionGOGReply(nullptr),
     discoverBestsellingReply(nullptr),
     discoverNewReply(nullptr),
     discoverUpcomingReply(nullptr),
@@ -25,6 +29,18 @@ StorePage::StorePage(QWidget *parent) :
 
 StorePage::~StorePage()
 {
+    if (customSectionCDPRReply != nullptr)
+    {
+        customSectionCDPRReply->abort();
+    }
+    if (customSectionExclusivesReply != nullptr)
+    {
+        customSectionExclusivesReply->abort();
+    }
+    if (customSectionGOGReply != nullptr)
+    {
+        customSectionGOGReply->abort();
+    }
     if (discoverBestsellingReply != nullptr)
     {
         discoverBestsellingReply->abort();
@@ -47,6 +63,135 @@ StorePage::~StorePage()
 void StorePage::setApiClient(api::GogApiClient *apiClient)
 {
     this->apiClient = apiClient;
+}
+
+void StorePage::getCustomSectionCDPRGames()
+{
+    ui->customSectionCDPRStackedWidget->setCurrentWidget(ui->customSectionCDPRLoadingPage);
+    customSectionCDPRReply = apiClient->getStoreCustomSection("68469ed0-e0d6-11ec-a381-fa163eebc216");
+    connect(customSectionCDPRReply, &QNetworkReply::finished,
+            this, [this]()
+    {
+        auto networkReply = customSectionCDPRReply;
+        customSectionCDPRReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreCustomSectionResponse data;
+            parseGetStoreCustomSectionResponse(resultJson, data);
+
+            for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
+            {
+                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionCDPRScrollAreaContents);
+                itemWidget->setCover(item.product.image, apiClient);
+                itemWidget->setTitle(item.product.title);
+                itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
+                                     item.product.price.discountPercentage, item.product.price.free, "");
+                connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->customSectionCDPRScrollAreaContentsLayout->addWidget(itemWidget);
+            }
+            ui->customSectionCDPRScrollAreaContentsLayout->addStretch();
+            ui->customSectionCDPRStackedWidget->setCurrentWidget(ui->customSectionCDPRResultsPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
+void StorePage::getCustomSectionExclusiveGames()
+{
+    ui->customSectionExclusivesStackedWidget->setCurrentWidget(ui->customSectionExclusivesLoadingPage);
+    customSectionExclusivesReply = apiClient->getStoreCustomSection("eea11712-458e-11ee-9787-fa163eebc216");
+    connect(customSectionExclusivesReply, &QNetworkReply::finished,
+            this, [this]()
+    {
+        auto networkReply = customSectionExclusivesReply;
+        customSectionExclusivesReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreCustomSectionResponse data;
+            parseGetStoreCustomSectionResponse(resultJson, data);
+
+            for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
+            {
+                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionExclusivesResultsScrollAreaContents);
+                itemWidget->setCover(item.product.image, apiClient);
+                itemWidget->setTitle(item.product.title);
+                itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
+                                     item.product.price.discountPercentage, item.product.price.free, "");
+                connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->customSectionExclusivesResultsScrollAreaContentsLayout->addWidget(itemWidget);
+            }
+            ui->customSectionExclusivesResultsScrollAreaContentsLayout->addStretch();
+            ui->customSectionExclusivesStackedWidget->setCurrentWidget(ui->customSectionExclusivesResultsPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
+void StorePage::getCustomSectionGOGGames()
+{
+    ui->customSectionGOGStackedWidget->setCurrentWidget(ui->customSectionGOGLoadingPage);
+    customSectionGOGReply = apiClient->getStoreCustomSection("3a6bfab2-af69-11ec-9ed8-fa163ec3f57d");
+    connect(customSectionGOGReply, &QNetworkReply::finished,
+            this, [this]()
+    {
+        auto networkReply = customSectionGOGReply;
+        customSectionGOGReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreCustomSectionResponse data;
+            parseGetStoreCustomSectionResponse(resultJson, data);
+
+            for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
+            {
+                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionCDPRScrollAreaContents);
+                itemWidget->setCover(item.product.image, apiClient);
+                itemWidget->setTitle(item.product.title);
+                itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
+                                     item.product.price.discountPercentage, item.product.price.free, "");
+                connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->customSectionGOGResultsScrollAreaContentsLayout->addWidget(itemWidget);
+            }
+            ui->customSectionGOGResultsScrollAreaContentsLayout->addStretch();
+            ui->customSectionGOGStackedWidget->setCurrentWidget(ui->customSectionGOGResultsPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
 }
 
 void StorePage::getDiscoverBestsellingGames()
@@ -113,7 +258,7 @@ void StorePage::getDiscoverNewGames()
             api::GetStoreDiscoverGamesSectionResponse data;
             parseGetStoreDiscoverGamesResponse(resultJson, data);
 
-            for (const api::StoreDiscoveredProduct &item : std::as_const(data.personalizedProducts))
+            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
             {
                 auto itemWidget = new StoreDiscoverItem(item.id, ui->discoverNewResultsPage);
                 itemWidget->setCover(item.image, apiClient);
@@ -155,7 +300,7 @@ void StorePage::getDiscoverUpcomingGames()
             api::GetStoreDiscoverGamesSectionResponse data;
             parseGetStoreDiscoverGamesResponse(resultJson, data);
 
-            for (const api::StoreDiscoveredProduct &item : std::as_const(data.personalizedProducts))
+            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
             {
                 auto itemWidget = new StoreDiscoverItem(item.id, ui->discoverUpcomingResultsPage);
                 itemWidget->setCover(item.image, apiClient);
@@ -226,6 +371,9 @@ void StorePage::getNews()
 
 void StorePage::initialize(const QVariant &data)
 {
+    getCustomSectionCDPRGames();
+    getCustomSectionExclusiveGames();
+    getCustomSectionGOGGames();
     ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
     getDiscoverBestsellingGames();
     getDiscoverNewGames();

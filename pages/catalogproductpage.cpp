@@ -688,7 +688,11 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 recommendationItem->setTitle(recommendation.details.title);
                 if (recommendation.pricing.priceSet)
                 {
-                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                 recommendation.pricing.finalPrice / 100.,
+                                                 discount,
+                                                 recommendation.pricing.basePrice == 0,
                                                  recommendation.pricing.currency);
                 }
 
@@ -731,7 +735,11 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 recommendationItem->setTitle(recommendation.details.title);
                 if (recommendation.pricing.priceSet)
                 {
-                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                 recommendation.pricing.finalPrice / 100.,
+                                                 discount,
+                                                 recommendation.pricing.basePrice == 0,
                                                  recommendation.pricing.currency);
                 }
 

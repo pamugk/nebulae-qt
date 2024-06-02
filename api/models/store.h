@@ -1,12 +1,13 @@
 #ifndef STORE_H
 #define STORE_H
 
+#include <QDateTime>
 #include <QString>
 #include <QVector>
 
 namespace api
 {
-    struct StoreDiscoveredProductPrice
+    struct StoreProductPrice
     {
         double baseAmount;
         double finalAmount;
@@ -14,12 +15,12 @@ namespace api
         bool free;
     };
 
-    struct StoreDiscoveredProduct
+    struct StoreProduct
     {
         unsigned long long id;
         QString title;
         QString image;
-        StoreDiscoveredProductPrice price;
+        StoreProductPrice price;
         QVector<QString> supportedOperatingSystems;
 
         bool comingSoon;
@@ -31,9 +32,27 @@ namespace api
         bool preorder;
     };
 
+    struct StoreCustomSectionItem
+    {
+        QDateTime dealActiveFrom;
+        QDateTime dealActiveTo;
+        StoreProduct product;
+    };
+
+    struct GetStoreCustomSectionResponse
+    {
+        QString id;
+        QString title;
+        QVector<StoreCustomSectionItem> items;
+
+        QDateTime currentServerTime;
+        QDateTime visibleFrom;
+        QDateTime visibleTo;
+    };
+
     struct GetStoreDiscoverGamesSectionResponse
     {
-        QVector<StoreDiscoveredProduct> personalizedProducts;
+        QVector<StoreProduct> personalizedProducts;
     };
 }
 

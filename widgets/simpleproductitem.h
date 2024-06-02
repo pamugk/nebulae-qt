@@ -21,8 +21,8 @@ public:
 
     void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
     void setTitle(const QString &title);
-    void setPrice(unsigned int basePrice, unsigned int finalPrice,
-                  const QString &currency);
+    void setPrice(double basePrice, double finalPrice,
+                  unsigned char discount, bool free, const QString &currency);
 
 signals:
     void navigateToProduct(unsigned long long id);

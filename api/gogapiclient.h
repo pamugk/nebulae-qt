@@ -23,8 +23,6 @@ namespace api
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
-        QNetworkReply *getStoreDiscoverNewGames();
-        QNetworkReply *getStoreDiscoverUpcomingGames();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
@@ -52,6 +50,9 @@ namespace api
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
+        QNetworkReply *getStoreCustomSection(const QString &id);
+        QNetworkReply *getStoreDiscoverNewGames();
+        QNetworkReply *getStoreDiscoverUpcomingGames();
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);
