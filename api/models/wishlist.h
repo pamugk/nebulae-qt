@@ -7,10 +7,10 @@ namespace api
 {
     struct GetWishlistResponse
     {
-        quint16 page;
-        quint32 totalProducts;
-        quint16 totalPages;
-        quint16 productsPerPage;
+        unsigned short page;
+        unsigned int totalProducts;
+        unsigned short totalPages;
+        unsigned short productsPerPage;
         QVector<Product> products;
     };
 }

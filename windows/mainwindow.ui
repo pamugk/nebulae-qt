@@ -17,16 +17,16 @@
    <iconset resource="../resources.qrc">
     <normaloff>:/icons/gog-galaxy.svg</normaloff>:/icons/gog-galaxy.svg</iconset>
   </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(255, 255, 255);</string>
-  </property>
-  <widget class="QWidget" name="content">
-   <layout class="QGridLayout" name="gridLayout">
+  <widget class="QWidget" name="scaffold">
+   <layout class="QGridLayout" name="scaffoldLayout">
     <item row="0" column="1">
-     <widget class="QWidget" name="horizontalWidget" native="true">
+     <widget class="QWidget" name="header" native="true">
       <layout class="QHBoxLayout" name="mainContentHeader">
        <item>
         <widget class="QPushButton" name="navigateBackButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -44,6 +44,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="navigateForwardButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -62,7 +65,7 @@
        <item>
         <spacer name="mainContentHeaderSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -75,9 +78,6 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QStackedWidget" name="pagesStack"/>
-    </item>
     <item row="0" column="0" rowspan="2">
      <widget class="QWidget" name="drawer" native="true">
       <property name="sizePolicy">
@@ -88,6 +88,7 @@
       </property>
       <property name="styleSheet">
        <string notr="true">QPushButton {
+    padding: 8px 12px 8px 12px;
 	text-align: left;
 }
 
@@ -112,6 +113,7 @@ QLabel {
         <widget class="QWidget" name="drawerHeader" native="true">
          <property name="styleSheet">
           <string notr="true">QPushButton {
+    padding: 12px;
 	text-align:center;
 }</string>
          </property>
@@ -234,6 +236,9 @@ QLabel {
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/layer-group.svg</normaloff>:/icons/layer-group.svg</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <property name="flat">
           <bool>true</bool>
          </property>
@@ -256,6 +261,9 @@ QLabel {
          <property name="icon">
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/calendar.svg</normaloff>:/icons/calendar.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -281,6 +289,9 @@ QLabel {
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/cart-shopping.svg</normaloff>:/icons/cart-shopping.svg</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <property name="flat">
           <bool>true</bool>
          </property>
@@ -297,6 +308,12 @@ QLabel {
          <property name="icon">
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/tag.svg</normaloff>:/icons/tag.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -315,6 +332,9 @@ QLabel {
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/heart.svg</normaloff>:/icons/heart.svg</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <property name="flat">
           <bool>true</bool>
          </property>
@@ -331,6 +351,9 @@ QLabel {
          <property name="icon">
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/receipt.svg</normaloff>:/icons/receipt.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -356,6 +379,9 @@ QLabel {
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/list.svg</normaloff>:/icons/list.svg</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <property name="flat">
           <bool>true</bool>
          </property>
@@ -372,6 +398,9 @@ QLabel {
          <property name="icon">
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/desktop.svg</normaloff>:/icons/desktop.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -397,6 +426,9 @@ QLabel {
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/user-group.svg</normaloff>:/icons/user-group.svg</iconset>
          </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
          <property name="flat">
           <bool>true</bool>
          </property>
@@ -405,7 +437,7 @@ QLabel {
        <item>
         <spacer name="drawerSpacer">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -426,7 +458,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>23</height>
+     <height>29</height>
     </rect>
    </property>
   </widget>

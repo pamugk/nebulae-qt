@@ -4,25 +4,21 @@
 
 void parseGetPricesResponse(const QJsonObject &json, api::GetPricesResponse &data)
 {
-    if (json["_embedded"]["items"].isArray())
-    {
+    auto prices = json["_embedded"]["items"].isArray()
+            ? json["_embedded"]["items"].toArray()[0].toObject()["_embedded"].toObject()["prices"].toArray()
+            : json["_embedded"]["prices"].toArray();
 
-    }
-    else if (json["_embedded"]["prices"].isArray())
+    for (const QJsonValue &item : std::as_const(prices))
     {
-        auto prices = json["_embedded"]["prices"].toArray();
-        for (int i = 0; i < prices.count(); i++)
-        {
-            auto item = prices[i].toObject();
-            auto currencyCode = item["currency"].toObject()["code"].toString();
-            data.prices[currencyCode] =
-                    api::ProductPrice
-                {
-                    item["basePrice"].toString().remove(' ' + currencyCode).toUInt(),
-                    item["finalPrice"].toString().remove(' ' + currencyCode).toUInt(),
-                    item["bonusWalletFunds"].toString().remove(' ' + currencyCode).toUInt(),
-                    item["promoId"].toString()
-                };
-        }
+        auto currencyCode = item["currency"]["code"].toString();
+        data.currencies.append(currencyCode);
+        data.prices[currencyCode] =
+                api::ProductPrice
+            {
+                item["basePrice"].toString().remove(' ' + currencyCode).toUInt(),
+                item["finalPrice"].toString().remove(' ' + currencyCode).toUInt(),
+                item["bonusWalletFunds"].toString().remove(' ' + currencyCode).toUInt(),
+                item["promoId"].toString()
+            };
     }
 }

@@ -17,10 +17,11 @@ public:
     virtual void setApiClient(api::GogApiClient *apiClient) = 0;
 
 signals:
-    void navigateToDestination(NavigationDestination destination);
+    void navigateBack();
+    void navigate(NavigationDestination destination);
 
 public slots:
-    virtual void clear() = 0;
+    virtual void switchUiAuthenticatedState(bool authenticated) = 0;
     virtual void initialize(const QVariant &data) = 0;
 };
 

@@ -9,16 +9,16 @@ namespace api
 {
     struct PriceRange
     {
-        quint32 min;
-        quint32 max;
+        unsigned int min;
+        unsigned int max;
         QString currency;
-        quint8 decimalPlaces;
+        unsigned char decimalPlaces;
     };
 
     struct ReleaseDateRange
     {
-        quint8 min;
-        quint8 max;
+        unsigned short min;
+        unsigned short max;
     };
 
     struct StoreFilters

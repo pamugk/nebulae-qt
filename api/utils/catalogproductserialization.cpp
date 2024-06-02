@@ -20,15 +20,14 @@ void parseSupportedOS(const QJsonObject &json, api::SupportedOperatingSystem &da
         data.systemRequirements[i].description = systemRequirementSet["description"].toString();
 
         auto requirementsList = systemRequirementSet["requirements"].toArray();
-        for (int j = 0; j < requirementsList.count(); j++)
+        for (const QJsonValue &item : std::as_const(requirementsList))
         {
-            auto requirement = requirementsList[j].toObject();
-            auto requirementId = requirement["id"].toString();
+            auto requirementId = item["id"].toString();
             if (!definedRequirements.contains(requirementId))
             {
-                data.definedRequirements.append(api::Requirement{requirementId, requirement["name"].toString()});
+                data.definedRequirements.append(api::Requirement{requirementId, item["name"].toString()});
             }
-            data.systemRequirements[i].requirements.insert(requirementId, requirement["description"].toString());
+            data.systemRequirements[i].requirements.insert(requirementId, item["description"].toString());
         }
     }
 }
@@ -93,10 +92,10 @@ void parseLocalizations(const QJsonArray &json, QVector<api::Localization> &data
 {
     data.clear();
     QMap<QString, int> foundLocales;
-    for (int i = 0; i < json.count(); i++)
+    for (const QJsonValue &item : json)
     {
-        auto locale = json[i].toObject()["_embedded"].toObject();
-        auto language = locale["language"].toObject();
+        auto locale = item["_embedded"];
+        auto language = locale["language"];
         auto languageCode = language["code"].toString();
         if (!foundLocales.contains(languageCode))
         {
@@ -306,18 +305,17 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         QSet<QString> fullBonusSet;
         for (int i = 0; i < data.editions.count() - 1; i++)
         {
-            for (int j = 0; j < data.editions[i].bonuses.count(); j++)
+            for (const QString &bonusName : std::as_const(data.editions[i].bonuses))
             {
-                auto bonusName = data.editions[i].bonuses[j];
                 if (fullBonusSet.contains(bonusName))
                 {
                     continue;
                 }
 
                 bool isCommonBonus = true;
-                for (int k = i + 1; k < data.editions.count() && isCommonBonus; k++)
+                for (int j = i + 1; j < data.editions.count() && isCommonBonus; j++)
                 {
-                    isCommonBonus = data.editions[k].bonusSet.contains(bonusName);
+                    isCommonBonus = data.editions[j].bonusSet.contains(bonusName);
                 }
 
                 if (isCommonBonus)
@@ -329,9 +327,8 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         }
         for (int i = 0; i < data.editions.count(); i++)
         {
-            for (int j = 0; j < data.editions[i].bonuses.count(); j++)
+            for (const QString &bonusName: std::as_const(data.editions[i].bonuses))
             {
-                auto bonusName = data.editions[i].bonuses[j];
                 if (!fullBonusSet.contains(bonusName))
                 {
                     fullBonusSet.insert(bonusName);

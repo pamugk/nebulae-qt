@@ -1,8 +1,6 @@
 #ifndef CATALOG_H
 #define CATALOG_H
 
-#include <QtGlobal>
-
 #include <QString>
 #include <QVector>
 
@@ -52,12 +50,12 @@ namespace api
         QString productState;
         QVector<MetaTag> genres;
         QVector<MetaTag> tags;
-        quint8 reviewsRating;
+        unsigned char reviewsRating;
     };
 
     struct SearchCatalogResponse
-    {   quint16 pages;
-        quint32 productCount;
+    {   unsigned short pages;
+        unsigned int productCount;
         QVector<CatalogProduct> products;
         StoreFilters filters;
     };

@@ -22,7 +22,9 @@ Pagination::Pagination(QWidget *parent) :
     {
         connect(pageButtons[i], &QPushButton::clicked, this, [this, i]()
         {
-            emit changedPage(pages[i]);
+            int requestedPage = pages[i];
+            changePages(requestedPage, pages[6]);
+            emit changedPage(requestedPage);
         });
     }
 }
@@ -51,8 +53,8 @@ void Pagination::changePages(quint16 page, quint16 totalPages)
         pages[6] = totalPages;
         pages[7] = page + 1;
 
-        quint8 j = 1;
-        for (qint32 i = std::max(std::min(page - 2, totalPages - 5), 2); i < std::min(std::max(page + 3, 7), static_cast<qint32>(totalPages)) && j < 6; i++, j++)
+        unsigned char j = 1;
+        for (int i = std::max(std::min(page - 2, totalPages - 5), 2); i < std::min(std::max(page + 3, 7), static_cast<int>(totalPages)) && j < 6; i++, j++)
         {
             pages[j] = i;
         }
@@ -92,6 +94,7 @@ void Pagination::changePages(quint16 page, quint16 totalPages)
 
 void Pagination::on_firstPageButton_clicked()
 {
+    changePages(1, pages[6]);
     emit changedPage(1);
 }
 

@@ -10,6 +10,12 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -51,7 +57,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -155,16 +161,16 @@
          <string>GENRES</string>
         </property>
         <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
+         <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
         <property name="arrowType">
-         <enum>Qt::NoArrow</enum>
+         <enum>Qt::ArrowType::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -185,16 +191,16 @@
          <string>SYSTEM</string>
         </property>
         <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
+         <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
         <property name="arrowType">
-         <enum>Qt::NoArrow</enum>
+         <enum>Qt::ArrowType::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -215,16 +221,16 @@
          <string>LANGUAGE</string>
         </property>
         <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
+         <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
         <property name="arrowType">
-         <enum>Qt::NoArrow</enum>
+         <enum>Qt::ArrowType::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -245,16 +251,16 @@
          <string>FEATURES</string>
         </property>
         <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
+         <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
         <property name="arrowType">
-         <enum>Qt::NoArrow</enum>
+         <enum>Qt::ArrowType::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -275,16 +281,16 @@
          <string>PRICE</string>
         </property>
         <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
+         <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
         </property>
         <property name="arrowType">
-         <enum>Qt::NoArrow</enum>
+         <enum>Qt::ArrowType::NoArrow</enum>
         </property>
        </widget>
       </item>
@@ -329,7 +335,7 @@
           <item>
            <spacer name="headerSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -408,7 +414,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>782</width>
+            <width>788</width>
             <height>387</height>
            </rect>
           </property>
@@ -479,7 +485,7 @@
           <string>No results found</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>

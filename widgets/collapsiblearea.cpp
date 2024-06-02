@@ -29,14 +29,17 @@ void CollapsibleArea::on_expandButton_toggled(bool checked)
     toggleAnimation.start();
 }
 
-void CollapsibleArea::setContentLayout(QLayout *contentLayout) {
-    if (ui->scrollArea->layout() != nullptr) {
+void CollapsibleArea::setContentLayout(QLayout *contentLayout)
+{
+    if (ui->scrollArea->layout() != nullptr)
+    {
         ui->scrollArea->layout()->deleteLater();
     }
     ui->scrollArea->setLayout(contentLayout);
     const auto collapsedHeight = sizeHint().height() - ui->scrollArea->maximumHeight();
     auto contentHeight = contentLayout->sizeHint().height();
-    for (int i = 0; i < toggleAnimation.animationCount() - 1; ++i) {
+    for (int i = 0; i < toggleAnimation.animationCount() - 1; ++i)
+    {
         QPropertyAnimation * spoilerAnimation = static_cast<QPropertyAnimation *>(toggleAnimation.animationAt(i));
         spoilerAnimation->setDuration(300);
         spoilerAnimation->setStartValue(collapsedHeight);

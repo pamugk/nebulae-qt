@@ -30,14 +30,15 @@ OrderItem::OrderItem(const api::OrderProduct &data,
 
     imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        if (imageReply->error() == QNetworkReply::NoError)
+        auto networkReply = imageReply;
+        imageReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(imageReply->readAll());
+            image.loadFromData(networkReply->readAll());
             ui->coverLabel->setPixmap(image);
         }
-        imageReply->deleteLater();
-        imageReply = nullptr;
+        networkReply->deleteLater();
     });
 }
 
@@ -45,7 +46,7 @@ OrderItem::~OrderItem()
 {
     if (imageReply != nullptr)
     {
-        imageReply->deleteLater();
+        imageReply->abort();
     }
     delete ui;
 }

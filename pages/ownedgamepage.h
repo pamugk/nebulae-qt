@@ -24,8 +24,8 @@ private:
     Ui::OwnedGamePage *ui;
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_expandDescriptionButton_clicked();
 };

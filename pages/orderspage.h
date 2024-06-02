@@ -23,15 +23,15 @@ public:
 private:
     api::GogApiClient *apiClient;
     api::OrderFilter filter;
-    quint16 page;
+    unsigned short page;
     Pagination *paginator;
     Ui::OrdersPage *ui;
 
     void fetchData();
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_searchEdit_textChanged(const QString &arg1);
 };

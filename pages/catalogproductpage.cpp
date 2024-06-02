@@ -11,7 +11,9 @@
 
 #include "../api/utils/catalogproductserialization.h"
 #include "../api/utils/priceserialization.h"
+#include "../api/utils/recommendationserialization.h"
 #include "../api/utils/reviewserialization.h"
+#include "../api/utils/seriesgameserialization.h"
 
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
@@ -20,10 +22,20 @@
 #include "../widgets/imageholder.h"
 #include "../widgets/pagination.h"
 #include "../widgets/reviewitem.h"
+#include "../widgets/simpleproductitem.h"
 #include "../widgets/videoholder.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
     BasePage(parent),
+    averageRatingReply(nullptr),
+    averageOwnerRatingReply(nullptr),
+    lastReviewsReply(nullptr),
+    mainReply(nullptr),
+    pricesReply(nullptr),
+    recommendedPurchasedTogetherReply(nullptr),
+    recommendedSimilarReply(nullptr),
+    seriesGamesReply(nullptr),
+    seriesTotalPriceReply(nullptr),
     ui(new Ui::CatalogProductPage)
 {
     ui->setupUi(this);
@@ -56,6 +68,10 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->linuxTab), false);
     ui->linuxTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
+    ui->seriesResultPage->setLayout(new FlowLayout(ui->seriesResultPage, -1, 24, 24));
+    ui->similarProductsResultPage->setLayout(new FlowLayout(ui->similarProductsResultPage, -1, 24, 24));
+    ui->purchasedTogetherResultPage->setLayout(new FlowLayout(ui->purchasedTogetherResultPage, -1, 24, 24));
+
     ui->criticsReviewLabel->setVisible(false);
 
     ui->userReviewsLabel->setVisible(false);
@@ -79,109 +95,48 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
 
 CatalogProductPage::~CatalogProductPage()
 {
+    if (averageRatingReply != nullptr)
+    {
+        averageRatingReply->abort();
+    }
+    if (averageOwnerRatingReply != nullptr)
+    {
+        averageOwnerRatingReply->abort();
+    }
+    if (lastReviewsReply != nullptr)
+    {
+        lastReviewsReply->abort();
+    }
+    if (mainReply != nullptr)
+    {
+        mainReply->abort();
+    }
+    if (pricesReply != nullptr)
+    {
+        pricesReply->abort();
+    }
+    if (recommendedSimilarReply != nullptr)
+    {
+        recommendedSimilarReply->abort();
+    }
+    if (recommendedPurchasedTogetherReply != nullptr)
+    {
+        recommendedPurchasedTogetherReply->abort();
+    }
+    if (seriesGamesReply != nullptr)
+    {
+        seriesGamesReply->abort();
+    }
+    if (seriesTotalPriceReply != nullptr)
+    {
+        seriesTotalPriceReply->abort();
+    }
     delete ui;
 }
 
 void CatalogProductPage::setApiClient(api::GogApiClient *apiClient)
 {
     this->apiClient = apiClient;
-}
-
-void CatalogProductPage::clear()
-{
-    ui->contentStack->setCurrentWidget(ui->loaderPage);
-
-    ui->starLabel->setVisible(false);
-    ui->ratingLabel->setVisible(false);
-
-    ui->discountLabel->setVisible(false);
-    ui->oldPriceLabel->setVisible(false);
-    ui->pricelabel->setVisible(false);
-
-    ui->mainPageScrollArea->verticalScrollBar()->setValue(0);
-    ui->mediaScrollArea->horizontalScrollBar()->setValue(0);
-    ui->descriptionView->setUrl(QUrl("about:blank"));
-    ui->editionsComboBox->clear();
-
-    ui->windowsLabel->setVisible(false);
-    ui->macOsLabel->setVisible(false);
-    ui->linuxLabel->setVisible(false);
-
-    while (!ui->mediaScrollAreaContentsLayout->isEmpty())
-    {
-        auto item = ui->mediaScrollAreaContentsLayout->itemAt(0);
-        ui->mediaScrollAreaContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    while (!ui->gameFeaturesLayout->isEmpty())
-    {
-        auto item = ui->gameFeaturesLayout->itemAt(0);
-        ui->gameFeaturesLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->languagesLayout->isEmpty())
-    {
-        auto item = ui->languagesLayout->itemAt(0);
-        ui->languagesLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    while (!ui->productGoodiesSection->layout()->isEmpty())
-    {
-        auto item = ui->productGoodiesSection->layout()->itemAt(0);
-        ui->productGoodiesSection->layout()->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->goodiesComparisonSectionGrid->isEmpty())
-    {
-        auto item = ui->goodiesComparisonSectionGrid->itemAt(0);
-        ui->goodiesComparisonSectionGrid->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->windowsTab), false);
-    while (!ui->windowsTabLayout->isEmpty())
-    {
-        auto item = ui->windowsTabLayout->itemAt(0);
-        ui->windowsTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->macOsTab), false);
-    while (!ui->macOsTabLayout->isEmpty())
-    {
-        auto item = ui->macOsTabLayout->itemAt(0);
-        ui->macOsTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->linuxTab), false);
-    while (!ui->linuxTabLayout->isEmpty())
-    {
-        auto item = ui->linuxTabLayout->itemAt(0);
-        ui->linuxTabLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->additonalRequirementsLabel->clear();
-
-    ui->userReviewsLabel->setVisible(false);
-    ui->userReviewsHeader->setVisible(false);
-    ui->ownersRatingLabel->setVisible(false);
-    ui->userReviewsStackedWidget->setVisible(false);
-    while (!ui->userReviewsContentsLayout->isEmpty())
-    {
-        auto item = ui->userReviewsContentsLayout->itemAt(0);
-        ui->userReviewsContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
 }
 
 void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const api::SupportedOperatingSystem data)
@@ -228,12 +183,15 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
 void CatalogProductPage::initialize(const QVariant &initialData)
 {
     id = initialData.toULongLong();
-    auto averageRatingResponse = apiClient->getProductAverageRating(id);
-    connect(averageRatingResponse, &QNetworkReply::finished, this, [this, averageRatingResponse]()
+    averageRatingReply = apiClient->getProductAverageRating(id);
+    connect(averageRatingReply, &QNetworkReply::finished, this, [this]()
     {
-        if (averageRatingResponse->error() == QNetworkReply::NoError)
+        auto networkReply = averageRatingReply;
+        averageRatingReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(averageRatingResponse->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetRatingResponse data;
             parseRatingResponse(resultJson, data);
 
@@ -243,48 +201,50 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->ratingLabel->setText(QString::number(data.value, 'g', 2) + "/5");
                 ui->ratingLabel->setVisible(true);
             }
-
-            averageRatingResponse->deleteLater();
         }
-    });
-    connect(averageRatingResponse, &QNetworkReply::errorOccurred, this, [this, averageRatingResponse](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            averageRatingResponse->deleteLater();
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
         }
+        networkReply->deleteLater();
     });
 
-    auto averageOwnerRatingResponse = apiClient->getProductAverageRating(id, "verified_owner");
-    connect(averageOwnerRatingResponse, &QNetworkReply::finished, this, [this, averageOwnerRatingResponse]()
+    averageOwnerRatingReply = apiClient->getProductAverageRating(id, "verified_owner");
+    connect(averageOwnerRatingReply, &QNetworkReply::finished, this, [this]()
     {
-        if (averageOwnerRatingResponse->error() == QNetworkReply::NoError)
+        auto networkReply = averageOwnerRatingReply;
+        averageOwnerRatingReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(averageOwnerRatingResponse->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetRatingResponse data;
             parseRatingResponse(resultJson, data);
 
             ui->ownersRatingLabel->setText(QString("Verified owners rating: %1/5").arg(QString::number(data.value, 'g', 2)));
             ui->ownersRatingLabel->setVisible(true);
-
-            averageOwnerRatingResponse->deleteLater();
         }
-    });
-    connect(averageOwnerRatingResponse, &QNetworkReply::errorOccurred, this, [this, averageOwnerRatingResponse](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            averageOwnerRatingResponse->deleteLater();
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
         }
+        networkReply->deleteLater();
     });
 
     auto countryCode = QLocale::territoryToCode(QLocale::system().territory());
-    auto pricesNetworkReply = apiClient->getProductPrices(id, countryCode);
-    connect(pricesNetworkReply, &QNetworkReply::finished, this, [this, pricesNetworkReply]()
+    pricesReply = apiClient->getProductPrices(id, countryCode);
+    connect(pricesReply, &QNetworkReply::finished, this, [this]()
     {
-        if (pricesNetworkReply->error() == QNetworkReply::NoError)
+        auto networkReply = pricesReply;
+        pricesReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(pricesNetworkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetPricesResponse data;
             parseGetPricesResponse(resultJson, data);
             if (!data.prices.isEmpty())
@@ -311,25 +271,25 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->pricelabel->setText(systemLocale.toCurrencyString(price.finalPrice / 100.0, currencySymbol));
                 ui->pricelabel->setVisible(true);
             }
-            pricesNetworkReply->deleteLater();
         }
-    });
-    connect(pricesNetworkReply, &QNetworkReply::errorOccurred, this, [this, pricesNetworkReply](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            pricesNetworkReply->deleteLater();
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
         }
+        networkReply->deleteLater();
     });
 
     updateUserReviews();
 
-    auto mainNetworkReply = apiClient->getCatalogProductInfo(id, "en-US");
-    connect(mainNetworkReply, &QNetworkReply::finished, this, [this, mainNetworkReply]()
+    mainReply = apiClient->getCatalogProductInfo(id, "en-US");
+    connect(mainReply, &QNetworkReply::finished, this, [this]()
     {
-        if (mainNetworkReply->error() == QNetworkReply::NoError)
+        auto networkReply = mainReply;
+        mainReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(mainNetworkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
@@ -339,12 +299,12 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
-                foreach (api::ThumbnailedVideo video, data.videos)
+                for (const api::ThumbnailedVideo &video : std::as_const(data.videos))
                 {
                     auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
                 }
-                foreach (api::FormattedLink screenshotLink, data.screenshots)
+                for (const api::FormattedLink &screenshotLink : std::as_const(data.screenshots))
                 {
                     auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
@@ -419,7 +379,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     ui->goodiesStackWidget->setVisible(true);
                     ui->goodiesStackWidget->setCurrentWidget(ui->productGoodiesSection);
 
-                    foreach (api::Bonus bonus, data.bonuses)
+                    for (const api::Bonus &bonus : std::as_const(data.bonuses))
                     {
                         ui->productGoodiesSection->layout()->addWidget(
                                     new BonusItem(bonus, ui->productGoodiesSection));
@@ -448,7 +408,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         {
                             if (checked)
                             {
-                                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, editionId});
+                                emit navigate({Page::CATALOG_PRODUCT_PAGE, editionId});
                             }
                         });
                     }
@@ -570,12 +530,14 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->contentRatingInfoLabel->clear();
                 ui->contentRatingIconLabel->clear();
             }
-            for (int i = 0; i < data.features.count(); i++)
+            for (const api::MetaTag &feature : std::as_const(data.features))
             {
-                ui->gameFeaturesLayout->addWidget(new FeatureItem(data.features[i], ui->gameDetails));
+                ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
             }
 
             QLocale systemLocale = QLocale::system();
+            QString countryCode = QLocale::territoryToCode(systemLocale.territory());
+            QString currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
             QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
             bool foundPreferredLanguage = false;
             for (int i = 0; i < data.localizations.count(); i++)
@@ -599,6 +561,95 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->supportedLanguagesLabel->setText(firstLanguage);
             }
 
+            if (data.series.name.isNull())
+            {
+                ui->seriesLabel->setVisible(false);
+                ui->seriesBuyButton->setVisible(false);
+                ui->seriesStackedWidget->setVisible(false);
+            }
+            else
+            {
+                seriesGamesReply = apiClient->getSeriesGames(data.series.id);
+                connect(seriesGamesReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = seriesGamesReply;
+                    seriesGamesReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetSeriesGamesResponse data;
+                        parseGetSeriesGamesResponse(resultJson, data);
+
+                        unsigned int count = 0;
+                        for (const api::SeriesGame &item : std::as_const(data.items))
+                        {
+                            if (item.visibleInCatalog)
+                            {
+                                count++;
+                                auto productItem = new SimpleProductItem(item.id, ui->seriesResultPage);
+                                productItem->setCover(item.imageLink, apiClient);
+                                productItem->setTitle(item.title);
+
+                                connect(apiClient, &api::GogApiClient::authenticated,
+                                        productItem, &SimpleProductItem::switchUiAuthenticatedState);
+                                productItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                                connect(productItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                                {
+                                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                                });
+                                ui->seriesResultPage->layout()->addWidget(productItem);
+                            }
+                        }
+
+                        ui->seriesLabel->setText(QString("%1 (%2)")
+                                                 .arg(ui->seriesLabel->text())
+                                                 .arg(count));
+                        ui->seriesStackedWidget->setCurrentWidget(ui->seriesResultPage);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+
+                seriesTotalPriceReply = apiClient->getSeriesPrices(data.series.id, countryCode, currencyCode);
+                connect(seriesTotalPriceReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = seriesTotalPriceReply;
+                    seriesTotalPriceReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetPricesResponse data;
+                        parseGetPricesResponse(resultJson, data);
+
+                        if (!data.currencies.isEmpty())
+                        {
+                            QLocale systemLocale = QLocale::system();
+                            QString preferredCurrency = data.currencies[0];
+                            auto preferredPrice = data.prices[preferredCurrency];
+                            ui->seriesBuyButton->setEnabled(apiClient->isAuthenticated());
+                            ui->seriesBuyButton->setText(QString("Buy whole series for %1")
+                                                         .arg(systemLocale.toCurrencyString(preferredPrice.finalPrice / 100., preferredCurrency)));
+                            ui->seriesBuyButton->setVisible(true);
+                        }
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+            }
+
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
             ui->featuresLabel->setText(data.featuresDescription);
             ui->featuresLabel->setVisible(!data.featuresDescription.isNull());
@@ -606,17 +657,111 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
 
             ui->contentStack->setCurrentWidget(ui->mainPage);
-
-            mainNetworkReply->deleteLater();
         }
-    });
-    connect(mainNetworkReply, &QNetworkReply::errorOccurred, this, [this, mainNetworkReply](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            mainNetworkReply->deleteLater();
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
         }
+        networkReply->deleteLater();
     });
+
+    auto systemLocale = QLocale::system();
+    auto currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
+    recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
+    connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = recommendedPurchasedTogetherReply;
+        recommendedPurchasedTogetherReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetRecommendationsResponse data;
+            parseRecommendationsResponse(resultJson, data);
+
+            for (const api::Recommendation &recommendation : std::as_const(data.products))
+            {
+                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
+                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                recommendationItem->setTitle(recommendation.details.title);
+                if (recommendation.pricing.priceSet)
+                {
+                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                                                 recommendation.pricing.currency);
+                }
+
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
+            }
+            ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+    recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
+    connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = recommendedSimilarReply;
+        recommendedSimilarReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetRecommendationsResponse data;
+            parseRecommendationsResponse(resultJson, data);
+
+            for (const api::Recommendation &recommendation : std::as_const(data.products))
+            {
+                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
+                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                recommendationItem->setTitle(recommendation.details.title);
+                if (recommendation.pricing.priceSet)
+                {
+                    recommendationItem->setPrice(recommendation.pricing.basePrice, recommendation.pricing.finalPrice,
+                                                 recommendation.pricing.currency);
+                }
+
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
+            }
+            ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
+void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->cartButton->setEnabled(authenticated);
+    ui->seriesBuyButton->setEnabled(authenticated);
+    ui->wishlistButton->setEnabled(authenticated);
 }
 
 void CatalogProductPage::on_acceptContentWarningButton_clicked()
@@ -627,7 +772,7 @@ void CatalogProductPage::on_acceptContentWarningButton_clicked()
 
 void CatalogProductPage::on_goBackButton_clicked()
 {
-    emit navigateToDestination({Page::ALL_GAMES, QVariant()});
+    emit navigateBack();
 }
 
 void CatalogProductPage::descriptionViewContentsSizeChanged(const QSizeF &size)
@@ -645,12 +790,20 @@ void CatalogProductPage::updateUserReviews()
         item->widget()->deleteLater();
         delete item;
     }
-    auto reviewsReply = apiClient->getProductReviews(id, QStringList(), reviewsOrder, reviewsPageSize, reviewsPage);
-    connect(reviewsReply, &QNetworkReply::finished, this, [this, reviewsReply]()
+
+    if (lastReviewsReply != nullptr)
     {
-        if (reviewsReply->error() == QNetworkReply::NoError)
+        lastReviewsReply->abort();
+    }
+    lastReviewsReply = apiClient->getProductReviews(id, QStringList(), reviewsOrder, reviewsPageSize, reviewsPage);
+    connect(lastReviewsReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = lastReviewsReply;
+        lastReviewsReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(reviewsReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetReviewsResponse data;
             parseReviewsResponse(resultJson, data);
 
@@ -658,7 +811,7 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsHeader->setVisible(data.reviewable);
             ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
             ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            foreach (api::Review review, data.items)
+            for (const api::Review &review : std::as_const(data.items))
             {
                 auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
                                                  apiClient,
@@ -668,20 +821,18 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
             emit userReviewsResultsUpdated(data.page, data.pages);
             ui->userReviewsStackedWidget->setVisible(data.reviewable);
-            reviewsReply->deleteLater();
         }
-    });
-    connect(reviewsReply, &QNetworkReply::errorOccurred, this, [this, reviewsReply](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << error;
-            reviewsReply->deleteLater();
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
         }
+        networkReply->deleteLater();
     });
 }
 
-void CatalogProductPage::changeUserReviewsPage(quint16 page)
+void CatalogProductPage::changeUserReviewsPage(unsigned short page)
 {
     reviewsPage = page;
     updateUserReviews();

@@ -23,16 +23,16 @@ private:
     api::GogApiClient *apiClient;
     QString query;
     QVector<QString> orders;
-    quint8 currentOrder;
-    quint16 page;
+    unsigned char currentOrder;
+    unsigned short page;
     Pagination *paginator;
     Ui::WishlistPage *ui;
 
     void fetchData();
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void onSearchTextChanged(const QString &arg1);
     void onCurrentOrderChanged(int index);

@@ -22,13 +22,16 @@ public:
     ~StoreGridTile();
 
 signals:
-    void navigateToProduct(quint64 id);
+    void navigateToProduct(unsigned long long id);
+
+public slots:
+    void switchUiAuthenticatedState(bool authenticated);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    quint64 itemId;
+    unsigned long long itemId;
     QNetworkReply *imageReply;
     Ui::StoreGridTile *ui;
 };

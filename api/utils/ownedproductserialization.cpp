@@ -31,9 +31,9 @@ void parseOwnedProduct(const QJsonObject &json, api::OwnedProduct &data)
     if (json["worksOn"].isObject())
     {
         auto worksOn = json["worksOn"];
-        data.worksOn.Windows = json["Windows"].toBool();
-        data.worksOn.Mac = json["Mac"].toBool();
-        data.worksOn.Linux = json["Linux"].toBool();
+        data.worksOn.Windows = worksOn["Windows"].toBool();
+        data.worksOn.Mac = worksOn["Mac"].toBool();
+        data.worksOn.Linux = worksOn["Linux"].toBool();
     }
     data.category = json["category"].toString();
     data.rating = json["rating"].toInt();

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
+    for (const QString &locale : std::as_const(uiLanguages)) {
         const QString baseName = "nebulae_" + QLocale(locale).name();
         if (translator.load(":/i18n/" + baseName)) {
             a.installTranslator(&translator);
@@ -33,9 +33,7 @@ int main(int argc, char *argv[])
     QObject::connect(&settingsManager, &SettingsManager::autoLoginChanged,
             &apiClient, &api::GogApiClient::setStoreCredentials);
 
-    MainWindow w;
-    w.setApiClient(&apiClient);
-    w.setSettingsManager(&settingsManager);
+    MainWindow w(&apiClient, &settingsManager);
     w.show();
 
     QSystemTrayIcon trayIcon(QIcon(":/icons/gog-galaxy.png"), &a);

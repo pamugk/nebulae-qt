@@ -9,6 +9,16 @@ struct NavigationDestination
 {
     Page page;
     QVariant parameters;
+
+    const bool operator==(const NavigationDestination &other)
+    {
+        return page == other.page && parameters == other.parameters;
+    }
+
+    const bool operator!=(const NavigationDestination &other)
+    {
+        return page != other.page || parameters != other.parameters;
+    }
 };
 
 #endif // NAVIGATIONDESTINATION_H

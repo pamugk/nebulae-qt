@@ -1,8 +1,7 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
-#include <QtGlobal>
-
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QSettings>
@@ -23,29 +22,41 @@ namespace api
 
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
-        QNetworkReply *getCatalogProductInfo(quint64 id, const QString &locale);
-        QNetworkReply *getOrdersHistory(const OrderFilter &filter, quint16 page = 1);
-        QNetworkReply *getOwnedProductInfo(quint64 id, const QString &locale);
+        QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
+        QNetworkReply *getOwnedProductInfo(unsigned long long id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                    const QString &order = "title",
-                                   quint16 page = 1);
+                                   unsigned short page = 1);
         QNetworkReply *getPlayTime();
-        QNetworkReply *getProductAchievements(quint64 productId);
-        QNetworkReply *getProductAverageRating(quint64 productId, const QString &reviewer = QString());
-        QNetworkReply *getProductPrices(quint64 productId, const QString &countryCode);
-        QNetworkReply *getProductReviews(quint64 productId,
+        QNetworkReply *getProductAchievements(unsigned long long productId);
+        QNetworkReply *getProductAverageRating(unsigned long long productId, const QString &reviewer = QString());
+        QNetworkReply *getProductPrices(unsigned long long productId, const QString &countryCode);
+        QNetworkReply *getProductRecommendationsPurchasedTogether(unsigned long long productId,
+                                                                 const QString &countryCode,
+                                                                 const QString &currency,
+                                                                 unsigned char limit = 8);
+        QNetworkReply *getProductRecommendationsSimilar(unsigned long long productId,
+                                                       const QString &countryCode,
+                                                       const QString &currency,
+                                                       unsigned char limit = 8);
+        QNetworkReply *getProductReviews(unsigned long long productId,
                                          const QStringList &languages,
                                          const SortOrder &order,
-                                         quint16 limit, quint16 page);
+                                         unsigned short limit, unsigned short page);
+        QNetworkReply *getSeriesGames(unsigned long long seriesId);
+        QNetworkReply *getSeriesPrices(unsigned long long seriesId,
+                                       const QString &countryCode,
+                                       const QString &currencyCode);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
-                                   quint16 page = 1);
+                                   unsigned short page = 1);
         QNetworkReply *searchCatalog(const SortOrder &order,
                                      const CatalogFilter &filter,
                                      QString countryCode,
                                      QString locale,
                                      QString currencyCode,
-                                     quint16 page = 1, quint32 limit = 48);
+                                     unsigned short page = 1, unsigned int limit = 48);
 
     public slots:
         void grant();
@@ -53,9 +64,10 @@ namespace api
 
     signals:
         void authorize(const QUrl &authUrl);
-        void authenticated();
+        void authenticated(bool authenticated);
 
     private:
+        QNetworkAccessManager client_tmp;
         QOAuth2AuthorizationCodeFlow client;
         QSettings settings;
         bool storeTokens;

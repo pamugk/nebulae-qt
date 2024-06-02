@@ -8,14 +8,15 @@ namespace api
 {
     struct ProductPrice
     {
-        quint32 basePrice;
-        quint32 finalPrice;
-        quint32 bonusWalletFunds;
+        unsigned int basePrice;
+        unsigned int finalPrice;
+        unsigned int bonusWalletFunds;
         QString promoId;
     };
 
     struct GetPricesResponse
     {
+        QVector<QString> currencies;
         QMap<QString, ProductPrice> prices;
     };
 }

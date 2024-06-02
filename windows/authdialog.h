@@ -12,10 +12,13 @@ class AuthDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AuthDialog(QWidget *parent = nullptr);
+    explicit AuthDialog(const QUrl &authUrl, QWidget *parent = nullptr);
     ~AuthDialog();
 
-    void setUrl(const QUrl &authUrl);
+private slots:
+    void on_webEngineView_loadFinished(bool success);
+
+    void on_reloadButton_clicked();
 
 private:
     Ui::AuthDialog *ui;

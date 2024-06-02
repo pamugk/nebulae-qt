@@ -31,7 +31,9 @@ set(PROJECT_SOURCES
         api/models/price.h
         api/models/product.h
         api/models/productshared.h
+        api/models/recommendation.h
         api/models/review.h
+        api/models/seriesgame.h
         api/models/sort.h
         api/models/statistics.h
         api/models/tag.h
@@ -44,8 +46,10 @@ set(PROJECT_SOURCES
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
+        api/utils/recommendationserialization.h api/utils/recommendationserialization.cpp
         api/utils/reviewserialization.h api/utils/reviewserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
+        api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
 
         internals/navigationdestination.h
@@ -74,6 +78,7 @@ set(PROJECT_SOURCES
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
+        widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
         widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui

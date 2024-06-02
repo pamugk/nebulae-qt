@@ -12,14 +12,15 @@ VideoHolder::VideoHolder(QSize size,
     ui->thumbnailLabel->setFixedSize(size);
     thumbnailReply = apiClient->getAnything(data.thumbnailLink);
     connect(thumbnailReply, &QNetworkReply::finished, this, [this]() {
-        if (thumbnailReply->error() == QNetworkReply::NoError)
+        auto networkReply = thumbnailReply;
+        thumbnailReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(thumbnailReply->readAll());
+            image.loadFromData(networkReply->readAll());
             ui->thumbnailLabel->setPixmap(image.scaled(ui->thumbnailLabel->size()));
         }
-        thumbnailReply->deleteLater();
-        thumbnailReply = nullptr;
+        networkReply->deleteLater();
     });
 }
 
@@ -27,7 +28,7 @@ VideoHolder::~VideoHolder()
 {
     if (thumbnailReply != nullptr)
     {
-        thumbnailReply->deleteLater();
+        thumbnailReply->abort();
     }
     delete ui;
 }

@@ -47,8 +47,8 @@ void parseProduct(const QJsonObject &json, api::CatalogProduct &data)
     data.releaseDate = json["releaseDate"].toString();
     data.productType = json["productType"].toString();
     data.title = json["title"].toString();
-    data.coverHorizontal = json["coverHorizontal"].toString();
-    data.coverVertical = json["coverVertical"].toString();
+    data.coverHorizontal = json["coverHorizontal"].toString().replace(".png", "_product_tile_extended_432x243.webp");
+    data.coverVertical = json["coverVertical"].toString().replace(".jpg", "_product_tile_80x114.webp");
     parseStringArray(json["developers"].toArray(), data.developers);
     parseStringArray(json["publishers"].toArray(), data.publishers);
     parseStringArray(json["operatingSystems"].toArray(), data.operatingSystems);

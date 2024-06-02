@@ -10,16 +10,70 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(217, 217, 217);s</string>
+   <string notr="true">background-color: rgb(217, 217, 217);</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="contentLayout">
    <property name="spacing">
     <number>0</number>
    </property>
+   <item row="0" column="0" colspan="2">
+    <widget class="QWidget" name="header" native="true">
+     <property name="styleSheet">
+      <string notr="true">QWidget#header
+{
+	border-bottom: 1px solid gray;
+}</string>
+     </property>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <item>
+       <widget class="QLabel" name="totalLabel">
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(237, 237, 237); border-radius: 20px;</string>
+        </property>
+        <property name="placeholderText">
+         <string>Search store by title, publisher or tag</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="1" column="0" rowspan="2">
     <widget class="QScrollArea" name="filtersScrollArea">
      <property name="styleSheet">
@@ -32,15 +86,15 @@
       <bool>true</bool>
      </property>
      <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
      </property>
      <widget class="QWidget" name="filtersScrollAreaContents">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>18</width>
-        <height>536</height>
+        <width>16</width>
+        <height>548</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -51,7 +105,7 @@
       </property>
       <layout class="QVBoxLayout" name="filtersScrollAreaLayout">
        <property name="sizeConstraint">
-        <enum>QLayout::SetFixedSize</enum>
+        <enum>QLayout::SizeConstraint::SetFixedSize</enum>
        </property>
       </layout>
      </widget>
@@ -93,7 +147,7 @@
           <string>No results found</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -114,7 +168,7 @@
           <item>
            <spacer name="resultsHeaderSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -223,63 +277,104 @@
         </widget>
        </item>
        <item>
-        <widget class="QScrollArea" name="resultsScrollArea">
-         <property name="styleSheet">
-          <string notr="true">QScrollArea
-{
-	border: none;
-}</string>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="resultsScrollAreaContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>100</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <layout class="QVBoxLayout" name="resultsScrollAreaLayout">
+        <widget class="QStackedWidget" name="resultsStackedWidget">
+         <widget class="QWidget" name="resultsListPage">
+          <layout class="QVBoxLayout" name="resultsListPageLayout">
            <property name="spacing">
             <number>0</number>
            </property>
            <property name="leftMargin">
-            <number>24</number>
+            <number>0</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
-            <widget class="QStackedWidget" name="resultsStackedWidget">
-             <widget class="QWidget" name="resultsListPage">
+            <widget class="QScrollArea" name="resultsListScrollArea">
+             <property name="styleSheet">
+              <string notr="true">QScrollArea
+          {
+              border: none;
+          }</string>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="resultsListScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>382</width>
+                <height>486</height>
+               </rect>
+              </property>
               <layout class="QVBoxLayout" name="resultsListLayout">
                <property name="spacing">
                 <number>1</number>
                </property>
                <property name="leftMargin">
-                <number>0</number>
+                <number>24</number>
                </property>
                <property name="topMargin">
                 <number>0</number>
                </property>
                <property name="rightMargin">
-                <number>0</number>
+                <number>8</number>
                </property>
                <property name="bottomMargin">
                 <number>0</number>
                </property>
               </layout>
              </widget>
-             <widget class="QWidget" name="resultsGridPage"/>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="resultsGridPage">
+          <layout class="QVBoxLayout" name="resultsGridPageLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="resultsGridScrollArea">
+             <property name="styleSheet">
+              <string notr="true">QScrollArea
+          {
+              border: none;
+          }</string>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="resultsGridScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>100</width>
+                <height>30</height>
+               </rect>
+              </property>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -305,7 +400,7 @@
        <property name="bottomMargin">
         <number>16</number>
        </property>
-       <item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="errorLabel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -317,11 +412,11 @@
           <string>Uh-oh, something bad happened. Retry?</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignCenter</set>
          </property>
         </widget>
        </item>
-       <item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QPushButton" name="retryButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -371,50 +466,30 @@
      </widget>
     </widget>
    </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QWidget" name="header" native="true">
-     <property name="styleSheet">
-      <string notr="true">QWidget#header
-{
-	border-bottom: 1px solid gray;
-}</string>
+   <item row="2" column="1">
+    <widget class="QFrame" name="paginatorSlot">
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
      </property>
-     <layout class="QHBoxLayout" name="headerLayout">
-      <item>
-       <widget class="QLabel" name="totalLabel">
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string notr="true"/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="lineEdit">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(237, 237, 237); border-radius: 20px;</string>
-        </property>
-        <property name="placeholderText">
-         <string>Search store by title, publisher or tag</string>
-        </property>
-       </widget>
-      </item>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="paginatorSlotLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
      </layout>
     </widget>
    </item>

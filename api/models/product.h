@@ -1,8 +1,6 @@
 #ifndef PRODUCT_H
 #define PRODUCT_H
 
-#include <QtGlobal>
-
 #include <QDate>
 #include <QDateTime>
 #include <QString>
@@ -18,11 +16,11 @@ namespace api
         QString baseAmount;
         QString finalAmount;
         bool discounted;
-        qint32 discountPercentage;
+        int discountPercentage;
         QString discountDifference;
         QString symbol;
         bool free;
-        qreal discount;
+        double discount;
         bool bonusStoreCreditIncluded;
         QString bonusStoreCreditAmount;
         QString promoId;
@@ -51,7 +49,7 @@ namespace api
         QVector<QString> supportedOperatingSystems;
         QVector<QString> genres;
         QDate globalReleaseDate;
-        qint64 id;
+        long long id;
         QDate releaseDate;
         QString title;
         QString image;
@@ -68,18 +66,18 @@ namespace api
 
         SalesVisibility salesVisibility;
         Price price;
-        qint32 rating;
+        int rating;
         bool TBA;
         bool discounted;
         bool inDevelopment;
         bool buyable;
-        qint8 type;
+        signed char type;
         bool comingSoon;
         bool priceVisible;
         bool movie;
         bool game;
         bool wishlistable;
-        quint8 ageLimit;
+        signed char ageLimit;
         Availability availability;
         PlatformAvailability worksOn;
     };

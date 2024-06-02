@@ -23,8 +23,11 @@ private:
     Ui::StorePage *ui;
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
+private slots:
+    void on_retryButton_clicked();
+    void on_webView_loadFinished(bool success);
 };
 
 #endif // STOREPAGE_H

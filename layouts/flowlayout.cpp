@@ -122,13 +122,13 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
         if (spaceX == -1)
         {
             spaceX = wid->style()->layoutSpacing(
-                    QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal);
+                    QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Orientation::Horizontal);
         }
         int spaceY = verticalSpacing();
         if (spaceY == -1)
         {
             spaceY = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Orientation::Vertical);
         }
 
         int nextX = x + item->sizeHint().width() + spaceX;

@@ -1,8 +1,6 @@
 #ifndef ORDER_H
 #define ORDER_H
 
-#include <QtGlobal>
-
 #include <QDateTime>
 #include <QVector>
 
@@ -14,7 +12,7 @@ namespace api
         QString symbol;
         QString code;
         bool zero;
-        quint32 rawAmount;
+        unsigned int rawAmount;
         QString formattedAmount;
         QString full;
         QString forEmail;
@@ -67,7 +65,7 @@ namespace api
     struct GetOrdersHistoryResponse
     {
         QVector<Order> orders;
-        quint16 totalPages;
+        unsigned short totalPages;
     };
 }
 

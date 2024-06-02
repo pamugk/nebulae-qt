@@ -19,12 +19,12 @@
 
 AllGamesPage::AllGamesPage(QWidget *parent) :
     BasePage(parent),
+    lastCatalogReply(nullptr),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);
     ui->filtersScrollAreaLayout->setAlignment(Qt::AlignTop);
-    ui->resultsScrollAreaLayout->setAlignment(Qt::AlignTop);
-    ui->resultsGridPage->setLayout(new FlowLayout(ui->resultsGridPage));
+    ui->resultsGridScrollAreaContents->setLayout(new FlowLayout(ui->resultsGridScrollAreaContents, -1, 24, 24));
     ui->resultsListLayout->setAlignment(Qt::AlignTop);
     gridLayout = true;
 
@@ -48,18 +48,22 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
     filter.productTypes = QStringList({"game","pack","dlc","extras"});
 
     page = 1;
-    paginator = new Pagination(ui->resultsPage);
+    paginator = new Pagination(this);
+    paginator->setVisible(false);
     connect(paginator, &Pagination::changedPage, this, [this](quint16 newPage)
     {
        page = newPage;
        fetchData();
     });
-    ui->resultsPageLayout->addWidget(paginator);
-    ui->resultsPageLayout->setAlignment(paginator, Qt::AlignHCenter);
+    ui->paginatorSlotLayout->addWidget(paginator, Qt::AlignHCenter);
 }
 
 AllGamesPage::~AllGamesPage()
 {
+    if (lastCatalogReply != nullptr)
+    {
+        lastCatalogReply->abort();
+    }
     delete ui;
 }
 
@@ -71,8 +75,8 @@ void AllGamesPage::setApiClient(api::GogApiClient *apiClient)
 void AllGamesPage::fetchData()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    paginator->setVisible(false);
     data.products.clear();
+    ui->resultsListScrollArea->verticalScrollBar()->setValue(0);
     while (!ui->resultsListLayout->isEmpty())
     {
         auto item = ui->resultsListLayout->itemAt(0);
@@ -80,15 +84,24 @@ void AllGamesPage::fetchData()
         item->widget()->deleteLater();
         delete item;
     }
-    while (!ui->resultsGridPage->layout()->isEmpty())
+    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
+    while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
     {
-        auto item = ui->resultsGridPage->layout()->itemAt(0);
-        ui->resultsGridPage->layout()->removeItem(item);
+        auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
+        ui->resultsGridScrollAreaContents->layout()->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
-    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
-    connect(networkReply, &QNetworkReply::finished, this, [=](){
+
+    if (lastCatalogReply != nullptr)
+    {
+        lastCatalogReply->abort();
+    }
+    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
+    connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
+        auto networkReply = lastCatalogReply;
+        lastCatalogReply = nullptr;
+
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -99,24 +112,22 @@ void AllGamesPage::fetchData()
 
             if (data.products.isEmpty())
             {
+                paginator->setVisible(false);
                 ui->contentsStack->setCurrentWidget(ui->emptyPage);
             }
             else
             {
+                paginator->setVisible(true);
                 paginator->changePages(page, data.pages);
                 layoutResults();
             }
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {   ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+        }
 
-            networkReply->deleteLater();
-        }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
-        {
-            qDebug() << error;
-            networkReply->deleteLater();
-        }
+        networkReply->deleteLater();
     });
 }
 
@@ -125,60 +136,37 @@ void AllGamesPage::layoutResults()
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     if (gridLayout)
     {
-        foreach (api::CatalogProduct product, data.products)
+        for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
+            connect(apiClient, &api::GogApiClient::authenticated, storeItem,
+                    &StoreGridTile::switchUiAuthenticatedState);
+            storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
             });
-            ui->resultsGridPage->layout()->addWidget(storeItem);
+            ui->resultsGridScrollAreaContents->layout()->addWidget(storeItem);
         }
         ui->resultsStackedWidget->setCurrentWidget(ui->resultsGridPage);
     }
     else
     {
-        foreach (api::CatalogProduct product, data.products)
+        for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
+            connect(apiClient, &api::GogApiClient::authenticated, storeItem,
+                    &StoreListItem::switchUiAuthenticatedState);
+            storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
             });
             ui->resultsListLayout->addWidget(storeItem);
         }
         ui->resultsStackedWidget->setCurrentWidget(ui->resultsListPage);
     }
     ui->contentsStack->setCurrentWidget(ui->resultsPage);
-}
-
-void AllGamesPage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    paginator->setVisible(false);
-    while (!ui->filtersScrollAreaLayout->isEmpty())
-    {
-        auto item = ui->filtersScrollAreaLayout->itemAt(0);
-        ui->filtersScrollAreaLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->resultsListLayout->isEmpty())
-    {
-        auto item = ui->resultsListLayout->itemAt(0);
-        ui->resultsListLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    while (!ui->resultsGridPage->layout()->isEmpty())
-    {
-        auto item = ui->resultsGridPage->layout()->itemAt(0);
-        ui->resultsGridPage->layout()->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-    ui->resultsScrollArea->horizontalScrollBar()->setValue(0);
-    data.products.clear();
 }
 
 void AllGamesPage::initialize(const QVariant &data)
@@ -230,9 +218,8 @@ void AllGamesPage::initialize(const QVariant &data)
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
             area = new CollapsibleArea("Price range", ui->filtersScrollAreaContents);
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             checkbox = new QCheckBox("Show only free games", area);
-            layout->setAlignment(Qt::AlignTop);
             layout->addWidget(checkbox);
             area->setContentLayout(layout);
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
@@ -240,9 +227,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Release Status", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.releaseStatuses)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.releaseStatuses))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.releaseStatuses.contains(item.slug));
@@ -283,9 +270,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Genres", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.genres)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.genres))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.genres.contains(item.slug));
@@ -326,9 +313,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Tags", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.tags)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.tags))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.tags.contains(item.slug));
@@ -370,9 +357,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Operating Systems", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.systems.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.systems)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.systems))
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.systems.contains(item.slug));
@@ -398,9 +385,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Features", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.features)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.features))
             {
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 filterCheckbox->setInclude(filter.features.contains(item.slug));
@@ -444,9 +431,9 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Languages", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.languages.count());
-            layout = new QVBoxLayout(area);
+            layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            foreach (api::MetaTag item, this->data.filters.languages)
+            for (const api::MetaTag &item : std::as_const(this->data.filters.languages))
             {
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.languages.contains(item.slug));
@@ -478,10 +465,12 @@ void AllGamesPage::initialize(const QVariant &data)
 
             if (this->data.products.isEmpty())
             {
+                paginator->setVisible(false);
                 ui->contentsStack->setCurrentWidget(ui->emptyPage);
             }
             else
             {
+                paginator->setVisible(true);
                 paginator->changePages(page, this->data.pages);
                 layoutResults();
             }
@@ -497,6 +486,11 @@ void AllGamesPage::initialize(const QVariant &data)
             networkReply->deleteLater();
         }
     });
+}
+
+void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void AllGamesPage::on_lineEdit_textChanged(const QString &arg1)
@@ -524,6 +518,13 @@ void AllGamesPage::on_gridModeButton_clicked()
     if (!gridLayout)
     {
         gridLayout = true;
+        while (!ui->resultsListLayout->isEmpty())
+        {
+            auto item = ui->resultsListLayout->itemAt(0);
+            ui->resultsListLayout->removeItem(item);
+            item->widget()->deleteLater();
+            delete item;
+        }
         layoutResults();
     }
 }
@@ -534,6 +535,13 @@ void AllGamesPage::on_listModeButton_clicked()
     if (gridLayout)
     {
         gridLayout = false;
+        while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
+        {
+            auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
+            ui->resultsGridScrollAreaContents->layout()->removeItem(item);
+            item->widget()->deleteLater();
+            delete item;
+        }
         layoutResults();
     }
 }

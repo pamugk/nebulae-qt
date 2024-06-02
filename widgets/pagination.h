@@ -1,10 +1,7 @@
 #ifndef PAGINATION_H
 #define PAGINATION_H
 
-#include <QtGlobal>
-
 #include <QPushButton>
-#include <QVector>
 #include <QWidget>
 
 namespace Ui {
@@ -20,17 +17,17 @@ public:
     ~Pagination();
 
 signals:
-    void changedPage(quint16 newPage);
+    void changedPage(unsigned short newPage);
 
 public slots:
-    void changePages(quint16 page, quint16 totalPages);
+    void changePages(unsigned short page, unsigned short totalPages);
 
 private slots:
     void on_firstPageButton_clicked();
 
 private:
-    QPushButton * pageButtons[8];
-    QVector<qint32> pages = QVector<qint32>(8);
+    QPushButton *pageButtons[8];
+    int pages[8];
     Ui::Pagination *ui;
 };
 

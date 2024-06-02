@@ -59,13 +59,13 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
     QJsonArray downloads;
     downloads = json["installers"].toArray();
     data.installers.clear();
-    foreach (QJsonValue item, downloads)
+    for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
         if (installers.contains(download.name))
         {
-            foreach (api::DownloadFile downloadFile, download.files)
+            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
                 installers[download.name]->files.append(downloadFile);
             }
@@ -80,13 +80,13 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
 
     downloads = json["patches"].toArray();
     data.patches.clear();
-    foreach (QJsonValue item, downloads)
+    for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
         if (installers.contains(download.name))
         {
-            foreach (api::DownloadFile downloadFile, download.files)
+            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
                 installers[download.name]->files.append(downloadFile);
             }
@@ -101,13 +101,13 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
 
     downloads = json["language_packs"].toArray();
     data.languagePacks.clear();
-    foreach (QJsonValue item, downloads)
+    for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
         parseGameDownload(item.toObject(), download);
         if (installers.contains(download.name))
         {
-            foreach (api::DownloadFile downloadFile, download.files)
+            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
                 installers[download.name]->files.append(downloadFile);
             }
@@ -134,9 +134,9 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.title = json["title"].toString();
     data.slug = json["slug"].toString();
     auto languages = json["languages"].toVariant().toMap();
-    foreach (QString language, languages.keys())
+    for (const auto& [language, value] : languages.asKeyValueRange())
     {
-        data.languages[language] = languages[language].toString();
+        data.languages[language] = value.toString();
     }
     data.purchaseLink = json["links"]["purchase_link"].toString();
     data.productCardLink = json["links"]["product_card"].toString();
@@ -153,9 +153,9 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     data.preOrder = json["is_pre_order"].toBool();
     data.releaseDate = QDateTime::fromString(json["release_date"].toString(), Qt::ISODate);
     auto images = json["images"].toVariant().toMap();
-    foreach (QString image, images.keys())
+    for (const auto &[image, value] : images.asKeyValueRange())
     {
-        data.images[image] = images[image].toString();
+        data.images[image] = value.toString();
     }
     parseDownloads(json["downloads"].toObject(), data.downloads);
 }
@@ -168,7 +168,7 @@ void parseProductScreenshot(const QJsonObject &json, api::ProductScreenshot &dat
     if (json["formatted_images"].isArray())
     {
         auto images = json["formatted_images"].toArray();
-        foreach (QJsonValue image, images)
+        for (const QJsonValue &image : std::as_const(images))
         {
             data.formattedImages[image["formatter_name"].toString()] = image["image_url"].toString();
         }

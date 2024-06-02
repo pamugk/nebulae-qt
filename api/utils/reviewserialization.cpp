@@ -33,9 +33,9 @@ void parseReview(const QJsonObject &json, api::Review &data)
     data.reviewer.counters.games = json["reviewer"]["counters"]["games"].toInt();
     data.reviewer.counters.reviews = json["reviewer"]["counters"]["reviews"].toInt();
     auto avatar = json["reviewer"]["avatar"]["links"].toVariant().toMap();
-    foreach (QString avatarLink, avatar.keys())
+    for (const auto &[avatarLink, value] : avatar.asKeyValueRange())
     {
-        data.reviewer.avatar[avatarLink] = avatar[avatarLink].toString();
+        data.reviewer.avatar[avatarLink] = value.toString();
     }
 }
 

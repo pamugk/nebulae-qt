@@ -28,16 +28,18 @@ private:
     QVector<api::SortOrder> orders;
     api::CatalogFilter filter;
     bool gridLayout;
-    quint16 page;
+    unsigned short page;
     Pagination *paginator;
     Ui::AllGamesPage *ui;
+
+    QNetworkReply *lastCatalogReply;
 
     void fetchData();
     void layoutResults();
 
 public slots:
-    virtual void clear() override;
     virtual void initialize(const QVariant &data) override;
+    virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_lineEdit_textChanged(const QString &arg1);
     void on_sortOrderComboBox_currentIndexChanged(int index);

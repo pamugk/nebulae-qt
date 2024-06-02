@@ -36,8 +36,7 @@ OrderGroup::OrderGroup(const api::Order &data,
     }
     ui->dateLabel->setText(data.date.toString());
 
-    api::OrderProduct product;
-    foreach (product, data.products)
+    for (const api::OrderProduct &product : std::as_const(data.products))
     {
         ui->productsLayout->addWidget(new OrderItem(product, apiClient, this));
     }

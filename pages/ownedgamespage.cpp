@@ -130,7 +130,16 @@ void OwnedGamesPage::setApiClient(api::GogApiClient *apiClient)
 
 void OwnedGamesPage::updateData()
 {
-    clear();
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
+    while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
+    {
+        auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
+        ui->resultsGridScrollAreaContents->layout()->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+
     auto networkReply = apiClient->getOwnedProducts(searchQuery);
     connect(networkReply, &QNetworkReply::finished, this, [=]()
     {
@@ -145,13 +154,13 @@ void OwnedGamesPage::updateData()
             }
             else
             {
-                foreach (api::OwnedProduct item, data.products)
+                for (const api::OwnedProduct &item : std::as_const(data.products))
                 {
                     auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
                     auto productId = item.id;
                     connect(gridItem, &OwnedProductGridItem::navigateToProduct, this, [this, productId]()
                     {
-                        emit navigateToDestination({Page::OWNED_PRODUCT_PAGE, productId});
+                        emit navigate({Page::OWNED_PRODUCT_PAGE, productId});
                     });
                     ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
                 }
@@ -170,22 +179,14 @@ void OwnedGamesPage::updateData()
     });
 }
 
-void OwnedGamesPage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
-    while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
-    {
-        auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
-        ui->resultsGridScrollAreaContents->layout()->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-}
-
 void OwnedGamesPage::initialize(const QVariant &data)
 {
     updateData();
+}
+
+void OwnedGamesPage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void OwnedGamesPage::on_searchLineEdit_textChanged(const QString &arg1)

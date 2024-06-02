@@ -45,7 +45,17 @@ void WishlistPage::setApiClient(api::GogApiClient *apiClient)
 
 void WishlistPage::fetchData()
 {
-    clear();
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    ui->resultsScrollArea->verticalScrollBar()->setValue(0);
+    paginator->setVisible(false);
+    while (!ui->resultsScrollAreaContentsLayout->isEmpty())
+    {
+        auto item =ui->resultsScrollAreaContentsLayout->itemAt(0);
+        ui->resultsScrollAreaContentsLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+
     auto networkReply = apiClient->getWishlist(query, orders[currentOrder], page);
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
@@ -60,12 +70,12 @@ void WishlistPage::fetchData()
             }
             else
             {
-                foreach (api::Product product, data.products)
+                for (const api::Product &product : std::as_const(data.products))
                 {
                     auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
                     connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)
                     {
-                        emit navigateToDestination({Page::CATALOG_PRODUCT_PAGE, productId});
+                        emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
                     });
                     ui->resultsScrollAreaContentsLayout->addWidget(wishlistItem);
                 }
@@ -85,23 +95,14 @@ void WishlistPage::fetchData()
     });
 }
 
-void WishlistPage::clear()
-{
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    ui->resultsScrollArea->verticalScrollBar()->setValue(0);
-    paginator->setVisible(false);
-    while (!ui->resultsScrollAreaContentsLayout->isEmpty())
-    {
-        auto item =ui->resultsScrollAreaContentsLayout->itemAt(0);
-        ui->resultsScrollAreaContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
-    }
-}
-
 void WishlistPage::initialize(const QVariant &data)
 {
     fetchData();
+}
+
+void WishlistPage::switchUiAuthenticatedState(bool authenticated)
+{
+
 }
 
 void WishlistPage::onSearchTextChanged(const QString &arg1)

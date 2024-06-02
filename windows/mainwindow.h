@@ -3,11 +3,11 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QStack>
 
 #include "../api/gogapiclient.h"
 #include "../internals/navigationdestination.h"
 #include "../internals/settingsmanager.h"
-#include "../pages/basepage.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,16 +18,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(api::GogApiClient *, SettingsManager *settingsManager, QWidget *parent = nullptr);
     ~MainWindow();
 
-    void setApiClient(api::GogApiClient *apiClient);
-    void setSettingsManager(SettingsManager *settingsManager);
-
-public slots:
-    void setDestination(NavigationDestination destination);
-
 private slots:
+    void navigate(NavigationDestination destination);
+    void navigateBack();
+    void navigateForward();
+
     void on_discoverButton_clicked();
 
     void on_recentButton_clicked();
@@ -50,14 +48,20 @@ private slots:
 
     void on_actionButton_clicked();
 
+    void on_navigateBackButton_clicked();
+
+    void on_navigateForwardButton_clicked();
+
 private:
     api::GogApiClient *apiClient;
+    QStack<NavigationDestination> navigationHistory;
+    QStack<NavigationDestination> navigationHistoryReplay;
     SettingsManager *settingsManager;
 
     Ui::MainWindow *ui;
-    Page currentPage;
-    QMap<Page, BasePage *> pages;
 
-    void navigate(Page newPage, const QVariant &data = QVariant());
+    QWidget *initializePage(const NavigationDestination &destination);
+    void switchUiAuthenticatedState(bool authenticated);
+    void updateCheckedDrawerDestination(Page currentPage);
 };
 #endif // MAINWINDOW_H
