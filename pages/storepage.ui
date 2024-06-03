@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-1453</y>
+        <y>-2201</y>
         <width>579</width>
-        <height>2340</height>
+        <height>3560</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
@@ -285,12 +285,128 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="nowOnSaleLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>Now on sale</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::TextFormat::PlainText</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="nowOnSaleStackedWidget">
+         <widget class="QWidget" name="nowOnSaleLoadingPage">
+          <layout class="QVBoxLayout" name="nowOnSaleLoadingPageLayout">
+           <item>
+            <widget class="QProgressBar" name="nowOnSaleProgressBar">
+             <property name="maximum">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="nowOnSaleResultsPage">
+          <layout class="QVBoxLayout" name="nowOnSaleResultsLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTabWidget" name="nowOnSaleTabWidget">
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="nowOnSaleDealsTab">
+              <attribute name="title">
+               <string>Featured deals</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="nowOnSaleDealsLayout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QScrollArea" name="nowOnSaleDealsScrollArea">
+                 <property name="minimumSize">
+                  <size>
+                   <width>548</width>
+                   <height>474</height>
+                  </size>
+                 </property>
+                 <property name="verticalScrollBarPolicy">
+                  <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="widgetResizable">
+                  <bool>true</bool>
+                 </property>
+                 <widget class="QWidget" name="nowOnSaleDealsScrollAreaContents">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>557</width>
+                    <height>475</height>
+                   </rect>
+                  </property>
+                  <layout class="QGridLayout" name="nowOnSaleDealsScrollAreaContentsLayout">
+                   <property name="spacing">
+                    <number>24</number>
+                   </property>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="customSectionExclusivesLabel">
          <property name="font">
           <font>
            <pointsize>12</pointsize>
            <bold>true</bold>
           </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
          </property>
          <property name="text">
           <string>Only on GOG</string>
@@ -335,7 +451,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>220</height>
+               <height>548</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -350,28 +466,10 @@
                 <x>0</x>
                 <y>0</y>
                 <width>563</width>
-                <height>200</height>
+                <height>548</height>
                </rect>
               </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>200</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>200</height>
-               </size>
-              </property>
-              <layout class="QHBoxLayout" name="customSectionExclusivesResultsScrollAreaContentsLayout">
+              <layout class="QGridLayout" name="customSectionExclusivesResultsScrollAreaContentsLayout">
                <property name="spacing">
                 <number>24</number>
                </property>
@@ -437,7 +535,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>220</height>
+               <height>462</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -452,22 +550,10 @@
                 <x>0</x>
                 <y>0</y>
                 <width>563</width>
-                <height>200</height>
+                <height>462</height>
                </rect>
               </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>200</height>
-               </size>
-              </property>
-              <layout class="QHBoxLayout" name="customSectionGOGResultsScrollAreaContentsLayout">
+              <layout class="QGridLayout" name="customSectionGOGResultsScrollAreaContentsLayout">
                <property name="spacing">
                 <number>24</number>
                </property>
@@ -533,7 +619,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>220</height>
+               <height>240</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -548,7 +634,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>563</width>
-                <height>220</height>
+                <height>240</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="customSectionCDPRScrollAreaContentsLayout">
@@ -631,7 +717,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>551</width>
+                <width>88</width>
                 <height>425</height>
                </rect>
               </property>

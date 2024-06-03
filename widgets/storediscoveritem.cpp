@@ -70,6 +70,11 @@ void StoreDiscoverItem::setPrice(double basePrice, double finalPrice,
                 : systemLocale.toCurrencyString(finalPrice, currency));
 }
 
+void StoreDiscoverItem::switchUiAuthenticatedState(bool authenticated)
+{
+    ui->addToCartButton->setEnabled(authenticated);
+}
+
 void StoreDiscoverItem::mousePressEvent(QMouseEvent *event)
 {
     emit navigateToProduct(id);

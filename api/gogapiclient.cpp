@@ -111,6 +111,17 @@ QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QStrin
     return client.get(url);
 }
 
+QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode)
+{
+    QUrl url("https://api.gog.com/now_on_sale");
+    url.setQuery(QUrlQuery({
+                               std::pair("locale", locale),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currencyCode", currencyCode),
+                           }));
+    return client.get(url);
+}
+
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;

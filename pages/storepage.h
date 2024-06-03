@@ -30,6 +30,7 @@ private:
     QNetworkReply *discoverNewReply;
     QNetworkReply *discoverUpcomingReply;
     QNetworkReply *newsReply;
+    QNetworkReply *nowOnSaleReply;
 
     void getCustomSectionCDPRGames();
     void getCustomSectionExclusiveGames();
@@ -38,6 +39,7 @@ private:
     void getDiscoverNewGames();
     void getDiscoverUpcomingGames();
     void getNews();
+    void getNowOnSale();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

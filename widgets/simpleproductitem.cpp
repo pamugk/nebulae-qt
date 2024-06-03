@@ -34,7 +34,13 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
         {
             QPixmap image;
             image.loadFromData(networkReply->readAll());
-            ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size(), Qt::KeepAspectRatioByExpanding));
+            this->setMinimumWidth(image.width());
+            this->setMaximumWidth(this->minimumWidth());
+            this->setMinimumHeight(image.height() + 84);
+            this->setMaximumHeight(this->minimumHeight());
+            ui->coverLabel->setMinimumSize(image.size());
+            ui->coverLabel->setMaximumSize(image.size());
+            ui->coverLabel->setPixmap(image);
         }
         networkReply->deleteLater();
     });

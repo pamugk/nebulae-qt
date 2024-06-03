@@ -1,6 +1,9 @@
 #include "storeserialization.h"
 
 #include <QJsonArray>
+#include <QMap>
+
+#include "catalogserialization.h"
 
 void parsePrice(const QJsonObject &json, api::StoreProductPrice &data)
 {
@@ -37,14 +40,16 @@ void parseProduct(const QJsonObject &json, api::StoreProduct &data, const QStrin
     data.preorder = json["isPreorder"].toBool();
 }
 
-void parseCustomSectionItem(const QJsonObject &json, api::StoreCustomSectionItem &data)
+void parseCustomSectionItem(const QJsonObject &json, api::StoreCustomSectionItem &data,
+                            const QString &coverFormat)
 {
     data.dealActiveFrom = QDateTime::fromString(json["dealActiveFrom"].toString(), Qt::ISODate);
     data.dealActiveTo = QDateTime::fromString(json["dealActiveTo"].toString(), Qt::ISODate);
-    parseProduct(json["product"].toObject(), data.product, "_product_tile_256.webp");
+    parseProduct(json["product"].toObject(), data.product, coverFormat);
 }
 
-void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCustomSectionResponse &data)
+void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCustomSectionResponse &data,
+                                        const QString &coverFormat)
 {
     data.id = json["id"].toString();
 
@@ -52,7 +57,7 @@ void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCu
     data.items.resize(items.count());
     for (int i = 0; i < items.count(); i++)
     {
-        parseCustomSectionItem(items[i].toObject(), data.items[i]);
+        parseCustomSectionItem(items[i].toObject(), data.items[i], coverFormat);
     }
 
     data.visibleFrom = QDateTime::fromString(json["products"]["currentServerTime"].toString(), Qt::ISODate);
@@ -67,5 +72,58 @@ void parseGetStoreDiscoverGamesResponse(const QJsonObject &json, api::GetStoreDi
     for (std::size_t i = 0; i < personalizedProducts.count(); i++)
     {
         parseProduct(personalizedProducts[i].toObject(), data.personalizedProducts[i], "_product_tile_136.webp");
+    }
+}
+
+void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &data)
+{
+    data.id = json["id"].toString();
+    data.title = json["title"].toString();
+
+    auto bigThingy = json["bigThingy"];
+    auto colorRgbArray = bigThingy["color_as_rgb_array"].toArray();
+    data.bigThingy.background = bigThingy["background"].toString();
+    data.bigThingy.color = bigThingy["color"].toString();
+    data.bigThingy.colorRgbArray =
+    {
+        static_cast<unsigned char>(colorRgbArray[0].toInt()),
+        static_cast<unsigned char>(colorRgbArray[1].toInt()),
+        static_cast<unsigned char>(colorRgbArray[2].toInt()),
+    };
+    data.bigThingy.text = bigThingy["text"].toString();
+    data.bigThingy.textSlug = bigThingy["textSlug"].toString();
+    data.bigThingy.discountValue = bigThingy["discountValue"].toInt();
+    data.bigThingy.discountUpTo = bigThingy["discountUpTo"].toBool();
+    data.bigThingy.url = bigThingy["url"].toString();
+    data.bigThingy.countdownDate = QDateTime::fromMSecsSinceEpoch(bigThingy["background"].toInteger());
+}
+
+void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnSaleResponse &data)
+{
+    auto productIds = json["allDiscounts"]["products"].toArray();
+    QMap<QString, std::size_t> productOrder;
+    for (std::size_t i = 0; i < productIds.count(); i++)
+    {
+        QString productId = productIds[i].toString();
+        productOrder[productId] = i;
+    }
+
+    auto products = json["allProducts"].toArray();
+    data.products.resize(productIds.count());
+    for (const QJsonValue &product : std::as_const(products))
+    {
+        QString productId = product["id"].toString();
+        if (productOrder.contains(productId))
+        {
+            auto productIdx = productOrder[productId];
+            parseCatalogProduct(product.toObject(), data.products[productIdx], "_product_tile_256.webp");
+        }
+    }
+
+    auto tabs = json["tabs"].toArray();
+    data.tabs.resize(tabs.count());
+    for (std::size_t i = 0; i < tabs.count(); i++)
+    {
+        parseStoreNowOnSaleTab(tabs[i].toObject(), data.tabs[i]);
     }
 }

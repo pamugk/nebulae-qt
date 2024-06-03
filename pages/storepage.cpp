@@ -79,7 +79,7 @@ void StorePage::getCustomSectionCDPRGames()
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetStoreCustomSectionResponse data;
-            parseGetStoreCustomSectionResponse(resultJson, data);
+            parseGetStoreCustomSectionResponse(resultJson, data, "_product_tile_256.webp");
 
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
@@ -122,8 +122,10 @@ void StorePage::getCustomSectionExclusiveGames()
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetStoreCustomSectionResponse data;
-            parseGetStoreCustomSectionResponse(resultJson, data);
+            parseGetStoreCustomSectionResponse(resultJson, data, "_product_tile_349.webp");
 
+            int column = 0;
+            int row = 0;
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
                 auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionExclusivesResultsScrollAreaContents);
@@ -136,9 +138,10 @@ void StorePage::getCustomSectionExclusiveGames()
                 {
                     emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
                 });
-                ui->customSectionExclusivesResultsScrollAreaContentsLayout->addWidget(itemWidget);
+                ui->customSectionExclusivesResultsScrollAreaContentsLayout->addWidget(itemWidget, row, column);
+                column += row;
+                row = (row + 1) % 2;
             }
-            ui->customSectionExclusivesResultsScrollAreaContentsLayout->addStretch();
             ui->customSectionExclusivesStackedWidget->setCurrentWidget(ui->customSectionExclusivesResultsPage);
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
@@ -165,8 +168,10 @@ void StorePage::getCustomSectionGOGGames()
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             api::GetStoreCustomSectionResponse data;
-            parseGetStoreCustomSectionResponse(resultJson, data);
+            parseGetStoreCustomSectionResponse(resultJson, data, "_product_tile_256.webp");
 
+            int column = 0;
+            int row = 0;
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
                 auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionCDPRScrollAreaContents);
@@ -174,14 +179,18 @@ void StorePage::getCustomSectionGOGGames()
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
                     emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
                 });
-                ui->customSectionGOGResultsScrollAreaContentsLayout->addWidget(itemWidget);
+                ui->customSectionGOGResultsScrollAreaContentsLayout->addWidget(itemWidget, row, column);
+                column += row;
+                row = (row + 1) % 2;
             }
-            ui->customSectionGOGResultsScrollAreaContentsLayout->addStretch();
             ui->customSectionGOGStackedWidget->setCurrentWidget(ui->customSectionGOGResultsPage);
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
@@ -223,6 +232,9 @@ void StorePage::getDiscoverBestsellingGames()
                                         ? 0
                                         : round(100. * (item.price.baseMoney.amount - item.price.finalMoney.amount) / item.price.baseMoney.amount),
                                      item.price.finalMoney.amount == 0, item.price.finalMoney.currency);
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
@@ -265,6 +277,9 @@ void StorePage::getDiscoverNewGames()
                 itemWidget->setTitle(item.title);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
@@ -308,6 +323,9 @@ void StorePage::getDiscoverUpcomingGames()
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
                 itemWidget->setTitle(item.title);
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
@@ -369,6 +387,69 @@ void StorePage::getNews()
     });
 }
 
+void StorePage::getNowOnSale()
+{
+    ui->nowOnSaleStackedWidget->setCurrentWidget(ui->nowOnSaleLoadingPage);
+
+    auto systemLocale = QLocale::system();
+    nowOnSaleReply = apiClient->getNowOnSale(QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                             QLocale::territoryToCode(systemLocale.territory()),
+                                             systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
+    connect(nowOnSaleReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = nowOnSaleReply;
+        nowOnSaleReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreNowOnSaleResponse data;
+            parseGetStoreNowOnSaleResponse(resultJson, data);
+
+            int column = 0;
+            int row = 0;
+            for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
+            {
+
+            }
+            for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
+            {
+                if (discountedProduct.id.isNull())
+                {
+                    continue;
+                }
+
+                auto discountedProductItem = new SimpleProductItem(discountedProduct.id.toULongLong(), ui->nowOnSaleDealsScrollAreaContents);
+                discountedProductItem->setCover(discountedProduct.coverHorizontal, apiClient);
+                discountedProductItem->setTitle(discountedProduct.title);
+                auto discount = round((discountedProduct.price.baseMoney.amount - discountedProduct.price.finalMoney.amount) / discountedProduct.price.baseMoney.amount * 100);
+                discountedProductItem->setPrice(discountedProduct.price.baseMoney.amount, discountedProduct.price.finalMoney.amount,
+                                                discount, discountedProduct.price.baseMoney.amount == 0,
+                                                discountedProduct.price.baseMoney.currency);
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        discountedProductItem, &SimpleProductItem::switchUiAuthenticatedState);
+                discountedProductItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                connect(discountedProductItem, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(discountedProductItem, row, column);
+                column += row;
+                row = (row + 1) % 2;
+            }
+            ui->nowOnSaleStackedWidget->setCurrentWidget(ui->nowOnSaleResultsPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
 void StorePage::initialize(const QVariant &data)
 {
     getCustomSectionCDPRGames();
@@ -379,6 +460,7 @@ void StorePage::initialize(const QVariant &data)
     getDiscoverNewGames();
     getDiscoverUpcomingGames();
     getNews();
+    getNowOnSale();
 }
 
 void StorePage::switchUiAuthenticatedState(bool authenticated)

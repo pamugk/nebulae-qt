@@ -5,8 +5,31 @@
 #include <QString>
 #include <QVector>
 
+#include "catalog.h"
+
 namespace api
 {
+    struct StoreNowOnSaleTabCard
+    {
+        QString background;
+        QString logo;
+        QString color;
+        std::array<unsigned char, 3> colorRgbArray;
+        QString text;
+        QString textSlug;
+        unsigned char discountValue;
+        bool discountUpTo;
+        QString url;
+        QDateTime countdownDate;
+    };
+
+    struct StoreNowOnSaleTab
+    {
+        QString id;
+        QString title;
+        StoreNowOnSaleTabCard bigThingy;
+    };
+
     struct StoreProductPrice
     {
         double baseAmount;
@@ -53,6 +76,12 @@ namespace api
     struct GetStoreDiscoverGamesSectionResponse
     {
         QVector<StoreProduct> personalizedProducts;
+    };
+
+    struct GetStoreNowOnSaleResponse
+    {
+        QVector<CatalogProduct> products;
+        QVector<StoreNowOnSaleTab> tabs;
     };
 }
 

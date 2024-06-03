@@ -5,6 +5,7 @@
 
 #include "../models/catalog.h"
 
+void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, const QString &horizontalCoverFormat);
 void parseSearchCatalogResponse(const QJsonObject &json, api::SearchCatalogResponse &data);
 
 #endif // CATALOGSERIALIZATION_H

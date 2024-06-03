@@ -31,7 +31,7 @@ void parseMoney(const QJsonObject &json, api::Money &data)
     data.currency = json["currency"].toString();
 }
 
-void parseProduct(const QJsonObject &json, api::CatalogProduct &data)
+void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, const QString &horizontalCoverFormat)
 {
     data.id = json["id"].toString();
     data.slug = json["slug"].toString();
@@ -47,7 +47,7 @@ void parseProduct(const QJsonObject &json, api::CatalogProduct &data)
     data.releaseDate = json["releaseDate"].toString();
     data.productType = json["productType"].toString();
     data.title = json["title"].toString();
-    data.coverHorizontal = json["coverHorizontal"].toString().replace(".png", "_product_tile_extended_432x243.webp");
+    data.coverHorizontal = json["coverHorizontal"].toString().replace(".png", horizontalCoverFormat);
     data.coverVertical = json["coverVertical"].toString().replace(".jpg", "_product_tile_80x114.webp");
     parseStringArray(json["developers"].toArray(), data.developers);
     parseStringArray(json["publishers"].toArray(), data.publishers);
@@ -111,7 +111,7 @@ void parseSearchCatalogResponse(const QJsonObject &json, api::SearchCatalogRespo
     data.products.resize(products.count());
     for (int i = 0; i < products.count(); i++)
     {
-        parseProduct(products[i].toObject(), data.products[i]);
+        parseCatalogProduct(products[i].toObject(), data.products[i], "_product_tile_extended_432x243.webp");
     }
     parseFilters(json["filters"].toObject(), data.filters);
 }
