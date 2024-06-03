@@ -87,6 +87,7 @@ set(PROJECT_SOURCES
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
+        widgets/storesalecard.h widgets/storesalecard.cpp widgets/storesalecard.ui
         widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 

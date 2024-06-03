@@ -82,7 +82,7 @@ void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &dat
 
     auto bigThingy = json["bigThingy"];
     auto colorRgbArray = bigThingy["color_as_rgb_array"].toArray();
-    data.bigThingy.background = bigThingy["background"].toString();
+    data.bigThingy.background = bigThingy["background"].toString().prepend("https:");
     data.bigThingy.color = bigThingy["color"].toString();
     data.bigThingy.colorRgbArray =
     {
@@ -95,7 +95,7 @@ void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &dat
     data.bigThingy.discountValue = bigThingy["discountValue"].toInt();
     data.bigThingy.discountUpTo = bigThingy["discountUpTo"].toBool();
     data.bigThingy.url = bigThingy["url"].toString();
-    data.bigThingy.countdownDate = QDateTime::fromMSecsSinceEpoch(bigThingy["background"].toInteger());
+    data.bigThingy.countdownDate = QDateTime::fromMSecsSinceEpoch(bigThingy["countdownDate"].toInteger());
 }
 
 void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnSaleResponse &data)

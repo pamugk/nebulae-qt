@@ -10,6 +10,7 @@
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
+#include "../widgets/storesalecard.h"
 #include "../widgets/newsitemtile.h"
 
 StorePage::StorePage(QWidget *parent) :
@@ -410,7 +411,9 @@ void StorePage::getNowOnSale()
             int row = 0;
             for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
             {
-
+                auto dealCard = new StoreSaleCard(dealTab, apiClient, ui->nowOnSaleDealsScrollAreaContents);
+                ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
+                column++;
             }
             for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
             {
