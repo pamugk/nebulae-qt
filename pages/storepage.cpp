@@ -10,6 +10,7 @@
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
+#include "../widgets/storesalebrowseallcard.h"
 #include "../widgets/storesalecard.h"
 #include "../widgets/newsitemtile.h"
 
@@ -430,9 +431,15 @@ void StorePage::getNowOnSale()
             nowOnSaleSectionIds.resize(data.tabs.count());
             nowOnSaleSectionsRequested.resize(data.tabs.count());
             nowOnSaleSectionReplies.resize(data.tabs.count());
+
             for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
             {
                 auto dealCard = new StoreSaleCard(dealTab.bigThingy, apiClient, ui->nowOnSaleDealsScrollAreaContents);
+                connect(dealCard, &StoreSaleCard::navigateToItem,
+                        this, [this]()
+                {
+                    emit navigate({Page::ALL_GAMES});
+                });
                 ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
 
                 auto dealLoadingPage = new QWidget;
@@ -466,6 +473,7 @@ void StorePage::getNowOnSale()
 
                 column++;
             }
+
             for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
             {
                 if (discountedProduct.id.isNull())
@@ -492,6 +500,20 @@ void StorePage::getNowOnSale()
                 column += row;
                 row = (row + 1) % 2;
             }
+
+            if (row == 1)
+            {
+                column++;
+                row = 0;
+            }
+            auto browseAllCard = new StoreSaleBrowseAllCard(ui->nowOnSaleDealsScrollAreaContents);
+            connect(browseAllCard, &StoreSaleBrowseAllCard::navigateToItem,
+                    this, [this]()
+            {
+                emit navigate({Page::ALL_GAMES});
+            });
+            ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(browseAllCard, row, column, 2, 1);
+
             ui->nowOnSaleStackedWidget->setCurrentWidget(ui->nowOnSaleResultsPage);
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
@@ -580,6 +602,11 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
             }
 
             auto dealCard = new StoreSaleCard(data.bigThingy, apiClient, dealTabScrollAreaContents);
+            connect(dealCard, &StoreSaleCard::navigateToItem,
+                    this, [this]()
+            {
+                emit navigate({Page::ALL_GAMES});
+            });
             dealTabScrollAreaContentsLayout->addWidget(dealCard, 0, column, 2, 1);
 
             column++;
