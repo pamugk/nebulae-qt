@@ -3,7 +3,7 @@
 
 #include <QNetworkReply>
 
-StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTab &data,
+StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
                              api::GogApiClient *apiClient,
                              QWidget *parent) :
     QWidget(parent),
@@ -12,11 +12,11 @@ StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTab &data,
     ui->setupUi(this);
 
     auto systemLocale = QLocale::system();
-    ui->titleLabel->setText(data.bigThingy.text);
-    ui->upToLabel->setVisible(data.bigThingy.discountUpTo);
-    ui->discountLabel->setText(QString("-%1%2").arg(data.bigThingy.discountValue).arg(systemLocale.percent()));
-    ui->endLabel->setText(systemLocale.toString(data.bigThingy.countdownDate, QLocale::ShortFormat));
-    imageReply = apiClient->getAnything(data.bigThingy.background);
+    ui->titleLabel->setText(data.text);
+    ui->upToLabel->setVisible(data.discountUpTo);
+    ui->discountLabel->setText(QString("-%1%2").arg(data.discountValue).arg(systemLocale.percent()));
+    ui->endLabel->setText(systemLocale.toString(data.countdownDate, QLocale::ShortFormat));
+    imageReply = apiClient->getAnything(data.background);
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
         auto networkReply = imageReply;
         imageReply = nullptr;

@@ -21,6 +21,8 @@ public:
 
 private:
     api::GogApiClient *apiClient;
+    QVector<QString> nowOnSaleSectionIds;
+    QVector<bool> nowOnSaleSectionsRequested;
     Ui::StorePage *ui;
 
     QNetworkReply *customSectionCDPRReply;
@@ -31,6 +33,7 @@ private:
     QNetworkReply *discoverUpcomingReply;
     QNetworkReply *newsReply;
     QNetworkReply *nowOnSaleReply;
+    QVector<QNetworkReply *> nowOnSaleSectionReplies;
 
     void getCustomSectionCDPRGames();
     void getCustomSectionExclusiveGames();
@@ -46,6 +49,7 @@ public slots:
     virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_showCatalogButton_clicked();
+    void on_nowOnSaleTabWidget_currentChanged(int index);
 };
 
 #endif // STOREPAGE_H

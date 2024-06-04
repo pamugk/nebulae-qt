@@ -83,6 +83,13 @@ namespace api
         QVector<CatalogProduct> products;
         QVector<StoreNowOnSaleTab> tabs;
     };
+
+    struct GetStoreNowOnSaleSectionResponse
+    {
+        QString id;
+        QVector<StoreProduct> personalizedProducts;
+        StoreNowOnSaleTabCard bigThingy;
+    };
 }
 
 #endif // STORE_H

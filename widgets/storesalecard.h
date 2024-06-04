@@ -15,7 +15,7 @@ class StoreSaleCard : public QWidget
     Q_OBJECT
 
 public:
-    explicit StoreSaleCard(const api::StoreNowOnSaleTab &data,
+    explicit StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
                            api::GogApiClient *apiClient,
                            QWidget *parent = nullptr);
     ~StoreSaleCard();

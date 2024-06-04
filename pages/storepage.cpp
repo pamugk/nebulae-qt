@@ -23,6 +23,7 @@ StorePage::StorePage(QWidget *parent) :
     discoverNewReply(nullptr),
     discoverUpcomingReply(nullptr),
     newsReply(nullptr),
+    nowOnSaleReply(nullptr),
     ui(new Ui::StorePage)
 {
     ui->setupUi(this);
@@ -58,6 +59,17 @@ StorePage::~StorePage()
     {
         newsReply->abort();
     }
+    if (nowOnSaleReply != nullptr)
+    {
+        nowOnSaleReply->abort();
+    }
+    for (QNetworkReply *nowOnSaleSectionReply : std::as_const(nowOnSaleSectionReplies))
+    {
+        if (nowOnSaleSectionReply != nullptr)
+        {
+            nowOnSaleReply->abort();
+        }
+    }
     delete ui;
 }
 
@@ -89,6 +101,9 @@ void StorePage::getCustomSectionCDPRGames()
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
@@ -134,6 +149,9 @@ void StorePage::getCustomSectionExclusiveGames()
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
@@ -409,10 +427,43 @@ void StorePage::getNowOnSale()
 
             int column = 0;
             int row = 0;
+            nowOnSaleSectionIds.resize(data.tabs.count());
+            nowOnSaleSectionsRequested.resize(data.tabs.count());
+            nowOnSaleSectionReplies.resize(data.tabs.count());
             for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
             {
-                auto dealCard = new StoreSaleCard(dealTab, apiClient, ui->nowOnSaleDealsScrollAreaContents);
+                auto dealCard = new StoreSaleCard(dealTab.bigThingy, apiClient, ui->nowOnSaleDealsScrollAreaContents);
                 ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
+
+                auto dealLoadingPage = new QWidget;
+                dealLoadingPage->setLayout(new QVBoxLayout);
+                auto dealProgressBar = new QProgressBar(dealLoadingPage);
+                dealProgressBar->setMaximum(0);
+                dealLoadingPage->layout()->addWidget(dealProgressBar);
+
+                auto dealResultsPage = new QWidget;
+                auto dealResultsPageLayout = new QVBoxLayout;
+                dealResultsPageLayout->setContentsMargins(0, 0, 0, 0);
+                dealResultsPageLayout->setSpacing(0);
+                dealResultsPage->setLayout(dealResultsPageLayout);
+                auto dealResultsScrollArea = new QScrollArea(dealResultsPage);
+                dealResultsScrollArea->setMinimumHeight(ui->nowOnSaleDealsScrollArea->minimumHeight());
+                dealResultsScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                dealResultsScrollArea->setWidgetResizable(true);
+                auto dealResultsScrollAreaContent = new QWidget;
+                auto dealResultsScrollAreaContentLayout = new QGridLayout;
+                dealResultsScrollAreaContentLayout->setSpacing(24);
+                dealResultsScrollAreaContent->setLayout(dealResultsScrollAreaContentLayout);
+                dealResultsScrollArea->setWidget(dealResultsScrollAreaContent);
+                dealResultsPageLayout->addWidget(dealResultsScrollArea);
+
+                auto dealTabWidget = new QStackedWidget;
+                dealTabWidget->addWidget(dealLoadingPage);
+                dealTabWidget->addWidget(dealResultsPage);
+                ui->nowOnSaleTabWidget->addTab(dealTabWidget, dealTab.title);
+
+                nowOnSaleSectionIds[column] = dealTab.id;
+
                 column++;
             }
             for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
@@ -471,9 +522,99 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
 
 }
 
-
 void StorePage::on_showCatalogButton_clicked()
 {
     emit navigate({Page::ALL_GAMES});
+}
+
+void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
+{
+    int tabIndex = index - 1;
+    if (index == 0 || nowOnSaleSectionsRequested[tabIndex])
+    {
+        return;
+    }
+
+    nowOnSaleSectionsRequested[tabIndex] = true;
+    nowOnSaleSectionReplies[tabIndex] = apiClient->getNowOnSaleSection(nowOnSaleSectionIds[tabIndex]);
+    connect(nowOnSaleSectionReplies[tabIndex], &QNetworkReply::finished,
+            this, [this, tabIndex, index]()
+    {
+        auto networkReply = nowOnSaleSectionReplies[tabIndex];
+        nowOnSaleSectionReplies[tabIndex] = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreNowOnSaleSectionResponse data;
+            parseGetStoreNowOnSaleSectionResponse(resultJson, data);
+
+            QStackedWidget *dealTab = static_cast<QStackedWidget *>(ui->nowOnSaleTabWidget->widget(index));
+            QScrollArea *dealTabScrollArea = static_cast<QScrollArea *>(dealTab->widget(1)->layout()->itemAt(0)->widget());
+            QWidget *dealTabScrollAreaContents = dealTabScrollArea->widget();
+            QGridLayout *dealTabScrollAreaContentsLayout = static_cast<QGridLayout *>(dealTabScrollAreaContents->layout());
+            dealTabScrollAreaContentsLayout->setAlignment(Qt::AlignLeft);
+
+            int column = 0;
+            int row = 0;
+            for (std::size_t i = 0; i < 2 && data.personalizedProducts.count(); i++)
+            {
+                const api::StoreProduct &item = data.personalizedProducts[i];
+                auto itemWidget = new SimpleProductItem(item.id, dealTabScrollAreaContents);
+                itemWidget->setCover(item.image, apiClient);
+                itemWidget->setTitle(item.title);
+                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
+                                     item.price.discountPercentage, item.price.free,
+                                     "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                dealTabScrollAreaContentsLayout->addWidget(itemWidget, row, column);
+                column += row;
+                row = (row + 1) % 2;
+            }
+
+            auto dealCard = new StoreSaleCard(data.bigThingy, apiClient, dealTabScrollAreaContents);
+            dealTabScrollAreaContentsLayout->addWidget(dealCard, 0, column, 2, 1);
+
+            column++;
+            row = 0;
+
+            for (std::size_t i = 2; i < data.personalizedProducts.count(); i++)
+            {
+                const api::StoreProduct &item = data.personalizedProducts[i];
+                auto itemWidget = new SimpleProductItem(item.id, dealTabScrollAreaContents);
+                itemWidget->setCover(item.image, apiClient);
+                itemWidget->setTitle(item.title);
+                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
+                                     item.price.discountPercentage, item.price.free,
+                                     "");
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                        this, [this](unsigned long long productId)
+                {
+                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                });
+                dealTabScrollAreaContentsLayout->addWidget(itemWidget, row, column);
+                column += row;
+                row = (row + 1) % 2;
+            }
+            dealTab->setCurrentIndex(1);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
 }
 

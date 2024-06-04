@@ -75,27 +75,30 @@ void parseGetStoreDiscoverGamesResponse(const QJsonObject &json, api::GetStoreDi
     }
 }
 
-void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &data)
+void parseStoreNowOnSaleTabCard(const QJsonObject &json, api::StoreNowOnSaleTabCard &data)
 {
-    data.id = json["id"].toString();
-    data.title = json["title"].toString();
-
-    auto bigThingy = json["bigThingy"];
-    auto colorRgbArray = bigThingy["color_as_rgb_array"].toArray();
-    data.bigThingy.background = bigThingy["background"].toString().prepend("https:");
-    data.bigThingy.color = bigThingy["color"].toString();
-    data.bigThingy.colorRgbArray =
+    auto colorRgbArray = json["color_as_rgb_array"].toArray();
+    data.background = json["background"].toString().prepend("https:");
+    data.color = json["color"].toString();
+    data.colorRgbArray =
     {
         static_cast<unsigned char>(colorRgbArray[0].toInt()),
         static_cast<unsigned char>(colorRgbArray[1].toInt()),
         static_cast<unsigned char>(colorRgbArray[2].toInt()),
     };
-    data.bigThingy.text = bigThingy["text"].toString();
-    data.bigThingy.textSlug = bigThingy["textSlug"].toString();
-    data.bigThingy.discountValue = bigThingy["discountValue"].toInt();
-    data.bigThingy.discountUpTo = bigThingy["discountUpTo"].toBool();
-    data.bigThingy.url = bigThingy["url"].toString();
-    data.bigThingy.countdownDate = QDateTime::fromMSecsSinceEpoch(bigThingy["countdownDate"].toInteger());
+    data.text = json["text"].toString();
+    data.textSlug = json["textSlug"].toString();
+    data.discountValue = json["discountValue"].toInt();
+    data.discountUpTo = json["discountUpTo"].toBool();
+    data.url = json["url"].toString();
+    data.countdownDate = QDateTime::fromMSecsSinceEpoch(json["countdownDate"].toInteger());
+}
+
+void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &data)
+{
+    data.id = json["id"].toString();
+    data.title = json["title"].toString();
+    parseStoreNowOnSaleTabCard(json["bigThingy"].toObject(), data.bigThingy);
 }
 
 void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnSaleResponse &data)
@@ -126,4 +129,16 @@ void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnS
     {
         parseStoreNowOnSaleTab(tabs[i].toObject(), data.tabs[i]);
     }
+}
+
+void parseGetStoreNowOnSaleSectionResponse(const QJsonObject &json, api::GetStoreNowOnSaleSectionResponse &data)
+{
+    data.id = json["id"].toString();
+    auto personalizedProducts = json["personalizedProducts"].toArray();
+    data.personalizedProducts.resize(personalizedProducts.count());
+    for (std::size_t i = 0; i < personalizedProducts.count(); i++)
+    {
+        parseProduct(personalizedProducts[i].toObject(), data.personalizedProducts[i], "_product_tile_256.webp");
+    }
+    parseStoreNowOnSaleTabCard(json["bigThingy"].toObject(), data.bigThingy);
 }

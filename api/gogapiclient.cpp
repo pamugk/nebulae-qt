@@ -122,6 +122,11 @@ QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QStr
     return client.get(url);
 }
 
+QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
+{
+    return client.get(QUrl(QString("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
+}
+
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;
