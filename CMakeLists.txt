@@ -65,6 +65,7 @@ set(PROJECT_SOURCES
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/basepage.h pages/basepage.cpp
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
+        pages/newspage.h pages/newspage.cpp pages/newspage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/ownedgamepage.h pages/ownedgamepage.cpp pages/ownedgamepage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
@@ -73,6 +74,7 @@ set(PROJECT_SOURCES
 
         widgets/bonusitem.h widgets/bonusitem.cpp widgets/bonusitem.ui
         widgets/checkeditem.h widgets/checkeditem.cpp widgets/checkeditem.ui
+        widgets/clickablelabel.h widgets/clickablelabel.cpp
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui

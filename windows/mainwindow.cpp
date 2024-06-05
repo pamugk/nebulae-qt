@@ -3,6 +3,7 @@
 
 #include "../pages/allgamespage.h"
 #include "../pages/catalogproductpage.h"
+#include "../pages/newspage.h"
 #include "../pages/orderspage.h"
 #include "../pages/ownedgamepage.h"
 #include "../pages/ownedgamespage.h"
@@ -71,12 +72,14 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         break;
     case FRIENDS:
         break;
-    case CATALOG_PRODUCT_PAGE:
+    case CATALOG_PRODUCT:
         page = new CatalogProductPage(ui->scaffold);
         break;
-    case OWNED_PRODUCT_PAGE:
+    case OWNED_PRODUCT:
         page = new OwnedGamePage(ui->scaffold);
         break;
+    case NEWS:
+        page = new NewsPage(ui->scaffold);
     }
     connect(page, &BasePage::navigate, this, &MainWindow::navigate);
     connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
@@ -106,11 +109,11 @@ void MainWindow::updateCheckedDrawerDestination(Page currentPage)
 {
     ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
     ui->recentButton->setChecked(currentPage == Page::RECENT);
-    ui->storeButton->setChecked(currentPage == Page::STORE);
+    ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::NEWS);
     ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
-    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES || currentPage == Page::CATALOG_PRODUCT_PAGE);
+    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES || currentPage == Page::CATALOG_PRODUCT);
     ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
-    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES || currentPage == Page::OWNED_PRODUCT_PAGE);
+    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES || currentPage == Page::OWNED_PRODUCT);
     ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
     ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
 }

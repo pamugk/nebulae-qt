@@ -149,7 +149,7 @@ void AllGamesPage::layoutResults()
             storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT, productId});
             });
             ui->resultsGridScrollAreaContents->layout()->addWidget(storeItem);
         }
@@ -165,7 +165,7 @@ void AllGamesPage::layoutResults()
             storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
             connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
             {
-                emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                emit navigate({Page::CATALOG_PRODUCT, productId});
             });
             ui->resultsListLayout->addWidget(storeItem);
         }
