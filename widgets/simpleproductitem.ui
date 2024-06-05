@@ -185,7 +185,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="5" alignment="Qt::AlignmentFlag::AlignTop">
+      <item row="1" column="0" colspan="5">
        <widget class="QLabel" name="titleLabel">
         <property name="font">
          <font>
@@ -198,6 +198,9 @@
         </property>
         <property name="textFormat">
          <enum>Qt::TextFormat::PlainText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

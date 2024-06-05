@@ -16,6 +16,13 @@ StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
     ui->upToLabel->setVisible(data.discountUpTo);
     ui->discountLabel->setText(QString("-%1%2").arg(data.discountValue).arg(systemLocale.percent()));
     ui->endLabel->setText(systemLocale.toString(data.countdownDate, QLocale::ShortFormat));
+
+    ui->content->setStyleSheet(QString("background: rgba(%1, %2, %3, 0.75)")
+                               .arg(data.colorRgbArray[0]).arg(data.colorRgbArray[1]).arg(data.colorRgbArray[2]));
+    /*QPalette shadowPalette;
+    shadowPalette.setBrush(ui->content->backgroundRole(), QColor::fromRgba64(data.colorRgbArray[0], data.colorRgbArray[1], data.colorRgbArray[2], 191));
+    ui->content->setAutoFillBackground(true);
+    ui->content->setPalette(shadowPalette);*/
     imageReply = apiClient->getAnything(data.background);
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
         auto networkReply = imageReply;
@@ -23,9 +30,11 @@ StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
         if (networkReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            // TODO: somehow display bacckground image
             image.loadFromData(networkReply->readAll());
-            this->update();
+            QPalette backgroundPalette;
+            backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
+            this->setAutoFillBackground(true);
+            this->setPalette(backgroundPalette);
         }
         networkReply->deleteLater();
     });

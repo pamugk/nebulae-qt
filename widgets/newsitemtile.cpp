@@ -21,6 +21,8 @@ NewsItemTile::NewsItemTile(const api::NewsItem &data,
     int width = primary ? 536 : 256;
     this->setMinimumWidth(width);
     this->setMaximumWidth(width);
+    ui->rootFrame->setMinimumWidth(width);
+    ui->rootFrame->setMaximumWidth(width);
     imageReply = apiClient->getAnything(data.imageSmall);
     connect(imageReply, &QNetworkReply::finished, this, [this, primary]() {
         auto networkReply = imageReply;
@@ -29,9 +31,12 @@ NewsItemTile::NewsItemTile(const api::NewsItem &data,
         {
             QPixmap image;
             image.loadFromData(networkReply->readAll());
-            ui->coverLabel->setPixmap(primary
-                                      ? image.scaled(ui->coverLabel->size(), Qt::KeepAspectRatioByExpanding)
-                                      : image.copy(150, 0, 256, 264));
+            QPalette backgroundPalette;
+            backgroundPalette.setBrush(this->backgroundRole(), QBrush(primary
+                                                                      ? image.scaled(this->size(), Qt::KeepAspectRatioByExpanding)
+                                                                      : image.copy(150, 0, 256, 264)));
+            this->setAutoFillBackground(true);
+            this->setPalette(backgroundPalette);
         }
         networkReply->deleteLater();
     });

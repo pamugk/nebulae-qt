@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-2992</y>
+        <y>0</y>
         <width>579</width>
-        <height>3560</height>
+        <height>3413</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
@@ -377,8 +377,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>557</width>
-                    <height>475</height>
+                    <width>548</width>
+                    <height>474</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="nowOnSaleDealsScrollAreaContentsLayout">
@@ -451,7 +451,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>548</height>
+               <height>542</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -466,10 +466,13 @@
                 <x>0</x>
                 <y>0</y>
                 <width>100</width>
-                <height>548</height>
+                <height>542</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="customSectionExclusivesResultsScrollAreaContentsLayout">
+               <property name="topMargin">
+                <number>0</number>
+               </property>
                <property name="spacing">
                 <number>24</number>
                </property>
@@ -535,7 +538,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>462</height>
+               <height>456</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -550,10 +553,13 @@
                 <x>0</x>
                 <y>0</y>
                 <width>100</width>
-                <height>462</height>
+                <height>456</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="customSectionGOGResultsScrollAreaContentsLayout">
+               <property name="topMargin">
+                <number>0</number>
+               </property>
                <property name="spacing">
                 <number>24</number>
                </property>
@@ -619,7 +625,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>240</height>
+               <height>234</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -634,12 +640,15 @@
                 <x>0</x>
                 <y>0</y>
                 <width>100</width>
-                <height>240</height>
+                <height>234</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="customSectionCDPRScrollAreaContentsLayout">
                <property name="spacing">
                 <number>24</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
                </property>
               </layout>
              </widget>
@@ -703,7 +712,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>425</height>
+               <height>296</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -717,8 +726,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>100</width>
-                <height>425</height>
+                <width>88</width>
+                <height>296</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="newsScrollAreaContentsLayout">
