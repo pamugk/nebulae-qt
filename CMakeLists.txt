@@ -25,6 +25,7 @@ set(PROJECT_SOURCES
         api/models/catalogproductinfo.h
         api/models/filters.h
         api/models/metatag.h
+        api/models/news.h
         api/models/order.h api/models/orderfilter.h
         api/models/ownedproduct.h
         api/models/ownedproductinfo.h
@@ -36,12 +37,14 @@ set(PROJECT_SOURCES
         api/models/seriesgame.h
         api/models/sort.h
         api/models/statistics.h
+        api/models/store.h
         api/models/tag.h
         api/models/user.h
         api/models/wishlist.h
 
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
         api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
+        api/utils/newsserialization.h api/utils/newsserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
@@ -51,6 +54,7 @@ set(PROJECT_SOURCES
         api/utils/serialization.h api/utils/serialization.cpp
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
+        api/utils/storeserialization.h api/utils/storeserialization.cpp
 
         internals/navigationdestination.h
         internals/pages.h
@@ -73,14 +77,18 @@ set(PROJECT_SOURCES
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
         widgets/imageholder.h widgets/imageholder.cpp widgets/imageholder.ui
+        widgets/newsitemtile.h widgets/newsitemtile.cpp widgets/newsitemtile.ui
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
+        widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
+        widgets/storesalebrowseallcard.h widgets/storesalebrowseallcard.cpp widgets/storesalebrowseallcard.ui
+        widgets/storesalecard.h widgets/storesalecard.cpp widgets/storesalecard.ui
         widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 

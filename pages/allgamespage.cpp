@@ -97,7 +97,12 @@ void AllGamesPage::fetchData()
     {
         lastCatalogReply->abort();
     }
-    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
+
+    auto systemLocale = QLocale::system();
+    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
+                                                QLocale::territoryToCode(systemLocale.territory()),
+                                                QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
     connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
         auto networkReply = lastCatalogReply;
         lastCatalogReply = nullptr;
@@ -171,10 +176,17 @@ void AllGamesPage::layoutResults()
 
 void AllGamesPage::initialize(const QVariant &data)
 {
-    auto networkReply = apiClient->searchCatalog(orders[currentSortOrder], filter, "RU", "en-US", "RUB", page);
+    auto systemLocale = QLocale::system();
+    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
+                                                QLocale::territoryToCode(systemLocale.territory()),
+                                                QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
     ui->filtersScrollArea->setVisible(false);
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    connect(networkReply, &QNetworkReply::finished, this, [=](){
+    connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
+        auto networkReply = lastCatalogReply;
+        lastCatalogReply = nullptr;
+
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -474,17 +486,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 paginator->changePages(page, this->data.pages);
                 layoutResults();
             }
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {   ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+        }
 
-            networkReply->deleteLater();
-        }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
-        {
-            qDebug() << error;
-            networkReply->deleteLater();
-        }
+        networkReply->deleteLater();
     });
 }
 

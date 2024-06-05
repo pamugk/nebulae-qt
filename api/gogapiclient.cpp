@@ -99,6 +99,34 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, c
     return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
+                                          unsigned char limit)
+{
+    QUrl url("https://api.gog.com/news");
+    url.setQuery(QUrlQuery({
+                               std::pair("language_code", locale),
+                               std::pair("page_token", QString::number(pageToken)),
+                               std::pair("limit", QString::number(limit)),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode)
+{
+    QUrl url("https://api.gog.com/now_on_sale");
+    url.setQuery(QUrlQuery({
+                               std::pair("locale", locale),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currencyCode", currencyCode),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
+{
+    return client.get(QUrl(QString("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
+}
+
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;
@@ -229,6 +257,21 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
                                std::pair("currency", currencyCode),
                            }));
     return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getStoreCustomSection(const QString &id)
+{
+    return client.get(QUrl(QString("https://api.gog.com/custom_sections/%1").arg(id)));
+}
+
+QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
+{
+    return client.get(QUrl("https://embed.gog.com/discover_games/new"));
+}
+
+QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
+{
+    return client.get(QUrl("https://embed.gog.com/discover_games/upcoming"));
 }
 
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)

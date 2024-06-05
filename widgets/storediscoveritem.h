@@ -1,28 +1,27 @@
-#ifndef SIMPLEPRODUCTITEM_H
-#define SIMPLEPRODUCTITEM_H
+#ifndef STOREDISCOVERITEM_H
+#define STOREDISCOVERITEM_H
 
-#include <QNetworkReply>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
 
 namespace Ui {
-class SimpleProductItem;
+class StoreDiscoverItem;
 }
 
-class SimpleProductItem : public QWidget
+class StoreDiscoverItem : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SimpleProductItem(unsigned long long productId,
-                               QWidget *parent = nullptr);
-    ~SimpleProductItem();
+    explicit StoreDiscoverItem(unsigned long long id, QWidget *parent = nullptr);
+    ~StoreDiscoverItem();
 
     void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
-    void setTitle(const QString &title);
+    void setPreorder(bool preorder);
     void setPrice(double basePrice, double finalPrice,
                   unsigned char discount, bool free, const QString &currency);
+    void setTitle(const QString &title);
 
 signals:
     void navigateToProduct(unsigned long long id);
@@ -34,9 +33,9 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    unsigned long long itemId;
+    unsigned long long id;
     QNetworkReply *imageReply;
-    Ui::SimpleProductItem *ui;
+    Ui::StoreDiscoverItem *ui;
 };
 
-#endif // SIMPLEPRODUCTITEM_H
+#endif // STOREDISCOVERITEM_H

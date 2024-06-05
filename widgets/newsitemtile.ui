@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NewsItemTile</class>
+ <widget class="QWidget" name="NewsItemTile">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>256</width>
+    <height>264</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>256</width>
+    <height>264</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>256</width>
+    <height>264</height>
+   </size>
+  </property>
+  <property name="cursor">
+   <cursorShape>PointingHandCursor</cursorShape>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QFrame" name="rootFrame">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>256</width>
+     <height>264</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>256</width>
+     <height>264</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background: rgba(82, 58, 52, 0.75);</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Shape::StyledPanel</enum>
+   </property>
+   <layout class="QGridLayout" name="rootFrameLayout" rowstretch="1,0">
+    <property name="leftMargin">
+     <number>16</number>
+    </property>
+    <property name="rightMargin">
+     <number>16</number>
+    </property>
+    <property name="bottomMargin">
+     <number>12</number>
+    </property>
+    <property name="verticalSpacing">
+     <number>18</number>
+    </property>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="titleLabel">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: transparent;color: white;</string>
+      </property>
+      <property name="text">
+       <string notr="true">Title</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignBottom">
+     <widget class="QLabel" name="commentsCountLabel">
+      <property name="styleSheet">
+       <string notr="true">background: transparent;color: white;</string>
+      </property>
+      <property name="text">
+       <string notr="true"/>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignBottom">
+     <widget class="QLabel" name="publishDateLabel">
+      <property name="styleSheet">
+       <string notr="true">background: transparent;color: white;</string>
+      </property>
+      <property name="text">
+       <string notr="true"/>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

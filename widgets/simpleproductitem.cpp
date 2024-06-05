@@ -34,30 +34,35 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
         {
             QPixmap image;
             image.loadFromData(networkReply->readAll());
-            ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size(), Qt::KeepAspectRatioByExpanding));
+            this->setMinimumWidth(image.width());
+            this->setMaximumWidth(this->minimumWidth());
+            this->setMinimumHeight(image.height() + 84);
+            this->setMaximumHeight(this->minimumHeight());
+            ui->coverLabel->setMinimumSize(image.size());
+            ui->coverLabel->setMaximumSize(image.size());
+            ui->coverLabel->setPixmap(image);
         }
         networkReply->deleteLater();
     });
 }
 
-void SimpleProductItem::setPrice(unsigned int basePrice, unsigned int finalPrice,
-                                 const QString &currency)
+void SimpleProductItem::setPrice(double basePrice, double finalPrice,
+                                 unsigned char discount, bool free, const QString &currency)
 {
-
     auto systemLocale = QLocale::system();
-    if (basePrice != finalPrice)
+    if (discount > 0)
     {
         ui->discountLabel->setText(QString("-%1%2")
-                                   .arg(round(100. * (basePrice - finalPrice) / basePrice))
+                                   .arg(discount)
                                    .arg(systemLocale.percent()));
         ui->discountLabel->setVisible(true);
-        ui->oldPriceLabel->setText(systemLocale.toCurrencyString(basePrice / 100., currency));
+        ui->oldPriceLabel->setText(systemLocale.toCurrencyString(basePrice, currency));
         ui->oldPriceLabel->setVisible(true);
     }
     ui->newPriceLabel->setText(
-                finalPrice == 0
+                free
                 ? "Free"
-                : systemLocale.toCurrencyString(finalPrice / 100, currency));
+                : systemLocale.toCurrencyString(finalPrice, currency));
     ui->newPriceLabel->setVisible(true);
 }
 
