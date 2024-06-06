@@ -6,6 +6,7 @@
 #include <QCheckBox>
 #include <QJsonDocument>
 #include <QLocale>
+#include <QPainter>
 #include <QNetworkReply>
 #include <QScrollBar>
 
@@ -29,6 +30,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     BasePage(parent),
     averageRatingReply(nullptr),
     averageOwnerRatingReply(nullptr),
+    backgroundReply(nullptr),
     lastReviewsReply(nullptr),
     mainReply(nullptr),
     pricesReply(nullptr),
@@ -91,6 +93,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
 
     connect(ui->descriptionView->page(), &QWebEnginePage::contentsSizeChanged,
             this, &CatalogProductPage::descriptionViewContentsSizeChanged);
+    ui->descriptionView->page()->setBackgroundColor(Qt::transparent);
 }
 
 CatalogProductPage::~CatalogProductPage()
@@ -102,6 +105,10 @@ CatalogProductPage::~CatalogProductPage()
     if (averageOwnerRatingReply != nullptr)
     {
         averageOwnerRatingReply->abort();
+    }
+    if (backgroundReply != nullptr)
+    {
+        backgroundReply->abort();
     }
     if (lastReviewsReply != nullptr)
     {
@@ -279,8 +286,6 @@ void CatalogProductPage::initialize(const QVariant &initialData)
         networkReply->deleteLater();
     });
 
-    updateUserReviews();
-
     mainReply = apiClient->getCatalogProductInfo(id, QLocale::languageToCode(QLocale::system().language(), QLocale::ISO639Part1));
     connect(mainReply, &QNetworkReply::finished, this, [this]()
     {
@@ -293,6 +298,29 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
+            if (!data.backgroundImageLink.isNull())
+            {
+                backgroundReply = apiClient->getAnything(data.backgroundImageLink);
+                connect(backgroundReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = backgroundReply;
+                    backgroundReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        backgroundImage.loadFromData(networkReply->readAll());
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+            }
+
+            QLocale systemLocale = QLocale::system();
             if (data.videos.isEmpty() && data.screenshots.isEmpty())
             {
                 ui->mediaScrollArea->setVisible(false);
@@ -494,7 +522,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             {
                 ui->sizeLabel->setVisible(true);
                 ui->sizeInfoLabel->setVisible(true);
-                ui->sizeInfoLabel->setText(data.size > 1000 ? QString::number(data.size / 1000.0, 'g', 1) : QString::number(data.size) + " MB");
+                ui->sizeInfoLabel->setText(systemLocale.formattedDataSize(static_cast<unsigned long long>(data.size) * 1000 * 1000, 2, QLocale::DataSizeSIFormat));
             }
             if (data.forumLink.isNull())
             {
@@ -535,7 +563,6 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
             }
 
-            QLocale systemLocale = QLocale::system();
             QString countryCode = QLocale::territoryToCode(systemLocale.territory());
             QString currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
             QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
@@ -649,6 +676,98 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     networkReply->deleteLater();
                 });
             }
+            recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
+            connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
+            {
+                auto networkReply = recommendedPurchasedTogetherReply;
+                recommendedPurchasedTogetherReply = nullptr;
+
+                if (networkReply->error() == QNetworkReply::NoError)
+                {
+                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    api::GetRecommendationsResponse data;
+                    parseRecommendationsResponse(resultJson, data);
+
+                    for (const api::Recommendation &recommendation : std::as_const(data.products))
+                    {
+                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
+                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        recommendationItem->setTitle(recommendation.details.title);
+                        if (recommendation.pricing.priceSet)
+                        {
+                            unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                            recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                         recommendation.pricing.finalPrice / 100.,
+                                                         discount,
+                                                         recommendation.pricing.basePrice == 0,
+                                                         recommendation.pricing.currency);
+                        }
+
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                        recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                        ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
+                    }
+                    ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
+                }
+                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                {
+                    ui->purchasedTogetherLabel->setVisible(false);
+                    ui->purchasedTogetherStackedWidget->setVisible(false);
+                }
+                networkReply->deleteLater();
+            });
+            recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
+            connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
+            {
+                auto networkReply = recommendedSimilarReply;
+                recommendedSimilarReply = nullptr;
+
+                if (networkReply->error() == QNetworkReply::NoError)
+                {
+                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    api::GetRecommendationsResponse data;
+                    parseRecommendationsResponse(resultJson, data);
+
+                    for (const api::Recommendation &recommendation : std::as_const(data.products))
+                    {
+                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
+                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        recommendationItem->setTitle(recommendation.details.title);
+                        if (recommendation.pricing.priceSet)
+                        {
+                            unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                            recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                         recommendation.pricing.finalPrice / 100.,
+                                                         discount,
+                                                         recommendation.pricing.basePrice == 0,
+                                                         recommendation.pricing.currency);
+                        }
+
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                        recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                        ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
+                    }
+                    ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
+                }
+                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                {
+                    ui->similarProductsLabel->setVisible(false);
+                    ui->similarProductsStackedWidget->setVisible(false);
+                }
+                networkReply->deleteLater();
+            });
 
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
             ui->featuresLabel->setText(data.featuresDescription);
@@ -656,104 +775,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             ui->copyrightsLabel->setText(data.copyrights);
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
 
+            updateUserReviews();
+
             ui->contentStack->setCurrentWidget(ui->mainPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-
-    auto systemLocale = QLocale::system();
-    auto currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
-    recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
-    connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
-    {
-        auto networkReply = recommendedPurchasedTogetherReply;
-        recommendedPurchasedTogetherReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetRecommendationsResponse data;
-            parseRecommendationsResponse(resultJson, data);
-
-            for (const api::Recommendation &recommendation : std::as_const(data.products))
-            {
-                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
-                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
-                recommendationItem->setTitle(recommendation.details.title);
-                if (recommendation.pricing.priceSet)
-                {
-                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
-                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
-                                                 recommendation.pricing.finalPrice / 100.,
-                                                 discount,
-                                                 recommendation.pricing.basePrice == 0,
-                                                 recommendation.pricing.currency);
-                }
-
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
-                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-
-                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
-            }
-            ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-    recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
-    connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
-    {
-        auto networkReply = recommendedSimilarReply;
-        recommendedSimilarReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetRecommendationsResponse data;
-            parseRecommendationsResponse(resultJson, data);
-
-            for (const api::Recommendation &recommendation : std::as_const(data.products))
-            {
-                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
-                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
-                recommendationItem->setTitle(recommendation.details.title);
-                if (recommendation.pricing.priceSet)
-                {
-                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
-                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
-                                                 recommendation.pricing.finalPrice / 100.,
-                                                 discount,
-                                                 recommendation.pricing.basePrice == 0,
-                                                 recommendation.pricing.currency);
-                }
-
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
-                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-
-                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
-            }
-            ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
@@ -884,4 +908,19 @@ void CatalogProductPage::on_userReviewsSortOrderComboBox_currentIndexChanged(int
         break;
     }
     updateUserReviews();
+}
+
+void CatalogProductPage::paintEvent(QPaintEvent *event)
+{
+    if (!backgroundImage.isNull())
+    {
+        QPainter backgroundPainter(this);
+        int selfMiddle = width() / 2;
+        int backgroundMiddle = backgroundImage.width() / 2;
+        backgroundPainter.drawPixmap(0, 0, backgroundImage,
+                                     std::max(0, backgroundMiddle - selfMiddle), 0,
+                                     std::min(width(), backgroundImage.width()), std::min(height(), backgroundImage.height()));
+    }
+
+    QWidget::paintEvent(event);
 }

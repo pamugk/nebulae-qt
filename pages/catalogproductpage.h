@@ -39,13 +39,18 @@ private slots:
 
     void on_userReviewsSortOrderComboBox_currentIndexChanged(int index);
 
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
+    QPixmap backgroundImage;
     unsigned long long id;
     Ui::CatalogProductPage *ui;
 
     QNetworkReply *averageRatingReply;
     QNetworkReply *averageOwnerRatingReply;
+    QNetworkReply *backgroundReply;
     QNetworkReply *lastReviewsReply;
     QNetworkReply *mainReply;
     QNetworkReply *pricesReply;
