@@ -160,7 +160,7 @@ void OwnedGamesPage::updateData()
                     auto productId = item.id;
                     connect(gridItem, &OwnedProductGridItem::navigateToProduct, this, [this, productId]()
                     {
-                        emit navigate({Page::OWNED_PRODUCT_PAGE, productId});
+                        emit navigate({Page::OWNED_PRODUCT, productId});
                     });
                     ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
                 }

@@ -75,7 +75,7 @@ void WishlistPage::fetchData()
                     auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
                     connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)
                     {
-                        emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                        emit navigate({Page::CATALOG_PRODUCT, productId});
                     });
                     ui->resultsScrollAreaContentsLayout->addWidget(wishlistItem);
                 }

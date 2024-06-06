@@ -108,7 +108,7 @@ void StorePage::getCustomSectionCDPRGames()
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->customSectionCDPRScrollAreaContentsLayout->addWidget(itemWidget);
             }
@@ -156,7 +156,7 @@ void StorePage::getCustomSectionExclusiveGames()
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->customSectionExclusivesResultsScrollAreaContentsLayout->addWidget(itemWidget, row, column);
                 column += row;
@@ -205,7 +205,7 @@ void StorePage::getCustomSectionGOGGames()
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->customSectionGOGResultsScrollAreaContentsLayout->addWidget(itemWidget, row, column);
                 column += row;
@@ -258,7 +258,7 @@ void StorePage::getDiscoverBestsellingGames()
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->discoverBestsellingResultsPageLayout->addWidget(itemWidget);
             }
@@ -303,7 +303,7 @@ void StorePage::getDiscoverNewGames()
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->discoverNewResultsPageLayout->addWidget(itemWidget);
             }
@@ -349,7 +349,7 @@ void StorePage::getDiscoverUpcomingGames()
                 connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->discoverUpcomingResultsPageLayout->addWidget(itemWidget);
             }
@@ -391,7 +391,7 @@ void StorePage::getNews()
                 connect(itemTile, &NewsItemTile::navigateToNewsItem, this,
                         [this](unsigned long long newsId)
                 {
-
+                    emit navigate({ Page::NEWS, newsId });
                 });
                 ui->newsScrollAreaContentsLayout->addWidget(itemTile);
             }
@@ -494,7 +494,7 @@ void StorePage::getNowOnSale()
                 connect(discountedProductItem, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(discountedProductItem, row, column);
                 column += row;
@@ -594,7 +594,7 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 dealTabScrollAreaContentsLayout->addWidget(itemWidget, row, column);
                 column += row;
@@ -627,7 +627,7 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
                 connect(itemWidget, &SimpleProductItem::navigateToProduct,
                         this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 dealTabScrollAreaContentsLayout->addWidget(itemWidget, row, column);
                 column += row;

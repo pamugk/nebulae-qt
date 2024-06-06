@@ -408,7 +408,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         {
                             if (checked)
                             {
-                                emit navigate({Page::CATALOG_PRODUCT_PAGE, editionId});
+                                emit navigate({Page::CATALOG_PRODUCT, editionId});
                             }
                         });
                     }
@@ -597,7 +597,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
                                 connect(productItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
                                 {
-                                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                                    emit navigate({Page::CATALOG_PRODUCT, productId});
                                 });
                                 ui->seriesResultPage->layout()->addWidget(productItem);
                             }
@@ -702,7 +702,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
                 connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
             }
@@ -749,7 +749,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
                 connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
                 {
-                    emit navigate({Page::CATALOG_PRODUCT_PAGE, productId});
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
                 ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
             }

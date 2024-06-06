@@ -19,7 +19,7 @@ void parseNewsItem(const QJsonObject &json, api::NewsItem &data)
     {
         data.imageSmall.prepend("https:");
     }
-    data.imageLarge = json["images"]["large"].toString();
+    data.imageLarge = json["images"]["big"].toString();
     if (!data.imageLarge.isNull())
     {
         data.imageLarge.prepend("https:");

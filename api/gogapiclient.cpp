@@ -266,12 +266,12 @@ QNetworkReply *api::GogApiClient::getStoreCustomSection(const QString &id)
 
 QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
 {
-    return client.get(QUrl("https://embed.gog.com/discover_games/new"));
+    return client.get(QUrl("https://api.gog.com/discover_games/new"));
 }
 
 QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
 {
-    return client.get(QUrl("https://embed.gog.com/discover_games/upcoming"));
+    return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
 }
 
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
