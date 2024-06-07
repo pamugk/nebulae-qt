@@ -58,6 +58,7 @@ set(PROJECT_SOURCES
 
         internals/navigationdestination.h
         internals/pages.h
+        internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
 
         layouts/flowlayout.h layouts/flowlayout.cpp

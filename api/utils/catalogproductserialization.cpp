@@ -42,6 +42,7 @@ void parseRating(const QJsonObject &json, api::ContentRating &data)
         data.contentDescriptors[i] = contentDescriptors[i].toObject()["descriptor"].toString();
     }
     data.category = json["category"]["name"].toString();
+    data.categoryId = json["category"]["id"].toInteger();
 }
 
 void parseBonus(const QJsonObject &json, api::Bonus &data)

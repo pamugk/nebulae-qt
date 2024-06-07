@@ -58,5 +58,22 @@
         <file>icons/music.svg</file>
         <file>icons/image-portrait.svg</file>
         <file>icons/images.svg</file>
+        <file>icons/PEGI_3.svg</file>
+        <file>icons/PEGI_7.svg</file>
+        <file>icons/PEGI_12.svg</file>
+        <file>icons/PEGI_16.svg</file>
+        <file>icons/PEGI_18.svg</file>
+        <file>icons/PEGI_PARENTAL.svg</file>
+        <file>icons/ESRB_2013_Adults_Only_18+.svg</file>
+        <file>icons/ESRB_2013_Everyone_10+.svg</file>
+        <file>icons/ESRB_2013_Mature.svg</file>
+        <file>icons/ESRB_2013_Rating_Pending_Likely_Mature_17_+.svg</file>
+        <file>icons/ESRB_2013_Rating_Pending.svg</file>
+        <file>icons/ESRB_2013_Teen.svg</file>
+        <file>icons/USK_0.svg</file>
+        <file>icons/USK_6.svg</file>
+        <file>icons/USK_12.svg</file>
+        <file>icons/USK_16.svg</file>
+        <file>icons/USK_18.svg</file>
     </qresource>
 </RCC>

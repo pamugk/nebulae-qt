@@ -15,7 +15,7 @@
 #include "../api/utils/recommendationserialization.h"
 #include "../api/utils/reviewserialization.h"
 #include "../api/utils/seriesgameserialization.h"
-
+#include "../internals/regionalutils.h"
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
@@ -291,7 +291,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
         networkReply->deleteLater();
     });
 
-    mainReply = apiClient->getCatalogProductInfo(id, QLocale::languageToCode(QLocale::system().language(), QLocale::ISO639Part1));
+    mainReply = apiClient->getCatalogProductInfo(id, QLocale::system().name(QLocale::TagSeparator::Dash));
     connect(mainReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = mainReply;
@@ -337,7 +337,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     {
                         QPixmap logo;
                         logo.loadFromData(networkReply->readAll());
-                        ui->logotypeLabel->setPixmap(logo.scaled(ui->logotypeLabel->size(), Qt::KeepAspectRatioByExpanding));
+                        ui->logotypeLabel->setPixmap(logo.scaled(480, 285, Qt::KeepAspectRatioByExpanding));
                     }
                     else if (networkReply->error() != QNetworkReply::OperationCanceledError)
                     {
@@ -567,26 +567,53 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             QString("<a href=\"%1\">GOG store page</a>, <a href=\"%2\">Forum discussions</a>, <a href=\"%3\">Support</a>")
                             .arg(data.storeLink, data.forumLink, data.supportLink));
             }
-            if (data.ratings.contains("PEGI"))
+
+            QVector<QString> ageRatings = getTerritoryPreferredRatings(systemLocale.territory());
+
+            bool foundRating = false;
+            QString ratingDescription;
+            QPixmap ratingIcon;
+            for (const QString &ratingCode : std::as_const(ageRatings))
             {
-                auto contentRating = data.ratings["PEGI"];
-                ui->contentRatingLabel->setVisible(true);
-                ui->contentRatingInfoLabel->setVisible(true);
-                auto contentRatingDescription = QString("%1 Rating: %2%3").arg(
-                            "PEGI",
-                            QString::number(contentRating.ageRating) + "+",
-                            contentRating.contentDescriptors.empty()
-                                ? " (" + contentRating.contentDescriptors.join(", ") + ")"
-                                : "");
-                ui->contentRatingInfoLabel->setText(contentRatingDescription);
+                if (data.ratings.contains(ratingCode))
+                {
+                    foundRating = true;
+                    auto contentRating = data.ratings[ratingCode];
+                    ratingDescription = QString("%1 Rating: %2%3").arg(
+                                ratingCode,
+                                contentRating.category.isEmpty() ? QString::number(contentRating.ageRating) + "+" : contentRating.category,
+                                !contentRating.contentDescriptors.empty()
+                                    ? " (" + contentRating.contentDescriptors.join(", ") + ")"
+                                    : "");
+                    if (ratingCode == "PEGI" || ratingCode == "USK")
+                    {
+                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode).arg(contentRating.ageRating));
+                    }
+                    else if (ratingCode == "ESRB")
+                    {
+                        switch (contentRating.categoryId)
+                        {
+                        case 15:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone.svg"));
+                        case 16:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone_10+.svg"));
+                        case 17:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Teen.svg"));
+                        case 18:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Mature.svg"));
+                        case 19:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Adults_Only_18+.svg"));
+                        }
+                    }
+                    break;
+                }
             }
-            else
-            {
-                ui->contentRatingLabel->setVisible(false);
-                ui->contentRatingInfoLabel->setVisible(false);
-                ui->contentRatingInfoLabel->clear();
-                ui->contentRatingIconLabel->clear();
-            }
+            ui->contentRatingLabel->setVisible(foundRating);
+            ui->contentRatingInfoLabel->setText(ratingDescription);
+            ui->contentRatingInfoLabel->setVisible(!ratingDescription.isNull());
+            ui->contentRatingIconLabel->setPixmap(ratingIcon);
+            ui->contentRatingIconLabel->setVisible(!ratingIcon.isNull());
+
             for (const api::MetaTag &feature : std::as_const(data.features))
             {
                 ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
@@ -806,7 +833,15 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             updateUserReviews();
 
-            ui->contentStack->setCurrentWidget(ui->mainPage);
+            // Should it be controlled by user's territory age rating system instead?
+            if (data.ratings.contains("GOG") && data.ratings["GOG"].ageRating >= 18)
+            {
+                ui->contentStack->setCurrentWidget(ui->contentRatingWarningPage);
+            }
+            else
+            {
+                ui->contentStack->setCurrentWidget(ui->mainPage);
+            }
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {

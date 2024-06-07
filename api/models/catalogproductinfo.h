@@ -33,6 +33,7 @@ namespace api
     {
         unsigned char ageRating;
         QString category;
+        unsigned long long categoryId;
         QStringList contentDescriptors;
     };
 

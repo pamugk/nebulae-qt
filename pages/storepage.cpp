@@ -228,7 +228,7 @@ void StorePage::getDiscoverBestsellingGames()
     ui->discoverBestsellingStackedWidget->setCurrentWidget(ui->discoverBestsellingLoadingPage);
     discoverBestsellingReply = apiClient->searchCatalog({ "trending", false }, {},
                                                         QLocale::territoryToCode(systemLocale.territory()),
-                                                        QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                        systemLocale.name(QLocale::TagSeparator::Dash),
                                                         systemLocale.currencySymbol(QLocale::CurrencyIsoCode), 1, 8);
     connect(discoverBestsellingReply, &QNetworkReply::finished,
             this, [this]() {
@@ -411,7 +411,7 @@ void StorePage::getNowOnSale()
     ui->nowOnSaleStackedWidget->setCurrentWidget(ui->nowOnSaleLoadingPage);
 
     auto systemLocale = QLocale::system();
-    nowOnSaleReply = apiClient->getNowOnSale(QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+    nowOnSaleReply = apiClient->getNowOnSale(systemLocale.name(QLocale::TagSeparator::Dash),
                                              QLocale::territoryToCode(systemLocale.territory()),
                                              systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
     connect(nowOnSaleReply, &QNetworkReply::finished, this, [this]()

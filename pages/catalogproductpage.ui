@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#CatalogProductPage { background: rgb(217, 217, 217); }</string>
+  </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
     <number>0</number>
@@ -37,12 +40,9 @@
    </property>
    <item>
     <widget class="QStackedWidget" name="contentStack">
-     <property name="styleSheet">
-      <string notr="true">background: transparent;</string>
-     </property>
      <widget class="QWidget" name="loaderPage">
       <property name="styleSheet">
-       <string notr="true">QWidget#loaderPage{background: rgba(217, 217, 217, 127);}</string>
+       <string notr="true">QWidget#loaderPage{background: rgb(217, 217, 217);}</string>
       </property>
       <layout class="QVBoxLayout" name="loaderPageLayout">
        <property name="spacing">
@@ -74,7 +74,7 @@
      </widget>
      <widget class="QWidget" name="contentRatingWarningPage">
       <property name="styleSheet">
-       <string notr="true">QWidget#contentRatingWarningPage{background: rgba(217, 217, 217, 127);}</string>
+       <string notr="true">QWidget#contentRatingWarningPage { background: rgb(217, 217, 217); }</string>
       </property>
       <layout class="QVBoxLayout" name="contentRatingWarningPageLayout">
        <item>
@@ -225,9 +225,6 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="styleSheet">
-          <string notr="true">background: rgba(217, 217, 217, 127);</string>
-         </property>
          <property name="horizontalScrollBarPolicy">
           <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
          </property>
@@ -241,9 +238,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-1211</y>
             <width>779</width>
-            <height>2793</height>
+            <height>2792</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -600,8 +597,17 @@
                      <height>50</height>
                     </size>
                    </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>40</width>
+                     <height>50</height>
+                    </size>
+                   </property>
                    <property name="text">
                     <string notr="true"/>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -1185,6 +1191,9 @@
                 <property name="textFormat">
                  <enum>Qt::TextFormat::PlainText</enum>
                 </property>
+                <property name="scaledContents">
+                 <bool>true</bool>
+                </property>
                 <property name="alignment">
                  <set>Qt::AlignmentFlag::AlignCenter</set>
                 </property>
@@ -1290,6 +1299,9 @@
                  <font>
                   <pointsize>9</pointsize>
                  </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background: transparent;</string>
                 </property>
                 <property name="text">
                  <string notr="true"/>
@@ -1734,7 +1746,7 @@
      </widget>
      <widget class="QWidget" name="secretPage">
       <property name="styleSheet">
-       <string notr="true">QWidget#secretPage{background: rgba(217, 217, 217, 127);}</string>
+       <string notr="true">QWidget#secretPage{background: rgb(217, 217, 217);}</string>
       </property>
       <layout class="QVBoxLayout" name="secretPageLayout">
        <item>
