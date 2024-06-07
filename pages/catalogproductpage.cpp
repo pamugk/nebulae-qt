@@ -1,7 +1,7 @@
 #include "catalogproductpage.h"
 #include "ui_catalogproductpage.h"
 
-#include <cmath>
+#include <algorithm>
 
 #include <QCheckBox>
 #include <QJsonDocument>

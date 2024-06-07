@@ -1,5 +1,7 @@
 #include "flowlayout.h"
 
+#include <algorithm>
+
 #include <QWidget>
 
 FlowLayout::FlowLayout(QWidget *parent, int margin, int horizontalSpacing, int verticalSpacing)
@@ -146,7 +148,7 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const
         }
 
         x = nextX;
-        lineHeight = qMax(lineHeight, item->sizeHint().height());
+        lineHeight = std::max(lineHeight, item->sizeHint().height());
     }
     return y + lineHeight - rect.y() + bottom;
 }

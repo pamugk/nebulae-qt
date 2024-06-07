@@ -1,7 +1,6 @@
 #include "storepage.h"
 #include "ui_storepage.h"
 
-#include <cmath>
 #include <QJsonDocument>
 #include <QNetworkReply>
 
