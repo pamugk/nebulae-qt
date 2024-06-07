@@ -52,6 +52,7 @@ private:
     QNetworkReply *averageOwnerRatingReply;
     QNetworkReply *backgroundReply;
     QNetworkReply *lastReviewsReply;
+    QNetworkReply *logotypeReply;
     QNetworkReply *mainReply;
     QNetworkReply *pricesReply;
     QNetworkReply *recommendedPurchasedTogetherReply;

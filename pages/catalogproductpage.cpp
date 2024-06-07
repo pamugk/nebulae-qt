@@ -32,6 +32,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     averageOwnerRatingReply(nullptr),
     backgroundReply(nullptr),
     lastReviewsReply(nullptr),
+    logotypeReply(nullptr),
     mainReply(nullptr),
     pricesReply(nullptr),
     recommendedPurchasedTogetherReply(nullptr),
@@ -113,6 +114,10 @@ CatalogProductPage::~CatalogProductPage()
     if (lastReviewsReply != nullptr)
     {
         lastReviewsReply->abort();
+    }
+    if (logotypeReply != nullptr)
+    {
+        logotypeReply->abort();
     }
     if (mainReply != nullptr)
     {
@@ -298,9 +303,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
-            if (!data.backgroundImageLink.isNull())
+            if (!data.galaxyBackgroundImageLink.isNull())
             {
-                backgroundReply = apiClient->getAnything(data.backgroundImageLink);
+                backgroundReply = apiClient->getAnything(data.galaxyBackgroundImageLink);
                 connect(backgroundReply, &QNetworkReply::finished, this, [this]()
                 {
                     auto networkReply = backgroundReply;
@@ -309,6 +314,30 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     if (networkReply->error() == QNetworkReply::NoError)
                     {
                         backgroundImage.loadFromData(networkReply->readAll());
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+            }
+
+            if (!data.logoLink.isNull())
+            {
+                logotypeReply = apiClient->getAnything(data.logoLink);
+                connect(logotypeReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = logotypeReply;
+                    logotypeReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        QPixmap logo;
+                        logo.loadFromData(networkReply->readAll());
+                        ui->logotypeLabel->setPixmap(logo.scaled(ui->logotypeLabel->size(), Qt::KeepAspectRatioByExpanding));
                     }
                     else if (networkReply->error() != QNetworkReply::OperationCanceledError)
                     {

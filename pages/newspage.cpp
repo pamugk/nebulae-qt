@@ -23,6 +23,7 @@ NewsPage::NewsPage(QWidget *parent) :
     {
         ui->descriptionWebEngineView->setFixedHeight(size.height());
     });
+    ui->descriptionWebEngineView->page()->setBackgroundColor(Qt::transparent);
 }
 
 NewsPage::~NewsPage()

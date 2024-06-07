@@ -243,7 +243,7 @@
             <x>0</x>
             <y>0</y>
             <width>779</width>
-            <height>2242</height>
+            <height>2263</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -253,7 +253,7 @@
            </sizepolicy>
           </property>
           <property name="styleSheet">
-           <string notr="true">background: rgba(217, 217, 217, 0.75);</string>
+           <string notr="true">background: rgba(217, 217, 217, 90%);</string>
           </property>
           <layout class="QGridLayout" name="scrollAreaWidgetContentsPage">
            <property name="leftMargin">
@@ -608,7 +608,7 @@
               </font>
              </property>
              <property name="styleSheet">
-              <string notr="true">font-weight: 300;</string>
+              <string notr="true">background: transparent; font-weight: 300;</string>
              </property>
              <property name="text">
               <string notr="true"/>
@@ -652,10 +652,22 @@
            </item>
            <item row="3" column="0" colspan="3">
             <widget class="QScrollArea" name="mediaScrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>190</height>
+               <height>210</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>210</height>
               </size>
              </property>
              <property name="styleSheet">
@@ -673,7 +685,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>779</width>
-                <height>190</height>
+                <height>210</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="mediaScrollAreaContentsLayout"/>
@@ -858,6 +870,9 @@
                <width>0</width>
                <height>200</height>
               </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background: transparent;</string>
              </property>
              <widget class="QWidget" name="userReviewsLoaderPage">
               <layout class="QVBoxLayout" name="userReviewsLoaderPageLayout">
@@ -1647,6 +1662,28 @@ padding: 16px 20px 24px 20px;</string>
                </widget>
               </item>
              </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="logotypeLabel">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>250</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background: transparent;</string>
+             </property>
+             <property name="text">
+              <string notr="true"/>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::TextFormat::PlainText</enum>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
             </widget>
            </item>
           </layout>
