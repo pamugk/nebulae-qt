@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1292</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -238,8 +238,8 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>1060</width>
+            <y>-1004</y>
+            <width>1271</width>
             <height>3213</height>
            </rect>
           </property>
@@ -339,7 +339,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>1060</width>
+                   <width>1271</width>
                    <height>210</height>
                   </rect>
                  </property>
@@ -1724,24 +1724,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="1" colspan="2">
-                     <widget class="QLabel" name="companyInfoLabel">
-                      <property name="font">
-                       <font>
-                        <pointsize>11</pointsize>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string notr="true"/>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-                      </property>
-                      <property name="wordWrap">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="3" column="1" colspan="2">
                      <widget class="QLabel" name="releaseDateInfoLabel">
                       <property name="font">
@@ -1779,40 +1761,13 @@
                      </widget>
                     </item>
                     <item row="1" column="1" colspan="2">
-                     <widget class="QLabel" name="tagsInfoLabel">
-                      <property name="font">
-                       <font>
-                        <pointsize>11</pointsize>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string notr="true"/>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-                      </property>
-                      <property name="wordWrap">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="QWidget" name="tagsHolder" native="true"/>
+                    </item>
+                    <item row="4" column="1" colspan="2">
+                     <widget class="QWidget" name="companyHolder" native="true"/>
                     </item>
                     <item row="0" column="1" colspan="2">
-                     <widget class="QLabel" name="genreInfoLabel">
-                      <property name="font">
-                       <font>
-                        <pointsize>11</pointsize>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string notr="true"/>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-                      </property>
-                      <property name="wordWrap">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="QWidget" name="genreHolder" native="true"/>
                     </item>
                    </layout>
                   </widget>

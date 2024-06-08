@@ -19,6 +19,7 @@
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
+#include "../widgets/clickablelabel.h"
 #include "../widgets/dependentproductitem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
@@ -62,8 +63,10 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->gameFeaturesLayout->setAlignment(Qt::AlignTop);
     ui->languagesLayout->setAlignment(Qt::AlignTop);
 
-    auto productGoodiesSectionLayout = new FlowLayout(ui->productGoodiesSection, -1, 15, 12);
-    ui->productGoodiesSection->setLayout(productGoodiesSectionLayout);
+    ui->genreHolder->setLayout(new FlowLayout(ui->genreHolder, 0, 13, 7));
+    ui->tagsHolder->setLayout(new FlowLayout(ui->tagsHolder, 0, 4, 7));
+    ui->companyHolder->setLayout(new FlowLayout(ui->companyHolder, 0, 14, 7));
+    ui->productGoodiesSection->setLayout(new FlowLayout(ui->productGoodiesSection, -1, 15, 12));
 
     ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->windowsTab), false);
     ui->windowsTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
@@ -549,18 +552,38 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             ui->libraryButton->setVisible(false);
 
-            QStringList genres(data.tags.count());
-            for (int i = 0; i < data.tags.count(); i++)
+            QFont tagFont;
+            tagFont.setPointSizeF(10.5);
+            tagFont.setUnderline(true);
+            for (const api::HierarchicalMetaTag &genre : std::as_const(data.tags))
             {
-                genres[data.tags[i].level - 1] = data.tags[i].name;
+                auto genreLabel = new ClickableLabel(ui->genreHolder);
+                genreLabel->setCursor(Qt::PointingHandCursor);
+                genreLabel->setText(genre.name);
+                genreLabel->setFont(tagFont);
+                connect(genreLabel, &ClickableLabel::clicked, this, [this, genreSlug = genre.slug]()
+                {
+                    emit navigate({ ALL_GAMES });
+                });
+                ui->genreHolder->layout()->addWidget(genreLabel);
             }
-            ui->genreInfoLabel->setText(genres.join(" - "));
-            QStringList tags(data.properties.count());
-            for (int i = 0; i < data.properties.count(); i++)
+
+            for (const api::MetaTag &tag : std::as_const(data.properties))
             {
-                tags[i] = data.properties[i].name;
+                auto tagLabel = new ClickableLabel(ui->tagsHolder);
+                tagLabel->setCursor(Qt::PointingHandCursor);
+                tagLabel->setText(tag.name);
+                tagLabel->setFont(tagFont);
+                connect(tagLabel, &ClickableLabel::clicked, this, [this, tagSlug = tag.slug]()
+                {
+                    emit navigate({ ALL_GAMES });
+                });
+                ui->tagsHolder->layout()->addWidget(tagLabel);
             }
-            ui->tagsInfoLabel->setText(tags.join(", "));
+
+            ui->tagsLabel->setVisible(data.properties.count() > 0);
+            ui->tagsHolder->setVisible(data.properties.count() > 0);
+
             ui->supportedOSInfoLabel->setText(supportedOSInfo.join(", "));
             if (data.globalReleaseDate.isNull())
             {
@@ -570,11 +593,31 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
-                ui->releaseDateInfoLabel->setText(data.globalReleaseDate.date().toString("MMMM, d yyyy"));
+                ui->releaseDateInfoLabel->setText(systemLocale.toString(data.globalReleaseDate.date()));
                 ui->releaseDateLabel->setVisible(true);
                 ui->releaseDateInfoLabel->setVisible(true);
             }
-            ui->companyInfoLabel->setText(QString("%1 / %2").arg(data.developers[0], data.publisher));
+
+            auto developerLabel = new ClickableLabel(ui->infoSidebar);
+            developerLabel->setCursor(Qt::PointingHandCursor);
+            developerLabel->setFont(tagFont);
+            developerLabel->setText(data.developers[0]);
+            connect(developerLabel, &ClickableLabel::clicked, this, [this, developerSlug = data.publisher]()
+            {
+                emit navigate({ ALL_GAMES });
+            });
+            ui->companyHolder->layout()->addWidget(developerLabel);
+
+            auto publisherLabel = new ClickableLabel(ui->companyHolder);
+            publisherLabel->setCursor(Qt::PointingHandCursor);
+            publisherLabel->setFont(tagFont);
+            publisherLabel->setText(data.publisher);
+            connect(publisherLabel, &ClickableLabel::clicked, this, [this, publisherSlug = data.publisher]()
+            {
+                emit navigate({ ALL_GAMES });
+            });
+            ui->companyHolder->layout()->addWidget(publisherLabel);
+
             if (data.size == 0)
             {
                 ui->sizeLabel->setVisible(false);
@@ -650,7 +693,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             for (const api::MetaTag &feature : std::as_const(data.features))
             {
-                ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
+                auto featureItem = new FeatureItem(feature, ui->gameDetails);
+                featureItem->setCursor(Qt::PointingHandCursor);
+                connect(featureItem, &FeatureItem::clicked, this, [this, featureSlug = feature.slug]()
+                {
+                    emit navigate({ Page::ALL_GAMES });
+                });
+                ui->gameFeaturesLayout->addWidget(featureItem);
             }
 
             QString countryCode = QLocale::territoryToCode(systemLocale.territory());
