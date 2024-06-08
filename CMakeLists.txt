@@ -97,6 +97,7 @@ set(PROJECT_SOURCES
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
+        windows/catalogproductmediadialog.h windows/catalogproductmediadialog.cpp windows/catalogproductmediadialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
         windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui

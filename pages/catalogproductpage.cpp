@@ -26,6 +26,7 @@
 #include "../widgets/reviewitem.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/videoholder.h"
+#include "../windows/catalogproductmediadialog.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
     BasePage(parent),
@@ -370,15 +371,34 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
+                std::size_t mediaIndex = 0;
                 for (const api::ThumbnailedVideo &video : std::as_const(data.videos))
                 {
-                    auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
-                    ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
+                    // How come it is not displayed on a web-site? Just... why?
+                    if (video.provider != "wistia")
+                    {
+                        auto videoHolder = new VideoHolder(QSize(271, 143), video,apiClient, ui->mediaScrollAreaContents);
+                        videoHolder->setCursor(Qt::PointingHandCursor);
+                        connect(videoHolder, &VideoHolder::clicked, this, [this, mediaIndex]()
+                        {
+                            openGalleryOnItem(mediaIndex);
+                        });
+                        ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
+                        videos.append(video);
+                        mediaIndex++;
+                    }
                 }
                 for (const api::FormattedLink &screenshotLink : std::as_const(data.screenshots))
                 {
-                    auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    auto screenshotHolder = new ImageHolder(QSize(271, 143), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    screenshotHolder->setCursor(Qt::PointingHandCursor);
+                    connect(screenshotHolder, &ImageHolder::clicked, this, [this, mediaIndex]()
+                    {
+                        openGalleryOnItem(mediaIndex);
+                    });
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
+                    screenshots.append(screenshotLink);
+                    mediaIndex++;
                 }
             }
 
@@ -1097,4 +1117,11 @@ void CatalogProductPage::paintEvent(QPaintEvent *event)
     }
 
     QWidget::paintEvent(event);
+}
+
+void CatalogProductPage::openGalleryOnItem(std::size_t index)
+{
+    CatalogProductMediaDialog dialog(videos, screenshots, apiClient, this);
+    dialog.viewMedia(index);
+    dialog.exec();
 }

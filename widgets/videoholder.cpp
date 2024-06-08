@@ -9,7 +9,7 @@ VideoHolder::VideoHolder(QSize size,
     ui(new Ui::VideoHolder)
 {
     ui->setupUi(this);
-    ui->thumbnailLabel->setFixedSize(size);
+    setFixedSize(size);
     thumbnailReply = apiClient->getAnything(data.thumbnailLink);
     connect(thumbnailReply, &QNetworkReply::finished, this, [this]() {
         auto networkReply = thumbnailReply;
@@ -18,7 +18,10 @@ VideoHolder::VideoHolder(QSize size,
         {
             QPixmap image;
             image.loadFromData(networkReply->readAll());
-            ui->thumbnailLabel->setPixmap(image.scaled(ui->thumbnailLabel->size()));
+            QPalette backgroundPalette;
+            backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::IgnoreAspectRatio)));
+            this->setAutoFillBackground(true);
+            this->setPalette(backgroundPalette);
         }
         networkReply->deleteLater();
     });
@@ -32,3 +35,9 @@ VideoHolder::~VideoHolder()
     }
     delete ui;
 }
+
+void VideoHolder::mousePressEvent(QMouseEvent *event)
+{
+    emit clicked();
+}
+

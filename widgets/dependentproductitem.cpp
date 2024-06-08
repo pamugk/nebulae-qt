@@ -13,7 +13,8 @@ DependentProductItem::DependentProductItem(const api::GetCatalogProductInfoRespo
     imageReply = apiClient->getAnything(data.imageLink.templated
                                         ? QString(data.imageLink.href).replace("{formatter}", "glx_logo")
                                         : data.imageLink.href);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
+    connect(imageReply, &QNetworkReply::finished, this, [this]()
+    {
         auto networkReply = imageReply;
         imageReply = nullptr;
         if (networkReply->error() == QNetworkReply::NoError)

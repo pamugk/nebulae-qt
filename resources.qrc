@@ -81,5 +81,7 @@
         <file>icons/BR_14.svg</file>
         <file>icons/BR_16.svg</file>
         <file>icons/BR_18.svg</file>
+        <file>icons/circle-play-white.svg</file>
+        <file>icons/circle-play.svg</file>
     </qresource>
 </RCC>

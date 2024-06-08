@@ -40,6 +40,8 @@ private slots:
 
     void on_userReviewsSortOrderComboBox_currentIndexChanged(int index);
 
+    void openGalleryOnItem(std::size_t index);
+
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
 
@@ -48,9 +50,11 @@ private:
     QPixmap backgroundImage;
     QVector<api::GetCatalogProductInfoResponse> dependentProducts;
     unsigned char dependentProductsLeft;
+    unsigned long long id;
     QVector<api::GetCatalogProductInfoResponse> requiredProducts;
     unsigned char requiredProductsLeft;
-    unsigned long long id;
+    QVector<api::FormattedLink> screenshots;
+    QVector<api::ThumbnailedVideo> videos;
     Ui::CatalogProductPage *ui;
 
     QNetworkReply *averageRatingReply;
