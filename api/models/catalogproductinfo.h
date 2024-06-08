@@ -113,6 +113,7 @@ namespace api
         QString backgroundImageLink;
         QString galaxyBackgroundImageLink;
         QVector<QString> requiredByGames;
+        QVector<QString> requiresGames;
         QString title;
         QString checkoutLink;
         QString productType;

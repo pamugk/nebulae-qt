@@ -48,6 +48,8 @@ private:
     QPixmap backgroundImage;
     QVector<api::GetCatalogProductInfoResponse> dependentProducts;
     unsigned char dependentProductsLeft;
+    QVector<api::GetCatalogProductInfoResponse> requiredProducts;
+    unsigned char requiredProductsLeft;
     unsigned long long id;
     Ui::CatalogProductPage *ui;
 
@@ -61,6 +63,7 @@ private:
     QNetworkReply *pricesReply;
     QNetworkReply *recommendedPurchasedTogetherReply;
     QNetworkReply *recommendedSimilarReply;
+    QVector<QNetworkReply *> requiredProductReplies;
     QNetworkReply *seriesGamesReply;
     QNetworkReply *seriesTotalPriceReply;
 

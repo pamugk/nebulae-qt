@@ -142,6 +142,13 @@ CatalogProductPage::~CatalogProductPage()
     {
         recommendedPurchasedTogetherReply->abort();
     }
+    for (QNetworkReply *requiredProductReply : std::as_const(requiredProductReplies))
+    {
+        if (requiredProductReply != nullptr)
+        {
+            requiredProductReply->abort();
+        }
+    }
     if (seriesGamesReply != nullptr)
     {
         seriesGamesReply->abort();
@@ -652,6 +659,53 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
 
             ui->mainGameLabel->setVisible(false);
+            requiredProducts.resize(data.requiresGames.count());
+            requiredProductsLeft = data.requiresGames.count();
+            requiredProductReplies.resize(requiredProductsLeft);
+            for (std::size_t mainPartIndex = 0; mainPartIndex < data.requiresGames.count(); mainPartIndex++)
+            {
+                requiredProductReplies[mainPartIndex] = apiClient->getAnything(data.requiresGames[mainPartIndex]);
+                connect(requiredProductReplies[mainPartIndex], &QNetworkReply::finished,
+                        this, [this, mainPartIndex]()
+                {
+                    auto networkReply = requiredProductReplies[mainPartIndex];
+                    requiredProductReplies[mainPartIndex] = nullptr;
+                    requiredProductsLeft--;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        parseCatalogProductInfoResponse(resultJson, requiredProducts[mainPartIndex]);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+
+                    if (requiredProductsLeft == 0)
+                    {
+                        for (const api::GetCatalogProductInfoResponse &mainPart : std::as_const(requiredProducts))
+                        {
+                            if (!mainPart.title.isNull())
+                            {
+                                auto mainPartItem = new DependentProductItem(mainPart, apiClient, ui->mainContentFrame);
+                                mainPartItem->setCursor(Qt::PointingHandCursor);
+                                connect(mainPartItem, &DependentProductItem::clicked,
+                                        this, [this, productId = mainPart.id]()
+                                {
+                                    emit navigate({ Page::CATALOG_PRODUCT, productId });
+                                });
+                                ui->mainGameLayout->addWidget(mainPartItem);
+                            }
+                        }
+                        ui->mainGameLabel->setVisible(ui->mainGameLayout->count() > 0);
+                    }
+                });
+            }
+
             ui->dlcsLabel->setVisible(false);
             dependentProducts.resize(data.requiredByGames.count());
             dependentProductsLeft = data.requiredByGames.count();
@@ -686,6 +740,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             if (!dlc.title.isNull())
                             {
                                 auto dlcItem = new DependentProductItem(dlc, apiClient, ui->mainContentFrame);
+                                dlcItem->setCursor(Qt::PointingHandCursor);
                                 connect(dlcItem, &DependentProductItem::clicked,
                                         this, [this, productId = dlc.id]()
                                 {

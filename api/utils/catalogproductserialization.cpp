@@ -162,6 +162,11 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         {
             data.requiredByGames.append(item["href"].toString());
         }
+        const QJsonArray &requiresGames = links["requiresGames"].toArray();
+        for (const QJsonValue &item : requiresGames)
+        {
+            data.requiresGames.append(item["href"].toString());
+        }
     }
 
     if (json["_embedded"].isObject())
