@@ -10,6 +10,7 @@ SimpleProductItem::SimpleProductItem(unsigned long long productId,
 {
     ui->setupUi(this);
 
+    ui->dealLabel->setVisible(false);
     ui->discountLabel->setVisible(false);
     ui->oldPriceLabel->setVisible(false);
     ui->newPriceLabel->setVisible(false);
@@ -38,12 +39,23 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
             this->setMaximumWidth(this->minimumWidth());
             this->setMinimumHeight(image.height() + 84);
             this->setMaximumHeight(this->minimumHeight());
+
+            ui->coverWidget->setMinimumSize(image.size());
+            ui->coverWidget->setMaximumSize(image.size());
             ui->coverLabel->setMinimumSize(image.size());
             ui->coverLabel->setMaximumSize(image.size());
+            ui->dealLabel->setMinimumWidth(this->minimumWidth());
+            ui->dealLabel->setMaximumWidth(this->minimumWidth());
             ui->coverLabel->setPixmap(image);
         }
         networkReply->deleteLater();
     });
+}
+
+void SimpleProductItem::setDeal(const QDateTime &dealEnd)
+{
+    ui->dealLabel->setText(QLocale::system().toString(dealEnd, QLocale::NarrowFormat));
+    ui->dealLabel->setVisible(true);
 }
 
 void SimpleProductItem::setPrice(double basePrice, double finalPrice,

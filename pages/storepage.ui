@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-843</y>
         <width>579</width>
-        <height>3413</height>
+        <height>3735</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
@@ -282,6 +282,56 @@
          <property name="text">
           <string>Show more</string>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="dealOfTheDayLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>Deal of the Day</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QScrollArea" name="dealOfTheDayScrollArea">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>234</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="dealOfTheDayScrollAreaContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>559</width>
+            <height>230</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="dealOfTheDayScrollAreaContentsLayout">
+           <property name="spacing">
+            <number>24</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+          </layout>
+         </widget>
         </widget>
        </item>
        <item>
@@ -639,7 +689,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>100</width>
+                <width>563</width>
                 <height>234</height>
                </rect>
               </property>
@@ -726,7 +776,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>88</width>
+                <width>100</width>
                 <height>296</height>
                </rect>
               </property>

@@ -20,6 +20,7 @@ public:
     ~SimpleProductItem();
 
     void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
+    void setDeal(const QDateTime &dealEnd);
     void setTitle(const QString &title);
     void setPrice(double basePrice, double finalPrice,
                   unsigned char discount, bool free, const QString &currency);
