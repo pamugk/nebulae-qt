@@ -19,6 +19,7 @@
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
+#include "../widgets/dependentproductitem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
 #include "../widgets/pagination.h"
@@ -109,6 +110,13 @@ CatalogProductPage::~CatalogProductPage()
     if (backgroundReply != nullptr)
     {
         backgroundReply->abort();
+    }
+    for (QNetworkReply *dependentProductReply : std::as_const(dependentProductReplies))
+    {
+        if (dependentProductReply != nullptr)
+        {
+            dependentProductReply->abort();
+        }
     }
     if (lastReviewsReply != nullptr)
     {
@@ -645,6 +653,51 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             ui->mainGameLabel->setVisible(false);
             ui->dlcsLabel->setVisible(false);
+            dependentProducts.resize(data.requiredByGames.count());
+            dependentProductsLeft = data.requiredByGames.count();
+            dependentProductReplies.resize(dependentProductsLeft);
+            for (std::size_t dlcIndex = 0; dlcIndex < data.requiredByGames.count(); dlcIndex++)
+            {
+                dependentProductReplies[dlcIndex] = apiClient->getAnything(data.requiredByGames[dlcIndex]);
+                connect(dependentProductReplies[dlcIndex], &QNetworkReply::finished,
+                        this, [this, dlcIndex]()
+                {
+                    auto networkReply = dependentProductReplies[dlcIndex];
+                    dependentProductReplies[dlcIndex] = nullptr;
+                    dependentProductsLeft--;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        parseCatalogProductInfoResponse(resultJson, dependentProducts[dlcIndex]);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+
+                    if (dependentProductsLeft == 0)
+                    {
+                        for (const api::GetCatalogProductInfoResponse &dlc : std::as_const(dependentProducts))
+                        {
+                            if (!dlc.title.isNull())
+                            {
+                                auto dlcItem = new DependentProductItem(dlc, apiClient, ui->mainContentFrame);
+                                connect(dlcItem, &DependentProductItem::clicked,
+                                        this, [this, productId = dlc.id]()
+                                {
+                                    emit navigate({ Page::CATALOG_PRODUCT, productId });
+                                });
+                                ui->dlcsLayout->addWidget(dlcItem);
+                            }
+                        }
+                        ui->dlcsLabel->setVisible(ui->dlcsLayout->count() > 0);
+                    }
+                });
+            }
 
             if (data.series.name.isNull())
             {

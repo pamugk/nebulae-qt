@@ -2,6 +2,7 @@
 #define CATALOGPRODUCTPAGE_H
 
 #include "./basepage.h"
+#include "../api/models/catalogproductinfo.h"
 
 namespace Ui {
 class CatalogProductPage;
@@ -45,12 +46,15 @@ protected:
 private:
     api::GogApiClient *apiClient;
     QPixmap backgroundImage;
+    QVector<api::GetCatalogProductInfoResponse> dependentProducts;
+    unsigned char dependentProductsLeft;
     unsigned long long id;
     Ui::CatalogProductPage *ui;
 
     QNetworkReply *averageRatingReply;
     QNetworkReply *averageOwnerRatingReply;
     QNetworkReply *backgroundReply;
+    QVector<QNetworkReply *> dependentProductReplies;
     QNetworkReply *lastReviewsReply;
     QNetworkReply *logotypeReply;
     QNetworkReply *mainReply;

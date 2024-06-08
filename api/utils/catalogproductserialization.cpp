@@ -156,6 +156,12 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         data.boxArtImageLink = links["boxArtImage"]["href"].toString();
         data.backgroundImageLink = links["backgroundImage"]["href"].toString();
         data.galaxyBackgroundImageLink = links["galaxyBackgroundImage"]["href"].toString();
+
+        const QJsonArray &requiredByGames = links["isRequiredByGames"].toArray();
+        for (const QJsonValue &item : requiredByGames)
+        {
+            data.requiredByGames.append(item["href"].toString());
+        }
     }
 
     if (json["_embedded"].isObject())
