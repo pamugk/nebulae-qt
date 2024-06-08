@@ -57,7 +57,6 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->linuxLabel->setVisible(false);
 
     ui->productPriceLayout->setAlignment(Qt::AlignTop);
-    ui->gameDetailsLayout->setAlignment(Qt::AlignTop);
     ui->gameFeaturesLayout->setAlignment(Qt::AlignTop);
     ui->languagesLayout->setAlignment(Qt::AlignTop);
 
@@ -585,7 +584,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                 !contentRating.contentDescriptors.empty()
                                     ? " (" + contentRating.contentDescriptors.join(", ") + ")"
                                     : "");
-                    if (ratingCode == "PEGI" || ratingCode == "USK")
+                    if (ratingCode == "PEGI" || ratingCode == "USK" || ratingCode == "BR")
                     {
                         ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode).arg(contentRating.ageRating));
                     }
@@ -643,6 +642,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             {
                 ui->supportedLanguagesLabel->setText(firstLanguage);
             }
+
+            ui->mainGameLabel->setVisible(false);
+            ui->dlcsLabel->setVisible(false);
 
             if (data.series.name.isNull())
             {

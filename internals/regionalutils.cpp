@@ -8,6 +8,14 @@ QVector<QString> getTerritoryPreferredRatings(QLocale::Territory territory)
 {
     switch (territory)
     {
+    case QLocale::Brazil:
+        return QVector<QString>(
+                    {
+                        // Proper brazilian advisory rating system
+                        "BR",
+                        // Fallback just in case
+                        "ESRB"
+                    });
     // Salzburg-Vienna difference not handled?
     case QLocale::Austria:
     case QLocale::Germany:
@@ -112,6 +120,7 @@ QVector<QString> getTerritoryPreferredRatings(QLocale::Territory territory)
     case QLocale::UnitedStates:
     case QLocale::UnitedStatesOutlyingIslands:
     case QLocale::UnitedStatesVirginIslands:
+        return QVector<QString>({"ESRB"});
     default:
         return QVector<QString>();
     }

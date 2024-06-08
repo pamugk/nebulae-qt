@@ -75,5 +75,11 @@
         <file>icons/USK_12.svg</file>
         <file>icons/USK_16.svg</file>
         <file>icons/USK_18.svg</file>
+        <file>icons/BR_0.svg</file>
+        <file>icons/BR_10.svg</file>
+        <file>icons/BR_12.svg</file>
+        <file>icons/BR_14.svg</file>
+        <file>icons/BR_16.svg</file>
+        <file>icons/BR_18.svg</file>
     </qresource>
 </RCC>
