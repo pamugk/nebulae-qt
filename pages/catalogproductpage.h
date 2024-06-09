@@ -2,6 +2,7 @@
 #define CATALOGPRODUCTPAGE_H
 
 #include "./basepage.h"
+#include "../api/models/reviewfilters.h"
 #include "../api/models/catalogproductinfo.h"
 
 namespace Ui {
@@ -53,6 +54,7 @@ private:
     unsigned long long id;
     QVector<api::GetCatalogProductInfoResponse> requiredProducts;
     unsigned char requiredProductsLeft;
+    api::ReviewFilters reviewFilters;
     QVector<api::FormattedLink> screenshots;
     QVector<api::ThumbnailedVideo> videos;
     Ui::CatalogProductPage *ui;
@@ -74,6 +76,8 @@ private:
     unsigned short reviewsPage;
     unsigned short reviewsPageSize;
     api::SortOrder reviewsOrder;
+
+    void initializeUserReviewsFilters();
 };
 
 #endif // CATALOGPRODUCTPAGE_H

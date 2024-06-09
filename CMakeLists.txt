@@ -33,7 +33,7 @@ set(PROJECT_SOURCES
         api/models/product.h
         api/models/productshared.h
         api/models/recommendation.h
-        api/models/review.h
+        api/models/review.h api/models/reviewfilters.h
         api/models/seriesgame.h
         api/models/sort.h
         api/models/statistics.h

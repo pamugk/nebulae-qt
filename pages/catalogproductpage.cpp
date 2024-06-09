@@ -3,10 +3,12 @@
 
 #include <algorithm>
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QJsonDocument>
 #include <QLocale>
 #include <QPainter>
+#include <QRadioButton>
 #include <QNetworkReply>
 #include <QScrollBar>
 
@@ -20,6 +22,7 @@
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
 #include "../widgets/clickablelabel.h"
+#include "../widgets/collapsiblearea.h"
 #include "../widgets/dependentproductitem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
@@ -40,6 +43,10 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     pricesReply(nullptr),
     recommendedPurchasedTogetherReply(nullptr),
     recommendedSimilarReply(nullptr),
+    reviewFilters({ { "en-US", "ru-RU", "de-DE", "pl-PL", "fr-FR", "zh-Hans" } }),
+    reviewsPage(1),
+    reviewsPageSize(5),
+    reviewsOrder({"votes", false}),
     seriesGamesReply(nullptr),
     seriesTotalPriceReply(nullptr),
     ui(new Ui::CatalogProductPage)
@@ -88,13 +95,11 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->userReviewsLoaderPageLayout->setAlignment(Qt::AlignTop);
     ui->userReviewsContentsLayout->setAlignment(Qt::AlignTop);
     ui->userReviewsFiltersLayout->setAlignment(Qt::AlignTop);
-    reviewsPage = 1;
-    reviewsPageSize = 5;
-    reviewsOrder = {"votes", false};
+
     auto reviewsPaginator = new Pagination(ui->userReviewsResultsPage);
     connect(reviewsPaginator, &Pagination::changedPage, this, &CatalogProductPage::changeUserReviewsPage);
     connect(this, &CatalogProductPage::userReviewsResultsUpdated, reviewsPaginator, &Pagination::changePages);
-    ui->userReviewsResultsPageLayout->addWidget(reviewsPaginator, 2, 0,  Qt::AlignHCenter);
+    ui->userReviewsResultsPageLayout->addWidget(reviewsPaginator,  Qt::AlignHCenter);
 
     connect(ui->descriptionView->page(), &QWebEnginePage::contentsSizeChanged,
             this, &CatalogProductPage::descriptionViewContentsSizeChanged);
@@ -664,7 +669,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                     : "");
                     if (ratingCode == "PEGI" || ratingCode == "USK" || ratingCode == "BR")
                     {
-                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode).arg(contentRating.ageRating));
+                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode, contentRating.ageRating));
                     }
                     else if (ratingCode == "ESRB")
                     {
@@ -1010,6 +1015,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             ui->copyrightsLabel->setText(data.copyrights);
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
 
+            initializeUserReviewsFilters();
             updateUserReviews();
 
             // Should it be controlled by user's territory age rating system instead?
@@ -1055,9 +1061,140 @@ void CatalogProductPage::descriptionViewContentsSizeChanged(const QSizeF &size)
     ui->descriptionView->setFixedHeight(size.height());
 }
 
+void CatalogProductPage::initializeUserReviewsFilters()
+{
+    ui->userReviewsFiltersLayout->addSpacing(44);
+    QLayout *filterAreaLayout;
+    auto reviewsLanguageCollapsibleArea = new CollapsibleArea("Written in", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+    for (const QString &language : std::as_const(reviewFilters.allLanguages))
+    {
+        QLocale languageLocale(QString(language).replace('-', '_'));
+        auto reviewsLanguageCheckbox = new QCheckBox(languageLocale.nativeLanguageName(), reviewsLanguageCollapsibleArea);
+        connect(reviewsLanguageCheckbox, &QCheckBox::clicked, this, [this, language](bool checked)
+        {
+            if (checked)
+            {
+                reviewFilters.languages.insert(language);
+            }
+            else
+            {
+                reviewFilters.languages.remove(language);
+            }
+            reviewsPage = 1;
+            updateUserReviews();
+        });
+        filterAreaLayout->addWidget(reviewsLanguageCheckbox);
+    }
+    auto reviewsOtherLanguageCheckbox = new QCheckBox("Others", reviewsLanguageCollapsibleArea);
+    connect(reviewsOtherLanguageCheckbox, &QCheckBox::clicked, this, [this](bool checked)
+    {
+       reviewFilters.otherLanguages = checked;
+       reviewsPage = 1;
+       updateUserReviews();
+    });
+    filterAreaLayout->addWidget(reviewsOtherLanguageCheckbox);
+    reviewsLanguageCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsLanguageCollapsibleArea);
+
+    auto reviewsAuthorCollapsibleArea = new CollapsibleArea("Written by", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+    auto reviewedByOwnerButton = new QRadioButton("Verified owners", reviewsAuthorCollapsibleArea);
+    connect(reviewedByOwnerButton, &QRadioButton::clicked, this, [this](bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedByOwner = true;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+    filterAreaLayout->addWidget(reviewedByOwnerButton);
+    auto reviewedByOthersButton = new QRadioButton("Others", reviewsAuthorCollapsibleArea);
+    connect(reviewedByOthersButton, &QRadioButton::clicked, this, [this](bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedByOwner = false;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+    filterAreaLayout->addWidget(reviewedByOthersButton);
+    reviewsAuthorCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsAuthorCollapsibleArea);
+
+    auto reviewsAddedCollapsibleArea = new CollapsibleArea("Added", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+
+    auto reviewsAddedLastDaysGroup = new QButtonGroup(reviewsAddedCollapsibleArea);
+    auto reviewsAddedLastMonthButton = new QRadioButton("Last 30 days", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLastMonthButton, 1);
+    filterAreaLayout->addWidget(reviewsAddedLastMonthButton);
+    auto reviewsAddedLast3MonthsButton = new QRadioButton("Last 90 days", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLast3MonthsButton, 2);
+    filterAreaLayout->addWidget(reviewsAddedLast3MonthsButton);
+    auto reviewsAddedLast6MonthsButton = new QRadioButton("Last 6 months", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLast6MonthsButton, 3);
+    filterAreaLayout->addWidget(reviewsAddedLast6MonthsButton);
+    auto reviewsAddedWheneverButton = new QRadioButton("Whenever", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedWheneverButton, 4);
+    filterAreaLayout->addWidget(reviewsAddedWheneverButton);
+    connect(reviewsAddedLastDaysGroup, &QButtonGroup::idToggled, this, [this](int id, bool checked)
+    {
+        if (checked)
+        {
+            switch (id)
+            {
+            case 1:
+            case 2:
+            case 3:
+                reviewFilters.lastDays = id * 30;
+            case 4:
+                reviewFilters.lastDays = std::nullopt;
+            }
+
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+
+    auto line = new QFrame(reviewsAddedCollapsibleArea);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    filterAreaLayout->addWidget(line);
+
+    auto reviewsAddedVersionGroup = new QButtonGroup(reviewsAddedCollapsibleArea);
+    auto reviewedReleaseVersionButton = new QRadioButton("After release", reviewsAddedCollapsibleArea);
+    reviewsAddedVersionGroup->addButton(reviewedReleaseVersionButton, 1);
+    filterAreaLayout->addWidget(reviewedReleaseVersionButton);
+    auto reviewedDevVersionButton = new QRadioButton("During Early Access", reviewsAddedCollapsibleArea);
+    reviewsAddedVersionGroup->addButton(reviewedDevVersionButton, 2);
+    filterAreaLayout->addWidget(reviewedDevVersionButton);
+    connect(reviewsAddedVersionGroup, &QButtonGroup::idToggled, this, [this](int id, bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedDuringDevelopment = id == 2;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+
+    reviewsAddedCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsAddedCollapsibleArea);
+}
+
 void CatalogProductPage::updateUserReviews()
 {
     ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsLoaderPage);
+    if (lastReviewsReply != nullptr)
+    {
+        lastReviewsReply->abort();
+    }
     while (!ui->userReviewsContentsLayout->isEmpty())
     {
         auto item = ui->userReviewsContentsLayout->itemAt(0);
@@ -1066,11 +1203,7 @@ void CatalogProductPage::updateUserReviews()
         delete item;
     }
 
-    if (lastReviewsReply != nullptr)
-    {
-        lastReviewsReply->abort();
-    }
-    lastReviewsReply = apiClient->getProductReviews(id, QStringList(), reviewsOrder, reviewsPageSize, reviewsPage);
+    lastReviewsReply = apiClient->getProductReviews(id, reviewFilters, reviewsOrder, reviewsPageSize, reviewsPage);
     connect(lastReviewsReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = lastReviewsReply;
@@ -1085,15 +1218,24 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsLabel->setVisible(data.reviewable);
             ui->userReviewsHeader->setVisible(data.reviewable);
             ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
-            ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            for (const api::Review &review : std::as_const(data.items))
+            if (data.items.isEmpty())
             {
-                auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
-                                                 apiClient,
-                                                 ui->userReviewsResultsPage);
-                ui->userReviewsContentsLayout->addWidget(reviewItem);
+                ui->filteredRatingLabel->setVisible(false);
+                ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsNotFoundPage);
             }
-            ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            else
+            {
+                ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
+                ui->filteredRatingLabel->setVisible(true);
+                for (const api::Review &review : std::as_const(data.items))
+                {
+                    auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
+                                                     apiClient,
+                                                     ui->userReviewsResultsPage);
+                    ui->userReviewsContentsLayout->addWidget(reviewItem);
+                }
+                ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            }
             emit userReviewsResultsUpdated(data.page, data.pages);
             ui->userReviewsStackedWidget->setVisible(data.reviewable);
         }
@@ -1130,6 +1272,7 @@ void CatalogProductPage::on_userReviewsPageSizeComboBox_currentIndexChanged(int 
         reviewsPageSize = 60;
         break;
     }
+    reviewsPage = 0;
     updateUserReviews();
 }
 
@@ -1150,6 +1293,7 @@ void CatalogProductPage::on_userReviewsSortOrderComboBox_currentIndexChanged(int
         reviewsOrder = {"date", false};
         break;
     }
+    reviewsPage = 0;
     updateUserReviews();
 }
 

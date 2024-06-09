@@ -222,19 +222,61 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(unsigned long
 }
 
 QNetworkReply *api::GogApiClient::getProductReviews(unsigned long long productId,
-                                                    const QStringList &languages,
+                                                    const ReviewFilters &filters,
                                                     const SortOrder &order,
                                                     unsigned short limit, unsigned short page)
 {
-    QVariantMap parameters;
-    if (!languages.isEmpty())
+    QUrl url(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId)));
+    QUrlQuery query({
+                        std::pair("limit", QString::number(limit)),
+                        std::pair("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field)),
+                        std::pair("page", QString::number(page)),
+                    });
+    if (filters.lastDays.has_value())
     {
-        parameters["language"] = "in:" + languages.join(',');
+        QDateTime searchStart = QDateTime::currentDateTime().addDays(-1 * filters.lastDays.value());
+        query.addQueryItem("date", QString("gte:%1").arg(searchStart.toString(Qt::DateFormat::ISODate)));
     }
-    parameters["limit"] = QString::number(limit);
-    parameters["order"] = QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field);
-    parameters["page"] = QString::number(page);
-    return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId))), parameters);
+    QStringList selectedLanguages;
+    if (filters.otherLanguages)
+    {
+        for (const QString &language : std::as_const(filters.allLanguages))
+        {
+            if (!filters.languages.contains(language))
+            {
+                selectedLanguages.append(language);
+            }
+        }
+    }
+    else
+    {
+        for (const QString &language : std::as_const(filters.languages))
+        {
+            selectedLanguages.append(language);
+        }
+    }
+    if (!selectedLanguages.isEmpty())
+    {
+        query.addQueryItem("language",
+                           QString("%1:%2")
+                            .arg(filters.otherLanguages ? "not_in" : "in", selectedLanguages.join(',')));
+    }
+    if (filters.reviewedByOwner.has_value())
+    {
+        query.addQueryItem("reviewer",
+                           filters.reviewedByOwner.value()
+                            ? "in:verified_owner"
+                            : "not_in:verified_owner");
+    }
+    if (filters.reviewedDuringDevelopment.has_value())
+    {
+        query.addQueryItem("version",
+                           filters.reviewedDuringDevelopment.value()
+                            ? "in:in_development"
+                            : "not_in:in_development");
+    }
+    url.setQuery(query);
+    return client.get(url);
 }
 
 QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
