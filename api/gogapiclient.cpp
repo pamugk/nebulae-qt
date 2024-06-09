@@ -343,6 +343,14 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         query.addQueryItem("query", "like:" + filter.query);
     }
+    if (filter.free)
+    {
+        query.addQueryItem("price", "between:0,0");
+    }
+    if (filter.onlyWishlisted)
+    {
+        query.addQueryItem("wishlist", "eq:true");
+    }
     if (!filter.developers.isEmpty())
     {
         query.addQueryItem("developers", "in:" + filter.developers.join(','));

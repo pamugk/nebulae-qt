@@ -22,6 +22,7 @@ public:
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 private:
+    unsigned short activatedFilterCount;
     api::GogApiClient *apiClient;
     int currentSortOrder;
     api::SearchCatalogResponse data;

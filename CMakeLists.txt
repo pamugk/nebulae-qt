@@ -76,6 +76,7 @@ set(PROJECT_SOURCES
 
         widgets/bonusitem.h widgets/bonusitem.cpp widgets/bonusitem.ui
         widgets/checkeditem.h widgets/checkeditem.cpp widgets/checkeditem.ui
+        widgets/clearfilterbutton.h widgets/clearfilterbutton.cpp widgets/clearfilterbutton.ui
         widgets/clickablelabel.h widgets/clickablelabel.cpp
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
         widgets/dependentproductitem.h widgets/dependentproductitem.cpp widgets/dependentproductitem.ui
