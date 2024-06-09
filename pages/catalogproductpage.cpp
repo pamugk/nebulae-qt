@@ -669,7 +669,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                     : "");
                     if (ratingCode == "PEGI" || ratingCode == "USK" || ratingCode == "BR")
                     {
-                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode, contentRating.ageRating));
+                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode).arg(contentRating.ageRating));
                     }
                     else if (ratingCode == "ESRB")
                     {
@@ -677,14 +677,19 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         {
                         case 15:
                             ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone.svg"));
+                            break;
                         case 16:
                             ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone_10+.svg"));
+                            break;
                         case 17:
                             ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Teen.svg"));
+                            break;
                         case 18:
                             ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Mature.svg"));
+                            break;
                         case 19:
                             ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Adults_Only_18+.svg"));
+                            break;
                         }
                     }
                     break;
@@ -693,8 +698,8 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             ui->contentRatingLabel->setVisible(foundRating);
             ui->contentRatingInfoLabel->setText(ratingDescription);
             ui->contentRatingInfoLabel->setVisible(!ratingDescription.isNull());
-            ui->contentRatingIconLabel->setPixmap(ratingIcon);
             ui->contentRatingIconLabel->setVisible(!ratingIcon.isNull());
+            ui->contentRatingIconLabel->setPixmap(ratingIcon);
 
             for (const api::MetaTag &feature : std::as_const(data.features))
             {
