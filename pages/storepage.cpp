@@ -496,7 +496,7 @@ void StorePage::getNowOnSale()
                 connect(dealCard, &StoreSaleCard::navigateToItem,
                         this, [this]()
                 {
-                    emit navigate({Page::ALL_GAMES});
+                    emit navigate({Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) })});
                 });
                 ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
 
@@ -568,7 +568,7 @@ void StorePage::getNowOnSale()
             connect(browseAllCard, &StoreSaleBrowseAllCard::navigateToItem,
                     this, [this]()
             {
-                emit navigate({Page::ALL_GAMES});
+                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) }) });
             });
             ui->nowOnSaleDealsScrollAreaContentsLayout->addWidget(browseAllCard, row, column, 2, 1);
 
@@ -605,7 +605,18 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
 
 void StorePage::on_showCatalogButton_clicked()
 {
-    emit navigate({Page::ALL_GAMES});
+    if (ui->discoverTabWidget->currentWidget() == ui->discoverBestsellingTab)
+    {
+        emit navigate({ Page::ALL_GAMES });
+    }
+    else if (ui->discoverTabWidget->currentWidget() == ui->discoverNewTab)
+    {
+        emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("releaseStatus", "new-arrival") }) });
+    }
+    else if (ui->discoverTabWidget->currentWidget() == ui->discoverUpcomingTab)
+    {
+        emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("releaseStatus", "upcoming") }) });
+    }
 }
 
 void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
@@ -664,7 +675,7 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
             connect(dealCard, &StoreSaleCard::navigateToItem,
                     this, [this]()
             {
-                emit navigate({Page::ALL_GAMES});
+                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) }) });
             });
             dealTabScrollAreaContentsLayout->addWidget(dealCard, 0, column, 2, 1);
 

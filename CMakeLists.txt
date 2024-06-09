@@ -60,6 +60,7 @@ set(PROJECT_SOURCES
         internals/pages.h
         internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
+        internals/tagutils.h internals/tagutils.cpp
 
         layouts/flowlayout.h layouts/flowlayout.cpp
 

@@ -22,6 +22,9 @@ namespace api
         QStringList releaseStatuses;
         QStringList excludeReleaseStatuses;
         QStringList productTypes;
+        // Hidden filters available only via redirections
+        QStringList developers;
+        QStringList publishers;
     };
 }
 

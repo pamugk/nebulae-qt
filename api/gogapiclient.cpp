@@ -343,10 +343,18 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         query.addQueryItem("query", "like:" + filter.query);
     }
+    if (!filter.developers.isEmpty())
+    {
+        query.addQueryItem("developers", "in:" + filter.developers.join(','));
+    }
+    if (!filter.publishers.isEmpty())
+    {
+        query.addQueryItem("publishers", "in:" + filter.publishers.join(','));
+    }
     query.addQueryItem("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field));
     if (!filter.genres.isEmpty())
     {
-        query.addQueryItem("genres", filter.genres.join(','));
+        query.addQueryItem("genres", "in:" + filter.genres.join(','));
     }
     if (!filter.excludeGenres.isEmpty())
     {

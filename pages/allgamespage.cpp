@@ -19,6 +19,7 @@
 
 AllGamesPage::AllGamesPage(QWidget *parent) :
     BasePage(parent),
+    filter({}),
     lastCatalogReply(nullptr),
     ui(new Ui::AllGamesPage)
 {
@@ -176,6 +177,35 @@ void AllGamesPage::layoutResults()
 
 void AllGamesPage::initialize(const QVariant &data)
 {
+    QMap<QString, QVariant> initialFilters = data.toMap();
+    if (initialFilters.contains("discounted"))
+    {
+        filter.discounted = initialFilters["discounted"].toBool();
+    }
+    if (initialFilters.contains("developer"))
+    {
+        filter.developers.append(initialFilters["developer"].toString());
+    }
+    if (initialFilters.contains("publisher"))
+    {
+        filter.publishers.append(initialFilters["publisher"].toString());
+    }
+    if (initialFilters.contains("genre"))
+    {
+        filter.genres.append(initialFilters["genre"].toString());
+    }
+    if (initialFilters.contains("tag"))
+    {
+        filter.tags.append(initialFilters["tag"].toString());
+    }
+    if (initialFilters.contains("feature"))
+    {
+        filter.features.append(initialFilters["feature"].toString());
+    }
+    if (initialFilters.contains("releaseStatus"))
+    {
+        filter.releaseStatuses.append(initialFilters["releaseStatus"].toString());
+    }
     auto systemLocale = QLocale::system();
     lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
                                                 QLocale::territoryToCode(systemLocale.territory()),
