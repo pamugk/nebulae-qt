@@ -26,6 +26,9 @@ public:
 signals:
     void clicked();
 
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+
 private:
     QNetworkReply *thumbnailReply;
     Ui::VideoHolder *ui;

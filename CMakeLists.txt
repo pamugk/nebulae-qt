@@ -33,7 +33,7 @@ set(PROJECT_SOURCES
         api/models/product.h
         api/models/productshared.h
         api/models/recommendation.h
-        api/models/review.h
+        api/models/review.h api/models/reviewfilters.h
         api/models/seriesgame.h
         api/models/sort.h
         api/models/statistics.h
@@ -58,6 +58,7 @@ set(PROJECT_SOURCES
 
         internals/navigationdestination.h
         internals/pages.h
+        internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
 
         layouts/flowlayout.h layouts/flowlayout.cpp
@@ -76,6 +77,7 @@ set(PROJECT_SOURCES
         widgets/checkeditem.h widgets/checkeditem.cpp widgets/checkeditem.ui
         widgets/clickablelabel.h widgets/clickablelabel.cpp
         widgets/collapsiblearea.h widgets/collapsiblearea.cpp widgets/collapsiblearea.ui
+        widgets/dependentproductitem.h widgets/dependentproductitem.cpp widgets/dependentproductitem.ui
         widgets/featureitem.h widgets/featureitem.cpp widgets/featureitem.ui
         widgets/filtercheckbox.h widgets/filtercheckbox.cpp widgets/filtercheckbox.ui
         widgets/imageholder.h widgets/imageholder.cpp widgets/imageholder.ui
@@ -95,6 +97,7 @@ set(PROJECT_SOURCES
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
+        windows/catalogproductmediadialog.h windows/catalogproductmediadialog.cpp windows/catalogproductmediadialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
         windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui

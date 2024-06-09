@@ -8,6 +8,7 @@
 
 #include "./models/catalogfilter.h"
 #include "./models/orderfilter.h"
+#include "./models/reviewfilters.h"
 #include "./models/sort.h"
 
 namespace api
@@ -45,7 +46,7 @@ namespace api
                                                        const QString &currency,
                                                        unsigned char limit = 8);
         QNetworkReply *getProductReviews(unsigned long long productId,
-                                         const QStringList &languages,
+                                         const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
         QNetworkReply *getSeriesGames(unsigned long long seriesId);

@@ -28,6 +28,7 @@ private:
     QNetworkReply *customSectionCDPRReply;
     QNetworkReply *customSectionExclusivesReply;
     QNetworkReply *customSectionGOGReply;
+    QNetworkReply *dealOfTheDayReply;
     QNetworkReply *discoverBestsellingReply;
     QNetworkReply *discoverNewReply;
     QNetworkReply *discoverUpcomingReply;
@@ -38,6 +39,7 @@ private:
     void getCustomSectionCDPRGames();
     void getCustomSectionExclusiveGames();
     void getCustomSectionGOGGames();
+    void getDealOfTheDay();
     void getDiscoverBestsellingGames();
     void getDiscoverNewGames();
     void getDiscoverUpcomingGames();

@@ -9,7 +9,7 @@ ImageHolder::ImageHolder(QSize size,
     ui(new Ui::ImageHolder)
 {
     ui->setupUi(this);
-    ui->imageLabel->setFixedSize(size);
+    setFixedSize(size);
     QString url = data.href;
     if (data.templated)
     {
@@ -23,7 +23,10 @@ ImageHolder::ImageHolder(QSize size,
         {
             QPixmap image;
             image.loadFromData(networkReply->readAll());
-            ui->imageLabel->setPixmap(image.scaled(ui->imageLabel->size()));
+            QPalette backgroundPalette;
+            backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::IgnoreAspectRatio)));
+            this->setAutoFillBackground(true);
+            this->setPalette(backgroundPalette);
         }
         networkReply->deleteLater();
     });
@@ -36,4 +39,9 @@ ImageHolder::~ImageHolder()
         imageReply->abort();
     }
     delete ui;
+}
+
+void ImageHolder::mousePressEvent(QMouseEvent *event)
+{
+    emit clicked();
 }

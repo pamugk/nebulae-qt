@@ -9,6 +9,10 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
 {
     ui->setupUi(this);
     ui->mostHelpfulLabel->setVisible(isMostHelpful);
+    if (isMostHelpful)
+    {
+        setStyleSheet("background: rgb(237, 237, 237);");
+    }
     ui->ratingLabel->setText(QString::number(data.rating, 'g', 2) + "/5");
     ui->titleLabel->setText(data.contentTitle);
     QStringList subheader;

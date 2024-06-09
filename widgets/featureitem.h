@@ -1,6 +1,7 @@
 #ifndef FEATUREITEM_H
 #define FEATUREITEM_H
 
+#include <QMouseEvent>
 #include <QWidget>
 
 #include "../api/models/metatag.h"
@@ -18,7 +19,10 @@ public:
     ~FeatureItem();
 
 signals:
-    void navigate(const QString &slug);
+    void clicked();
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     Ui::FeatureItem *ui;

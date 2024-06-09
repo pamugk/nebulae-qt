@@ -1,11 +1,14 @@
 #include "catalogproductpage.h"
 #include "ui_catalogproductpage.h"
 
-#include <cmath>
+#include <algorithm>
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QJsonDocument>
 #include <QLocale>
+#include <QPainter>
+#include <QRadioButton>
 #include <QNetworkReply>
 #include <QScrollBar>
 
@@ -14,26 +17,36 @@
 #include "../api/utils/recommendationserialization.h"
 #include "../api/utils/reviewserialization.h"
 #include "../api/utils/seriesgameserialization.h"
-
+#include "../internals/regionalutils.h"
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
+#include "../widgets/clickablelabel.h"
+#include "../widgets/collapsiblearea.h"
+#include "../widgets/dependentproductitem.h"
 #include "../widgets/featureitem.h"
 #include "../widgets/imageholder.h"
 #include "../widgets/pagination.h"
 #include "../widgets/reviewitem.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/videoholder.h"
+#include "../windows/catalogproductmediadialog.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
     BasePage(parent),
     averageRatingReply(nullptr),
     averageOwnerRatingReply(nullptr),
+    backgroundReply(nullptr),
     lastReviewsReply(nullptr),
+    logotypeReply(nullptr),
     mainReply(nullptr),
     pricesReply(nullptr),
     recommendedPurchasedTogetherReply(nullptr),
     recommendedSimilarReply(nullptr),
+    reviewFilters({ { "en-US", "ru-RU", "de-DE", "pl-PL", "fr-FR", "zh-Hans" } }),
+    reviewsPage(1),
+    reviewsPageSize(5),
+    reviewsOrder({"votes", false}),
     seriesGamesReply(nullptr),
     seriesTotalPriceReply(nullptr),
     ui(new Ui::CatalogProductPage)
@@ -54,12 +67,13 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->linuxLabel->setVisible(false);
 
     ui->productPriceLayout->setAlignment(Qt::AlignTop);
-    ui->gameDetailsLayout->setAlignment(Qt::AlignTop);
     ui->gameFeaturesLayout->setAlignment(Qt::AlignTop);
     ui->languagesLayout->setAlignment(Qt::AlignTop);
 
-    auto productGoodiesSectionLayout = new FlowLayout(ui->productGoodiesSection, -1, 15, 12);
-    ui->productGoodiesSection->setLayout(productGoodiesSectionLayout);
+    ui->genreHolder->setLayout(new FlowLayout(ui->genreHolder, 0, 13, 7));
+    ui->tagsHolder->setLayout(new FlowLayout(ui->tagsHolder, 0, 4, 7));
+    ui->companyHolder->setLayout(new FlowLayout(ui->companyHolder, 0, 14, 7));
+    ui->productGoodiesSection->setLayout(new FlowLayout(ui->productGoodiesSection, -1, 15, 12));
 
     ui->systemRequirementsTabWidget->setTabVisible(ui->systemRequirementsTabWidget->indexOf(ui->windowsTab), false);
     ui->windowsTabLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
@@ -81,16 +95,15 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     ui->userReviewsLoaderPageLayout->setAlignment(Qt::AlignTop);
     ui->userReviewsContentsLayout->setAlignment(Qt::AlignTop);
     ui->userReviewsFiltersLayout->setAlignment(Qt::AlignTop);
-    reviewsPage = 1;
-    reviewsPageSize = 5;
-    reviewsOrder = {"votes", false};
+
     auto reviewsPaginator = new Pagination(ui->userReviewsResultsPage);
     connect(reviewsPaginator, &Pagination::changedPage, this, &CatalogProductPage::changeUserReviewsPage);
     connect(this, &CatalogProductPage::userReviewsResultsUpdated, reviewsPaginator, &Pagination::changePages);
-    ui->userReviewsResultsPageLayout->addWidget(reviewsPaginator, 2, 0,  Qt::AlignHCenter);
+    ui->userReviewsResultsPageLayout->addWidget(reviewsPaginator,  Qt::AlignHCenter);
 
     connect(ui->descriptionView->page(), &QWebEnginePage::contentsSizeChanged,
             this, &CatalogProductPage::descriptionViewContentsSizeChanged);
+    ui->descriptionView->page()->setBackgroundColor(Qt::transparent);
 }
 
 CatalogProductPage::~CatalogProductPage()
@@ -103,9 +116,24 @@ CatalogProductPage::~CatalogProductPage()
     {
         averageOwnerRatingReply->abort();
     }
+    if (backgroundReply != nullptr)
+    {
+        backgroundReply->abort();
+    }
+    for (QNetworkReply *dependentProductReply : std::as_const(dependentProductReplies))
+    {
+        if (dependentProductReply != nullptr)
+        {
+            dependentProductReply->abort();
+        }
+    }
     if (lastReviewsReply != nullptr)
     {
         lastReviewsReply->abort();
+    }
+    if (logotypeReply != nullptr)
+    {
+        logotypeReply->abort();
     }
     if (mainReply != nullptr)
     {
@@ -122,6 +150,13 @@ CatalogProductPage::~CatalogProductPage()
     if (recommendedPurchasedTogetherReply != nullptr)
     {
         recommendedPurchasedTogetherReply->abort();
+    }
+    for (QNetworkReply *requiredProductReply : std::as_const(requiredProductReplies))
+    {
+        if (requiredProductReply != nullptr)
+        {
+            requiredProductReply->abort();
+        }
     }
     if (seriesGamesReply != nullptr)
     {
@@ -279,9 +314,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
         networkReply->deleteLater();
     });
 
-    updateUserReviews();
-
-    mainReply = apiClient->getCatalogProductInfo(id, QLocale::languageToCode(QLocale::system().language(), QLocale::ISO639Part1));
+    mainReply = apiClient->getCatalogProductInfo(id, QLocale::system().name(QLocale::TagSeparator::Dash));
     connect(mainReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = mainReply;
@@ -293,21 +326,87 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
+            if (!data.galaxyBackgroundImageLink.isNull())
+            {
+                backgroundReply = apiClient->getAnything(data.galaxyBackgroundImageLink);
+                connect(backgroundReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = backgroundReply;
+                    backgroundReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        backgroundImage.loadFromData(networkReply->readAll());
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+            }
+
+            if (!data.logoLink.isNull())
+            {
+                logotypeReply = apiClient->getAnything(data.logoLink);
+                connect(logotypeReply, &QNetworkReply::finished, this, [this]()
+                {
+                    auto networkReply = logotypeReply;
+                    logotypeReply = nullptr;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        QPixmap logo;
+                        logo.loadFromData(networkReply->readAll());
+                        ui->logotypeLabel->setPixmap(logo.scaled(480, 285, Qt::KeepAspectRatioByExpanding));
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+                });
+            }
+
+            QLocale systemLocale = QLocale::system();
             if (data.videos.isEmpty() && data.screenshots.isEmpty())
             {
                 ui->mediaScrollArea->setVisible(false);
             }
             else
             {
+                std::size_t mediaIndex = 0;
                 for (const api::ThumbnailedVideo &video : std::as_const(data.videos))
                 {
-                    auto videoHolder = new VideoHolder(QSize(271, 152), video,apiClient, ui->mediaScrollAreaContents);
-                    ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
+                    // How come it is not displayed on a web-site? Just... why?
+                    if (video.provider != "wistia")
+                    {
+                        auto videoHolder = new VideoHolder(QSize(271, 143), video,apiClient, ui->mediaScrollAreaContents);
+                        videoHolder->setCursor(Qt::PointingHandCursor);
+                        connect(videoHolder, &VideoHolder::clicked, this, [this, mediaIndex]()
+                        {
+                            openGalleryOnItem(mediaIndex);
+                        });
+                        ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
+                        videos.append(video);
+                        mediaIndex++;
+                    }
                 }
                 for (const api::FormattedLink &screenshotLink : std::as_const(data.screenshots))
                 {
-                    auto screenshotHolder = new ImageHolder(QSize(271, 152), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    auto screenshotHolder = new ImageHolder(QSize(271, 143), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    screenshotHolder->setCursor(Qt::PointingHandCursor);
+                    connect(screenshotHolder, &ImageHolder::clicked, this, [this, mediaIndex]()
+                    {
+                        openGalleryOnItem(mediaIndex);
+                    });
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
+                    screenshots.append(screenshotLink);
+                    mediaIndex++;
                 }
             }
 
@@ -458,18 +557,38 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             ui->libraryButton->setVisible(false);
 
-            QStringList genres(data.tags.count());
-            for (int i = 0; i < data.tags.count(); i++)
+            QFont tagFont;
+            tagFont.setPointSizeF(10.5);
+            tagFont.setUnderline(true);
+            for (const api::HierarchicalMetaTag &genre : std::as_const(data.tags))
             {
-                genres[data.tags[i].level - 1] = data.tags[i].name;
+                auto genreLabel = new ClickableLabel(ui->genreHolder);
+                genreLabel->setCursor(Qt::PointingHandCursor);
+                genreLabel->setText(genre.name);
+                genreLabel->setFont(tagFont);
+                connect(genreLabel, &ClickableLabel::clicked, this, [this, genreSlug = genre.slug]()
+                {
+                    emit navigate({ ALL_GAMES });
+                });
+                ui->genreHolder->layout()->addWidget(genreLabel);
             }
-            ui->genreInfoLabel->setText(genres.join(" - "));
-            QStringList tags(data.properties.count());
-            for (int i = 0; i < data.properties.count(); i++)
+
+            for (const api::MetaTag &tag : std::as_const(data.properties))
             {
-                tags[i] = data.properties[i].name;
+                auto tagLabel = new ClickableLabel(ui->tagsHolder);
+                tagLabel->setCursor(Qt::PointingHandCursor);
+                tagLabel->setText(tag.name);
+                tagLabel->setFont(tagFont);
+                connect(tagLabel, &ClickableLabel::clicked, this, [this, tagSlug = tag.slug]()
+                {
+                    emit navigate({ ALL_GAMES });
+                });
+                ui->tagsHolder->layout()->addWidget(tagLabel);
             }
-            ui->tagsInfoLabel->setText(tags.join(", "));
+
+            ui->tagsLabel->setVisible(data.properties.count() > 0);
+            ui->tagsHolder->setVisible(data.properties.count() > 0);
+
             ui->supportedOSInfoLabel->setText(supportedOSInfo.join(", "));
             if (data.globalReleaseDate.isNull())
             {
@@ -479,11 +598,31 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
-                ui->releaseDateInfoLabel->setText(data.globalReleaseDate.date().toString("MMMM, d yyyy"));
+                ui->releaseDateInfoLabel->setText(systemLocale.toString(data.globalReleaseDate.date()));
                 ui->releaseDateLabel->setVisible(true);
                 ui->releaseDateInfoLabel->setVisible(true);
             }
-            ui->companyInfoLabel->setText(QString("%1 / %2").arg(data.developers[0], data.publisher));
+
+            auto developerLabel = new ClickableLabel(ui->infoSidebar);
+            developerLabel->setCursor(Qt::PointingHandCursor);
+            developerLabel->setFont(tagFont);
+            developerLabel->setText(data.developers[0]);
+            connect(developerLabel, &ClickableLabel::clicked, this, [this, developerSlug = data.publisher]()
+            {
+                emit navigate({ ALL_GAMES });
+            });
+            ui->companyHolder->layout()->addWidget(developerLabel);
+
+            auto publisherLabel = new ClickableLabel(ui->companyHolder);
+            publisherLabel->setCursor(Qt::PointingHandCursor);
+            publisherLabel->setFont(tagFont);
+            publisherLabel->setText(data.publisher);
+            connect(publisherLabel, &ClickableLabel::clicked, this, [this, publisherSlug = data.publisher]()
+            {
+                emit navigate({ ALL_GAMES });
+            });
+            ui->companyHolder->layout()->addWidget(publisherLabel);
+
             if (data.size == 0)
             {
                 ui->sizeLabel->setVisible(false);
@@ -494,7 +633,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             {
                 ui->sizeLabel->setVisible(true);
                 ui->sizeInfoLabel->setVisible(true);
-                ui->sizeInfoLabel->setText(data.size > 1000 ? QString::number(data.size / 1000.0, 'g', 1) : QString::number(data.size) + " MB");
+                ui->sizeInfoLabel->setText(systemLocale.formattedDataSize(static_cast<unsigned long long>(data.size) * 1000 * 1000, 2, QLocale::DataSizeSIFormat));
             }
             if (data.forumLink.isNull())
             {
@@ -510,32 +649,69 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             QString("<a href=\"%1\">GOG store page</a>, <a href=\"%2\">Forum discussions</a>, <a href=\"%3\">Support</a>")
                             .arg(data.storeLink, data.forumLink, data.supportLink));
             }
-            if (data.ratings.contains("PEGI"))
+
+            QVector<QString> ageRatings = getTerritoryPreferredRatings(systemLocale.territory());
+
+            bool foundRating = false;
+            QString ratingDescription;
+            QPixmap ratingIcon;
+            for (const QString &ratingCode : std::as_const(ageRatings))
             {
-                auto contentRating = data.ratings["PEGI"];
-                ui->contentRatingLabel->setVisible(true);
-                ui->contentRatingInfoLabel->setVisible(true);
-                auto contentRatingDescription = QString("%1 Rating: %2%3").arg(
-                            "PEGI",
-                            QString::number(contentRating.ageRating) + "+",
-                            contentRating.contentDescriptors.empty()
-                                ? " (" + contentRating.contentDescriptors.join(", ") + ")"
-                                : "");
-                ui->contentRatingInfoLabel->setText(contentRatingDescription);
+                if (data.ratings.contains(ratingCode))
+                {
+                    foundRating = true;
+                    auto contentRating = data.ratings[ratingCode];
+                    ratingDescription = QString("%1 Rating: %2%3").arg(
+                                ratingCode,
+                                contentRating.category.isEmpty() ? QString::number(contentRating.ageRating) + "+" : contentRating.category,
+                                !contentRating.contentDescriptors.empty()
+                                    ? " (" + contentRating.contentDescriptors.join(", ") + ")"
+                                    : "");
+                    if (ratingCode == "PEGI" || ratingCode == "USK" || ratingCode == "BR")
+                    {
+                        ratingIcon = QPixmap(QString(":/icons/%1_%2.svg").arg(ratingCode).arg(contentRating.ageRating));
+                    }
+                    else if (ratingCode == "ESRB")
+                    {
+                        switch (contentRating.categoryId)
+                        {
+                        case 15:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone.svg"));
+                            break;
+                        case 16:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Everyone_10+.svg"));
+                            break;
+                        case 17:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Teen.svg"));
+                            break;
+                        case 18:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Mature.svg"));
+                            break;
+                        case 19:
+                            ratingIcon = QPixmap(QString(":/icons/ESRB_2013_Adults_Only_18+.svg"));
+                            break;
+                        }
+                    }
+                    break;
+                }
             }
-            else
-            {
-                ui->contentRatingLabel->setVisible(false);
-                ui->contentRatingInfoLabel->setVisible(false);
-                ui->contentRatingInfoLabel->clear();
-                ui->contentRatingIconLabel->clear();
-            }
+            ui->contentRatingLabel->setVisible(foundRating);
+            ui->contentRatingInfoLabel->setText(ratingDescription);
+            ui->contentRatingInfoLabel->setVisible(!ratingDescription.isNull());
+            ui->contentRatingIconLabel->setVisible(!ratingIcon.isNull());
+            ui->contentRatingIconLabel->setPixmap(ratingIcon);
+
             for (const api::MetaTag &feature : std::as_const(data.features))
             {
-                ui->gameFeaturesLayout->addWidget(new FeatureItem(feature, ui->gameDetails));
+                auto featureItem = new FeatureItem(feature, ui->gameDetails);
+                featureItem->setCursor(Qt::PointingHandCursor);
+                connect(featureItem, &FeatureItem::clicked, this, [this, featureSlug = feature.slug]()
+                {
+                    emit navigate({ Page::ALL_GAMES });
+                });
+                ui->gameFeaturesLayout->addWidget(featureItem);
             }
 
-            QLocale systemLocale = QLocale::system();
             QString countryCode = QLocale::territoryToCode(systemLocale.territory());
             QString currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
             QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
@@ -559,6 +735,102 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             else
             {
                 ui->supportedLanguagesLabel->setText(firstLanguage);
+            }
+
+            ui->mainGameLabel->setVisible(false);
+            requiredProducts.resize(data.requiresGames.count());
+            requiredProductsLeft = data.requiresGames.count();
+            requiredProductReplies.resize(requiredProductsLeft);
+            for (std::size_t mainPartIndex = 0; mainPartIndex < data.requiresGames.count(); mainPartIndex++)
+            {
+                requiredProductReplies[mainPartIndex] = apiClient->getAnything(data.requiresGames[mainPartIndex]);
+                connect(requiredProductReplies[mainPartIndex], &QNetworkReply::finished,
+                        this, [this, mainPartIndex]()
+                {
+                    auto networkReply = requiredProductReplies[mainPartIndex];
+                    requiredProductReplies[mainPartIndex] = nullptr;
+                    requiredProductsLeft--;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        parseCatalogProductInfoResponse(resultJson, requiredProducts[mainPartIndex]);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+
+                    if (requiredProductsLeft == 0)
+                    {
+                        for (const api::GetCatalogProductInfoResponse &mainPart : std::as_const(requiredProducts))
+                        {
+                            if (!mainPart.title.isNull())
+                            {
+                                auto mainPartItem = new DependentProductItem(mainPart, apiClient, ui->mainContentFrame);
+                                mainPartItem->setCursor(Qt::PointingHandCursor);
+                                connect(mainPartItem, &DependentProductItem::clicked,
+                                        this, [this, productId = mainPart.id]()
+                                {
+                                    emit navigate({ Page::CATALOG_PRODUCT, productId });
+                                });
+                                ui->mainGameLayout->addWidget(mainPartItem);
+                            }
+                        }
+                        ui->mainGameLabel->setVisible(ui->mainGameLayout->count() > 0);
+                    }
+                });
+            }
+
+            ui->dlcsLabel->setVisible(false);
+            dependentProducts.resize(data.requiredByGames.count());
+            dependentProductsLeft = data.requiredByGames.count();
+            dependentProductReplies.resize(dependentProductsLeft);
+            for (std::size_t dlcIndex = 0; dlcIndex < data.requiredByGames.count(); dlcIndex++)
+            {
+                dependentProductReplies[dlcIndex] = apiClient->getAnything(data.requiredByGames[dlcIndex]);
+                connect(dependentProductReplies[dlcIndex], &QNetworkReply::finished,
+                        this, [this, dlcIndex]()
+                {
+                    auto networkReply = dependentProductReplies[dlcIndex];
+                    dependentProductReplies[dlcIndex] = nullptr;
+                    dependentProductsLeft--;
+
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        parseCatalogProductInfoResponse(resultJson, dependentProducts[dlcIndex]);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+                    networkReply->deleteLater();
+
+                    if (dependentProductsLeft == 0)
+                    {
+                        for (const api::GetCatalogProductInfoResponse &dlc : std::as_const(dependentProducts))
+                        {
+                            if (!dlc.title.isNull())
+                            {
+                                auto dlcItem = new DependentProductItem(dlc, apiClient, ui->mainContentFrame);
+                                dlcItem->setCursor(Qt::PointingHandCursor);
+                                connect(dlcItem, &DependentProductItem::clicked,
+                                        this, [this, productId = dlc.id]()
+                                {
+                                    emit navigate({ Page::CATALOG_PRODUCT, productId });
+                                });
+                                ui->dlcsLayout->addWidget(dlcItem);
+                            }
+                        }
+                        ui->dlcsLabel->setVisible(ui->dlcsLayout->count() > 0);
+                    }
+                });
             }
 
             if (data.series.name.isNull())
@@ -649,6 +921,98 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     networkReply->deleteLater();
                 });
             }
+            recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
+            connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
+            {
+                auto networkReply = recommendedPurchasedTogetherReply;
+                recommendedPurchasedTogetherReply = nullptr;
+
+                if (networkReply->error() == QNetworkReply::NoError)
+                {
+                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    api::GetRecommendationsResponse data;
+                    parseRecommendationsResponse(resultJson, data);
+
+                    for (const api::Recommendation &recommendation : std::as_const(data.products))
+                    {
+                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
+                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        recommendationItem->setTitle(recommendation.details.title);
+                        if (recommendation.pricing.priceSet)
+                        {
+                            unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                            recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                         recommendation.pricing.finalPrice / 100.,
+                                                         discount,
+                                                         recommendation.pricing.basePrice == 0,
+                                                         recommendation.pricing.currency);
+                        }
+
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                        recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                        ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
+                    }
+                    ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
+                }
+                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                {
+                    ui->purchasedTogetherLabel->setVisible(false);
+                    ui->purchasedTogetherStackedWidget->setVisible(false);
+                }
+                networkReply->deleteLater();
+            });
+            recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
+            connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
+            {
+                auto networkReply = recommendedSimilarReply;
+                recommendedSimilarReply = nullptr;
+
+                if (networkReply->error() == QNetworkReply::NoError)
+                {
+                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    api::GetRecommendationsResponse data;
+                    parseRecommendationsResponse(resultJson, data);
+
+                    for (const api::Recommendation &recommendation : std::as_const(data.products))
+                    {
+                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
+                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        recommendationItem->setTitle(recommendation.details.title);
+                        if (recommendation.pricing.priceSet)
+                        {
+                            unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
+                            recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
+                                                         recommendation.pricing.finalPrice / 100.,
+                                                         discount,
+                                                         recommendation.pricing.basePrice == 0,
+                                                         recommendation.pricing.currency);
+                        }
+
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
+                        recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
+
+                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                        ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
+                    }
+                    ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
+                }
+                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                {
+                    ui->similarProductsLabel->setVisible(false);
+                    ui->similarProductsStackedWidget->setVisible(false);
+                }
+                networkReply->deleteLater();
+            });
 
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
             ui->featuresLabel->setText(data.featuresDescription);
@@ -656,104 +1020,18 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             ui->copyrightsLabel->setText(data.copyrights);
             ui->copyrightsLabel->setVisible(!data.copyrights.isNull());
 
-            ui->contentStack->setCurrentWidget(ui->mainPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
+            initializeUserReviewsFilters();
+            updateUserReviews();
 
-    auto systemLocale = QLocale::system();
-    auto currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
-    recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
-    connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
-    {
-        auto networkReply = recommendedPurchasedTogetherReply;
-        recommendedPurchasedTogetherReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetRecommendationsResponse data;
-            parseRecommendationsResponse(resultJson, data);
-
-            for (const api::Recommendation &recommendation : std::as_const(data.products))
+            // Should it be controlled by user's territory age rating system instead?
+            if (data.ratings.contains("GOG") && data.ratings["GOG"].ageRating >= 18)
             {
-                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
-                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
-                recommendationItem->setTitle(recommendation.details.title);
-                if (recommendation.pricing.priceSet)
-                {
-                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
-                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
-                                                 recommendation.pricing.finalPrice / 100.,
-                                                 discount,
-                                                 recommendation.pricing.basePrice == 0,
-                                                 recommendation.pricing.currency);
-                }
-
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
-                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-
-                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->purchasedTogetherResultPage->layout()->addWidget(recommendationItem);
+                ui->contentStack->setCurrentWidget(ui->contentRatingWarningPage);
             }
-            ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-    recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
-    connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
-    {
-        auto networkReply = recommendedSimilarReply;
-        recommendedSimilarReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetRecommendationsResponse data;
-            parseRecommendationsResponse(resultJson, data);
-
-            for (const api::Recommendation &recommendation : std::as_const(data.products))
+            else
             {
-                auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
-                recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
-                recommendationItem->setTitle(recommendation.details.title);
-                if (recommendation.pricing.priceSet)
-                {
-                    unsigned char discount = round(1. * (recommendation.pricing.basePrice - recommendation.pricing.finalPrice) / recommendation.pricing.basePrice * 100);
-                    recommendationItem->setPrice(recommendation.pricing.basePrice / 100.,
-                                                 recommendation.pricing.finalPrice / 100.,
-                                                 discount,
-                                                 recommendation.pricing.basePrice == 0,
-                                                 recommendation.pricing.currency);
-                }
-
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
-                recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-
-                connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->similarProductsResultPage->layout()->addWidget(recommendationItem);
+                ui->contentStack->setCurrentWidget(ui->mainPage);
             }
-            ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
@@ -788,9 +1066,140 @@ void CatalogProductPage::descriptionViewContentsSizeChanged(const QSizeF &size)
     ui->descriptionView->setFixedHeight(size.height());
 }
 
+void CatalogProductPage::initializeUserReviewsFilters()
+{
+    ui->userReviewsFiltersLayout->addSpacing(44);
+    QLayout *filterAreaLayout;
+    auto reviewsLanguageCollapsibleArea = new CollapsibleArea("Written in", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+    for (const QString &language : std::as_const(reviewFilters.allLanguages))
+    {
+        QLocale languageLocale(QString(language).replace('-', '_'));
+        auto reviewsLanguageCheckbox = new QCheckBox(languageLocale.nativeLanguageName(), reviewsLanguageCollapsibleArea);
+        connect(reviewsLanguageCheckbox, &QCheckBox::clicked, this, [this, language](bool checked)
+        {
+            if (checked)
+            {
+                reviewFilters.languages.insert(language);
+            }
+            else
+            {
+                reviewFilters.languages.remove(language);
+            }
+            reviewsPage = 1;
+            updateUserReviews();
+        });
+        filterAreaLayout->addWidget(reviewsLanguageCheckbox);
+    }
+    auto reviewsOtherLanguageCheckbox = new QCheckBox("Others", reviewsLanguageCollapsibleArea);
+    connect(reviewsOtherLanguageCheckbox, &QCheckBox::clicked, this, [this](bool checked)
+    {
+       reviewFilters.otherLanguages = checked;
+       reviewsPage = 1;
+       updateUserReviews();
+    });
+    filterAreaLayout->addWidget(reviewsOtherLanguageCheckbox);
+    reviewsLanguageCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsLanguageCollapsibleArea);
+
+    auto reviewsAuthorCollapsibleArea = new CollapsibleArea("Written by", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+    auto reviewedByOwnerButton = new QRadioButton("Verified owners", reviewsAuthorCollapsibleArea);
+    connect(reviewedByOwnerButton, &QRadioButton::clicked, this, [this](bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedByOwner = true;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+    filterAreaLayout->addWidget(reviewedByOwnerButton);
+    auto reviewedByOthersButton = new QRadioButton("Others", reviewsAuthorCollapsibleArea);
+    connect(reviewedByOthersButton, &QRadioButton::clicked, this, [this](bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedByOwner = false;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+    filterAreaLayout->addWidget(reviewedByOthersButton);
+    reviewsAuthorCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsAuthorCollapsibleArea);
+
+    auto reviewsAddedCollapsibleArea = new CollapsibleArea("Added", ui->mainContentFrame);
+    filterAreaLayout = new QVBoxLayout();
+    filterAreaLayout->setAlignment(Qt::AlignTop);
+
+    auto reviewsAddedLastDaysGroup = new QButtonGroup(reviewsAddedCollapsibleArea);
+    auto reviewsAddedLastMonthButton = new QRadioButton("Last 30 days", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLastMonthButton, 1);
+    filterAreaLayout->addWidget(reviewsAddedLastMonthButton);
+    auto reviewsAddedLast3MonthsButton = new QRadioButton("Last 90 days", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLast3MonthsButton, 2);
+    filterAreaLayout->addWidget(reviewsAddedLast3MonthsButton);
+    auto reviewsAddedLast6MonthsButton = new QRadioButton("Last 6 months", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedLast6MonthsButton, 3);
+    filterAreaLayout->addWidget(reviewsAddedLast6MonthsButton);
+    auto reviewsAddedWheneverButton = new QRadioButton("Whenever", reviewsAddedCollapsibleArea);
+    reviewsAddedLastDaysGroup->addButton(reviewsAddedWheneverButton, 4);
+    filterAreaLayout->addWidget(reviewsAddedWheneverButton);
+    connect(reviewsAddedLastDaysGroup, &QButtonGroup::idToggled, this, [this](int id, bool checked)
+    {
+        if (checked)
+        {
+            switch (id)
+            {
+            case 1:
+            case 2:
+            case 3:
+                reviewFilters.lastDays = id * 30;
+            case 4:
+                reviewFilters.lastDays = std::nullopt;
+            }
+
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+
+    auto line = new QFrame(reviewsAddedCollapsibleArea);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    filterAreaLayout->addWidget(line);
+
+    auto reviewsAddedVersionGroup = new QButtonGroup(reviewsAddedCollapsibleArea);
+    auto reviewedReleaseVersionButton = new QRadioButton("After release", reviewsAddedCollapsibleArea);
+    reviewsAddedVersionGroup->addButton(reviewedReleaseVersionButton, 1);
+    filterAreaLayout->addWidget(reviewedReleaseVersionButton);
+    auto reviewedDevVersionButton = new QRadioButton("During Early Access", reviewsAddedCollapsibleArea);
+    reviewsAddedVersionGroup->addButton(reviewedDevVersionButton, 2);
+    filterAreaLayout->addWidget(reviewedDevVersionButton);
+    connect(reviewsAddedVersionGroup, &QButtonGroup::idToggled, this, [this](int id, bool checked)
+    {
+        if (checked)
+        {
+            reviewFilters.reviewedDuringDevelopment = id == 2;
+            reviewsPage = 1;
+            updateUserReviews();
+        }
+    });
+
+    reviewsAddedCollapsibleArea->setContentLayout(filterAreaLayout);
+    ui->userReviewsFiltersLayout->addWidget(reviewsAddedCollapsibleArea);
+}
+
 void CatalogProductPage::updateUserReviews()
 {
     ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsLoaderPage);
+    if (lastReviewsReply != nullptr)
+    {
+        lastReviewsReply->abort();
+    }
     while (!ui->userReviewsContentsLayout->isEmpty())
     {
         auto item = ui->userReviewsContentsLayout->itemAt(0);
@@ -799,11 +1208,7 @@ void CatalogProductPage::updateUserReviews()
         delete item;
     }
 
-    if (lastReviewsReply != nullptr)
-    {
-        lastReviewsReply->abort();
-    }
-    lastReviewsReply = apiClient->getProductReviews(id, QStringList(), reviewsOrder, reviewsPageSize, reviewsPage);
+    lastReviewsReply = apiClient->getProductReviews(id, reviewFilters, reviewsOrder, reviewsPageSize, reviewsPage);
     connect(lastReviewsReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = lastReviewsReply;
@@ -818,15 +1223,24 @@ void CatalogProductPage::updateUserReviews()
             ui->userReviewsLabel->setVisible(data.reviewable);
             ui->userReviewsHeader->setVisible(data.reviewable);
             ui->overallRatingLabel->setText(QString("Overall rating: %1/5").arg(QString::number(data.overallAvgRating, 'g', 2)));
-            ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
-            for (const api::Review &review : std::as_const(data.items))
+            if (data.items.isEmpty())
             {
-                auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
-                                                 apiClient,
-                                                 ui->userReviewsResultsPage);
-                ui->userReviewsContentsLayout->addWidget(reviewItem);
+                ui->filteredRatingLabel->setVisible(false);
+                ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsNotFoundPage);
             }
-            ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            else
+            {
+                ui->filteredRatingLabel->setText(QString("Filters based rating: %1/5").arg(QString::number(data.filteredAvgRating, 'g', 2)));
+                ui->filteredRatingLabel->setVisible(true);
+                for (const api::Review &review : std::as_const(data.items))
+                {
+                    auto reviewItem = new ReviewItem(review, review.id == data.mostHelpfulReviewId,
+                                                     apiClient,
+                                                     ui->userReviewsResultsPage);
+                    ui->userReviewsContentsLayout->addWidget(reviewItem);
+                }
+                ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsResultsPage);
+            }
             emit userReviewsResultsUpdated(data.page, data.pages);
             ui->userReviewsStackedWidget->setVisible(data.reviewable);
         }
@@ -863,6 +1277,7 @@ void CatalogProductPage::on_userReviewsPageSizeComboBox_currentIndexChanged(int 
         reviewsPageSize = 60;
         break;
     }
+    reviewsPage = 0;
     updateUserReviews();
 }
 
@@ -883,5 +1298,28 @@ void CatalogProductPage::on_userReviewsSortOrderComboBox_currentIndexChanged(int
         reviewsOrder = {"date", false};
         break;
     }
+    reviewsPage = 0;
     updateUserReviews();
+}
+
+void CatalogProductPage::paintEvent(QPaintEvent *event)
+{
+    if (!backgroundImage.isNull())
+    {
+        QPainter backgroundPainter(this);
+        int selfMiddle = width() / 2;
+        int backgroundMiddle = backgroundImage.width() / 2;
+        backgroundPainter.drawPixmap(0, 0, backgroundImage,
+                                     std::max(0, backgroundMiddle - selfMiddle), 0,
+                                     std::min(width(), backgroundImage.width()), std::min(height(), backgroundImage.height()));
+    }
+
+    QWidget::paintEvent(event);
+}
+
+void CatalogProductPage::openGalleryOnItem(std::size_t index)
+{
+    CatalogProductMediaDialog dialog(videos, screenshots, apiClient, this);
+    dialog.viewMedia(index);
+    dialog.exec();
 }

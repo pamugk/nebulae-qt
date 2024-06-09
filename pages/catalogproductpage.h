@@ -2,6 +2,8 @@
 #define CATALOGPRODUCTPAGE_H
 
 #include "./basepage.h"
+#include "../api/models/reviewfilters.h"
+#include "../api/models/catalogproductinfo.h"
 
 namespace Ui {
 class CatalogProductPage;
@@ -39,24 +41,43 @@ private slots:
 
     void on_userReviewsSortOrderComboBox_currentIndexChanged(int index);
 
+    void openGalleryOnItem(std::size_t index);
+
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
+    QPixmap backgroundImage;
+    QVector<api::GetCatalogProductInfoResponse> dependentProducts;
+    unsigned char dependentProductsLeft;
     unsigned long long id;
+    QVector<api::GetCatalogProductInfoResponse> requiredProducts;
+    unsigned char requiredProductsLeft;
+    api::ReviewFilters reviewFilters;
+    QVector<api::FormattedLink> screenshots;
+    QVector<api::ThumbnailedVideo> videos;
     Ui::CatalogProductPage *ui;
 
     QNetworkReply *averageRatingReply;
     QNetworkReply *averageOwnerRatingReply;
+    QNetworkReply *backgroundReply;
+    QVector<QNetworkReply *> dependentProductReplies;
     QNetworkReply *lastReviewsReply;
+    QNetworkReply *logotypeReply;
     QNetworkReply *mainReply;
     QNetworkReply *pricesReply;
     QNetworkReply *recommendedPurchasedTogetherReply;
     QNetworkReply *recommendedSimilarReply;
+    QVector<QNetworkReply *> requiredProductReplies;
     QNetworkReply *seriesGamesReply;
     QNetworkReply *seriesTotalPriceReply;
 
     unsigned short reviewsPage;
     unsigned short reviewsPageSize;
     api::SortOrder reviewsOrder;
+
+    void initializeUserReviewsFilters();
 };
 
 #endif // CATALOGPRODUCTPAGE_H

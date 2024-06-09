@@ -101,7 +101,7 @@ void AllGamesPage::fetchData()
     auto systemLocale = QLocale::system();
     lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
                                                 QLocale::territoryToCode(systemLocale.territory()),
-                                                QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                systemLocale.name(QLocale::TagSeparator::Dash),
                                                 systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
     connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
         auto networkReply = lastCatalogReply;
@@ -179,7 +179,7 @@ void AllGamesPage::initialize(const QVariant &data)
     auto systemLocale = QLocale::system();
     lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
                                                 QLocale::territoryToCode(systemLocale.territory()),
-                                                QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                systemLocale.name(QLocale::TagSeparator::Dash),
                                                 systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
     ui->filtersScrollArea->setVisible(false);
     ui->contentsStack->setCurrentWidget(ui->loaderPage);

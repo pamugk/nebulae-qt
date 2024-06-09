@@ -1,6 +1,7 @@
 #ifndef IMAGEHOLDER_H
 #define IMAGEHOLDER_H
 
+#include <QMouseEvent>
 #include <QNetworkReply>
 #include <QSize>
 #include <QWidget>
@@ -22,6 +23,12 @@ public:
                          api::GogApiClient *apiClient,
                          QWidget *parent = nullptr);
     ~ImageHolder();
+
+signals:
+    void clicked();
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QNetworkReply *imageReply;

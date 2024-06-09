@@ -33,6 +33,7 @@ namespace api
     {
         unsigned char ageRating;
         QString category;
+        unsigned long long categoryId;
         QStringList contentDescriptors;
     };
 
@@ -111,7 +112,8 @@ namespace api
         QString boxArtImageLink;
         QString backgroundImageLink;
         QString galaxyBackgroundImageLink;
-        QVector<QString> includedGames;
+        QVector<QString> requiredByGames;
+        QVector<QString> requiresGames;
         QString title;
         QString checkoutLink;
         QString productType;

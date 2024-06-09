@@ -56,3 +56,8 @@ FeatureItem::~FeatureItem()
 {
     delete ui;
 }
+
+void FeatureItem::mousePressEvent(QMouseEvent *event)
+{
+    emit clicked();
+}

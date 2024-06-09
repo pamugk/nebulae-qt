@@ -1,7 +1,6 @@
 #include "storepage.h"
 #include "ui_storepage.h"
 
-#include <cmath>
 #include <QJsonDocument>
 #include <QNetworkReply>
 
@@ -20,6 +19,7 @@ StorePage::StorePage(QWidget *parent) :
     customSectionCDPRReply(nullptr),
     customSectionExclusivesReply(nullptr),
     customSectionGOGReply(nullptr),
+    dealOfTheDayReply(nullptr),
     discoverBestsellingReply(nullptr),
     discoverNewReply(nullptr),
     discoverUpcomingReply(nullptr),
@@ -43,6 +43,10 @@ StorePage::~StorePage()
     if (customSectionGOGReply != nullptr)
     {
         customSectionGOGReply->abort();
+    }
+    if (dealOfTheDayReply != nullptr)
+    {
+        dealOfTheDayReply->abort();
     }
     if (discoverBestsellingReply != nullptr)
     {
@@ -223,13 +227,67 @@ void StorePage::getCustomSectionGOGGames()
     });
 }
 
+void StorePage::getDealOfTheDay()
+{
+    ui->dealOfTheDayLabel->setVisible(false);
+    ui->dealOfTheDayScrollArea->setVisible(false);
+    dealOfTheDayReply = apiClient->getStoreCustomSection("bd39ffdc-458d-11ee-a513-fa163eebc216");
+    connect(dealOfTheDayReply, &QNetworkReply::finished,
+            this, [this]()
+    {
+        auto networkReply = dealOfTheDayReply;
+        dealOfTheDayReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreCustomSectionResponse data;
+            parseGetStoreCustomSectionResponse(resultJson, data, "_product_tile_256.webp");
+
+            QDateTime now = QDateTime::currentDateTime();
+            // Also hide this section when the time comes?
+            if (data.visibleFrom <= now && data.visibleTo >= now)
+            {
+                for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
+                {
+                    auto itemWidget = new SimpleProductItem(item.product.id, ui->dealOfTheDayScrollAreaContents);
+                    itemWidget->setCover(item.product.image, apiClient);
+                    itemWidget->setTitle(item.product.title);
+                    itemWidget->setDeal(item.dealActiveTo);
+                    itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
+                                         item.product.price.discountPercentage, item.product.price.free, "");
+                    connect(apiClient, &api::GogApiClient::authenticated,
+                            itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                    itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                    connect(itemWidget, &SimpleProductItem::navigateToProduct,
+                            this, [this](unsigned long long productId)
+                    {
+                        emit navigate({Page::CATALOG_PRODUCT, productId});
+                    });
+                    ui->dealOfTheDayScrollAreaContentsLayout->addWidget(itemWidget);
+                }
+                ui->dealOfTheDayScrollAreaContentsLayout->addStretch();
+                ui->dealOfTheDayLabel->setVisible(true);
+                ui->dealOfTheDayScrollArea->setVisible(true);
+            }
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
 void StorePage::getDiscoverBestsellingGames()
 {
     auto systemLocale = QLocale::system();
     ui->discoverBestsellingStackedWidget->setCurrentWidget(ui->discoverBestsellingLoadingPage);
     discoverBestsellingReply = apiClient->searchCatalog({ "trending", false }, {},
                                                         QLocale::territoryToCode(systemLocale.territory()),
-                                                        QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+                                                        systemLocale.name(QLocale::TagSeparator::Dash),
                                                         systemLocale.currencySymbol(QLocale::CurrencyIsoCode), 1, 8);
     connect(discoverBestsellingReply, &QNetworkReply::finished,
             this, [this]() {
@@ -412,7 +470,7 @@ void StorePage::getNowOnSale()
     ui->nowOnSaleStackedWidget->setCurrentWidget(ui->nowOnSaleLoadingPage);
 
     auto systemLocale = QLocale::system();
-    nowOnSaleReply = apiClient->getNowOnSale(QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1),
+    nowOnSaleReply = apiClient->getNowOnSale(systemLocale.name(QLocale::TagSeparator::Dash),
                                              QLocale::territoryToCode(systemLocale.territory()),
                                              systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
     connect(nowOnSaleReply, &QNetworkReply::finished, this, [this]()
@@ -528,15 +586,16 @@ void StorePage::getNowOnSale()
 
 void StorePage::initialize(const QVariant &data)
 {
-    getCustomSectionCDPRGames();
-    getCustomSectionExclusiveGames();
-    getCustomSectionGOGGames();
     ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
     getDiscoverBestsellingGames();
     getDiscoverNewGames();
     getDiscoverUpcomingGames();
-    getNews();
+    getDealOfTheDay();
     getNowOnSale();
+    getCustomSectionCDPRGames();
+    getCustomSectionExclusiveGames();
+    getCustomSectionGOGGames();
+    getNews();
 }
 
 void StorePage::switchUiAuthenticatedState(bool authenticated)
