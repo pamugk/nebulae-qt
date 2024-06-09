@@ -21,6 +21,7 @@
 AllGamesPage::AllGamesPage(QWidget *parent) :
     BasePage(parent),
     activatedFilterCount(0),
+    applyFilters(true),
     filter({}),
     lastCatalogReply(nullptr),
     ui(new Ui::AllGamesPage)
@@ -191,30 +192,10 @@ void AllGamesPage::initialize(const QVariant &data)
     if (initialFilters.contains("developer"))
     {
         filter.developers.append(initialFilters["developer"].toString());
-        auto clearFilterButton = new ClearFilterButton("Selected developer", QString(), ui->appliedFiltersHolder);
-        ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-        connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton]()
-        {
-            filter.developers.clear();
-            ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-            clearFilterButton->setVisible(false);
-            page = 1;
-            fetchData();
-        });
     }
     if (initialFilters.contains("publisher"))
     {
         filter.publishers.append(initialFilters["publisher"].toString());
-        auto clearFilterButton = new ClearFilterButton("Selected publisher", QString(), ui->appliedFiltersHolder);
-        ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-        connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton]()
-        {
-            filter.publishers.clear();
-            ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-            clearFilterButton->setVisible(false);
-            page = 1;
-            fetchData();
-        });
     }
     if (initialFilters.contains("genre"))
     {
@@ -248,11 +229,70 @@ void AllGamesPage::initialize(const QVariant &data)
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
             parseSearchCatalogResponse(resultJson, this->data);
 
+            auto clearAllFiltersButton = new ClearFilterButton("Clear all filters", QString(), ui->appliedFiltersHolder);
+            clearAllFiltersButton->setVisible(false);
+            ui->appliedFiltersHolder->layout()->addWidget(clearAllFiltersButton);
+            connect(clearAllFiltersButton, &ClearFilterButton::clicked, this, [this, clearAllFiltersButton]()
+            {
+                applyFilters = false;
+                while (ui->appliedFiltersHolder->layout()->count() > 1)
+                {
+                    emit static_cast<ClearFilterButton*>(ui->appliedFiltersHolder->layout()->itemAt(1)->widget())->clicked();
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
+
             int maxWidth = 0;
             CollapsibleArea *area;
             QLayout *layout;
             QCheckBox *checkbox;
             ClearFilterButton *clearFilterButton;
+
+            if (!filter.developers.isEmpty())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                auto clearFilterButton = new ClearFilterButton("Selected developer", QString(), ui->appliedFiltersHolder);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton, clearAllFiltersButton]()
+                {
+                    activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                    filter.developers.clear();
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                    clearFilterButton->setVisible(false);
+
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
+                });
+            }
+            if (!filter.publishers.isEmpty())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                auto clearFilterButton = new ClearFilterButton("Selected publisher", QString(), ui->appliedFiltersHolder);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton, clearAllFiltersButton]()
+                {
+                    activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                    filter.publishers.clear();
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                    clearFilterButton->setVisible(false);
+
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
+                });
+            }
 
             clearFilterButton = new ClearFilterButton("Discounted", QString(), ui->appliedFiltersHolder);
             checkbox = new QCheckBox("Show only discounted", ui->filtersScrollAreaContents);
@@ -261,6 +301,7 @@ void AllGamesPage::initialize(const QVariant &data)
             if (checkbox->isChecked())
             {
                 activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                 ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
             }
             else
@@ -271,23 +312,30 @@ void AllGamesPage::initialize(const QVariant &data)
             {
                checkbox->setChecked(false);
             });
-            connect(checkbox, &QCheckBox::toggled, this, [this, clearFilterButton](bool value)
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
             {
                 if (value)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                     clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                     clearFilterButton->setVisible(false);
                 }
                 filter.discounted = value;
-                page = 1;
-                fetchData();
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
@@ -297,6 +345,7 @@ void AllGamesPage::initialize(const QVariant &data)
             if (checkbox->isChecked())
             {
                 activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                 ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
             }
             else
@@ -308,11 +357,13 @@ void AllGamesPage::initialize(const QVariant &data)
             {
                checkbox->setChecked(false);
             });
-            connect(checkbox, &QCheckBox::toggled, this, [this, clearFilterButton](bool value)
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
             {
                 if (value)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack"});
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                     clearFilterButton->setVisible(true);
@@ -320,12 +371,17 @@ void AllGamesPage::initialize(const QVariant &data)
                 else
                 {
                     activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack","dlc","extras"});
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                     clearFilterButton->setVisible(false);
                 }
-                page = 1;
-                fetchData();
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
@@ -338,23 +394,30 @@ void AllGamesPage::initialize(const QVariant &data)
             {
                checkbox->setChecked(false);
             });
-            connect(checkbox, &QCheckBox::toggled, this, [this, clearFilterButton](bool value)
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
             {
                 if (value)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                     clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                     clearFilterButton->setVisible(false);
                 }
                 filter.hideOwned = value;
-                page = 1;
-                fetchData();
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
@@ -367,23 +430,30 @@ void AllGamesPage::initialize(const QVariant &data)
             {
                checkbox->setChecked(false);
             });
-            connect(checkbox, &QCheckBox::toggled, this, [this, clearFilterButton](bool value)
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
             {
                 if (value)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                     clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                     clearFilterButton->setVisible(false);
                 }
                 filter.onlyWishlisted = value;
-                page = 1;
-                fetchData();
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
@@ -396,23 +466,30 @@ void AllGamesPage::initialize(const QVariant &data)
             {
                checkbox->setChecked(false);
             });
-            connect(checkbox, &QCheckBox::toggled, this, [this, clearFilterButton](bool value)
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
             {
                 if (value)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                     clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                     clearFilterButton->setVisible(false);
                 }
                 filter.free = value;
-                page = 1;
-                fetchData();
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
             });
             layout->addWidget(checkbox);
             area->setContentLayout(layout);
@@ -421,6 +498,20 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Release Status", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<FilterCheckbox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setInclude(false);
+                    filter->setExclude(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.releaseStatuses))
@@ -433,6 +524,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldInclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -444,6 +536,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldExclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                 }
                 else
@@ -454,11 +547,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    filterCheckbox->setInclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(filterCheckbox, &FilterCheckbox::include,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.releaseStatuses.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
@@ -466,23 +561,30 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.releaseStatuses.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 connect(clearHideFilterButton, &ClearFilterButton::clicked, filterCheckbox, [this, filterCheckbox]()
                 {
                    filterCheckbox->setExclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area, clearHideFilterButton](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude,
+                        this, [this, item, area, clearHideFilterButton, clearAllFiltersButton](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeReleaseStatuses.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
@@ -490,13 +592,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeReleaseStatuses.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(filterCheckbox);
             }
@@ -506,6 +613,20 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Genres", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<FilterCheckbox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setInclude(false);
+                    filter->setExclude(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.genres))
@@ -518,6 +639,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldInclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -529,6 +651,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldExclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                 }
                 else
@@ -539,11 +662,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    filterCheckbox->setInclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(filterCheckbox, &FilterCheckbox::include,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.genres.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
@@ -551,23 +676,30 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.genres.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 connect(clearHideFilterButton, &ClearFilterButton::clicked, filterCheckbox, [this, filterCheckbox]()
                 {
                    filterCheckbox->setExclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area, clearHideFilterButton](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude,
+                        this, [this, item, area, clearHideFilterButton, clearAllFiltersButton](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeGenres.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
@@ -575,13 +707,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeGenres.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.genres.count() + filter.excludeGenres.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(filterCheckbox);
             }
@@ -591,6 +728,20 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Tags", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<FilterCheckbox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setInclude(false);
+                    filter->setExclude(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.tags))
@@ -603,6 +754,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldInclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -614,6 +766,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldExclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                 }
                 else
@@ -624,11 +777,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    filterCheckbox->setInclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(filterCheckbox, &FilterCheckbox::include,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.tags.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
@@ -636,23 +791,30 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.tags.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 connect(clearHideFilterButton, &ClearFilterButton::clicked, filterCheckbox, [this, filterCheckbox]()
                 {
                    filterCheckbox->setExclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area, clearHideFilterButton](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude,
+                        this, [this, item, area, clearHideFilterButton, clearAllFiltersButton](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeTags.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
@@ -660,13 +822,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeTags.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(filterCheckbox);
             }
@@ -677,6 +844,19 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Operating Systems", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.systems.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<QCheckBox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setChecked(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.systems))
@@ -687,6 +867,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (checkbox->isChecked())
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -697,11 +878,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    checkbox->setChecked(false);
                 });
-                connect(checkbox, &QCheckBox::toggled, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(checkbox, &QCheckBox::toggled,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                         filter.systems.append(item.slug);
@@ -709,13 +892,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.systems.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.systems.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(checkbox);
             }
@@ -725,6 +913,20 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Features", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<FilterCheckbox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setInclude(false);
+                    filter->setExclude(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.features))
@@ -737,6 +939,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldInclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -748,6 +951,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (shouldExclude)
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                 }
                 else
@@ -758,11 +962,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    filterCheckbox->setInclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::include, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(filterCheckbox, &FilterCheckbox::include,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.features.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
@@ -770,23 +976,30 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.features.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 connect(clearHideFilterButton, &ClearFilterButton::clicked, filterCheckbox, [this, filterCheckbox]()
                 {
                    filterCheckbox->setExclude(false);
                 });
-                connect(filterCheckbox, &FilterCheckbox::exclude, this, [this, item, area, clearHideFilterButton](bool shouldExclude)
+                connect(filterCheckbox, &FilterCheckbox::exclude,
+                        this, [this, item, area, clearHideFilterButton, clearAllFiltersButton](bool shouldExclude)
                 {
                     if (shouldExclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeFeatures.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
@@ -794,13 +1007,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.excludeFeatures.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(filterCheckbox);
             }
@@ -813,6 +1031,19 @@ void AllGamesPage::initialize(const QVariant &data)
 
             area = new CollapsibleArea("Languages", ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.languages.count());
+            connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
+            {
+                applyFilters = false;
+                for (std::size_t i = 0; i < area->contentLayout()->count(); i++)
+                {
+                    auto filter = static_cast<QCheckBox*>(area->contentLayout()->itemAt(i)->widget());
+                    filter->setChecked(false);
+                }
+                applyFilters = true;
+
+                page = 1;
+                fetchData();
+            });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.languages))
@@ -823,6 +1054,7 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (checkbox->isChecked())
                 {
                     activatedFilterCount++;
+                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 }
                 else
@@ -833,11 +1065,13 @@ void AllGamesPage::initialize(const QVariant &data)
                 {
                    checkbox->setChecked(false);
                 });
-                connect(checkbox, &QCheckBox::toggled, this, [this, item, area, clearFilterButton](bool shouldInclude)
+                connect(checkbox, &QCheckBox::toggled,
+                        this, [this, item, area, clearFilterButton, clearAllFiltersButton](bool shouldInclude)
                 {
                     if (shouldInclude)
                     {
                         activatedFilterCount++;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.languages.append(item.slug);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
@@ -845,13 +1079,18 @@ void AllGamesPage::initialize(const QVariant &data)
                     else
                     {
                         activatedFilterCount--;
+                        clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         filter.languages.removeOne(item.slug);
                         ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
                         clearFilterButton->setVisible(false);
                     }
-                    page = 1;
+
                     area->setChangedFilters(filter.languages.count());
-                    fetchData();
+                    if (applyFilters)
+                    {
+                        page = 1;
+                        fetchData();
+                    }
                 });
                 layout->addWidget(checkbox);
             }

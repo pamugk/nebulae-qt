@@ -24,6 +24,7 @@ public:
 private:
     unsigned short activatedFilterCount;
     api::GogApiClient *apiClient;
+    bool applyFilters;
     int currentSortOrder;
     api::SearchCatalogResponse data;
     QVector<api::SortOrder> orders;

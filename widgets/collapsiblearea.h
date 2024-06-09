@@ -15,6 +15,7 @@ class CollapsibleArea : public QWidget
 public:
     explicit CollapsibleArea(const QString &header, QWidget *parent = nullptr);
     ~CollapsibleArea();
+    const QLayout *contentLayout();
     void setContentLayout(QLayout *contentLayout);
 
 signals:
