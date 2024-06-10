@@ -7,13 +7,16 @@
 #include <QProcessEnvironment>
 #include <QUrlQuery>
 
-api::GogApiClient::GogApiClient(QObject *parent)
+api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
     : QObject{parent},
       client(new QOAuth2AuthorizationCodeFlow(new QNetworkAccessManager(this), this))
 {
     auto environment = QProcessEnvironment::systemEnvironment();
 
+    const auto [token, refreshToken] = tokenStorage->tokens();
     client->setReplyHandler(new QOAuthHttpServerReplyHandler(6543, client));
+    client->setToken(token);
+    client->setRefreshToken(refreshToken);
     client->setClientIdentifier(environment.value("GOG_CLIENT_ID"));
     client->setClientIdentifierSharedKey(environment.value("GOG_CLIENT_SECRET"));
     client->setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
@@ -47,30 +50,13 @@ api::GogApiClient::GogApiClient(QObject *parent)
     });
     connect(client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
 
-    connect(client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken)
+    connect(client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [tokenStorage](const QString & newToken)
     {
-        if (storeTokens)
-        {
-            if (newToken.isEmpty())
-            {
-            }
-            else
-            {
-            }
-        }
+        tokenStorage->setToken(newToken);
     });
-
-    connect(client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, this, [this](const QString & newToken)
+    connect(client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, this, [tokenStorage](const QString & newToken)
     {
-        if (storeTokens)
-        {
-            if (newToken.isEmpty())
-            {
-            }
-            else
-            {
-            }
-        }
+        tokenStorage->setRefreshToken(newToken);
     });
 }
 
@@ -430,13 +416,9 @@ void api::GogApiClient::grant()
     client->grant();
 }
 
-void api::GogApiClient::setStoreCredentials(bool value)
+void api::GogApiClient::logout()
 {
-    storeTokens = value;
-    if (storeTokens)
-    {
-    }
-    else
-    {
-    }
+    client->setToken(QString());
+    client->setRefreshToken(QString());
+    emit authenticated(false);
 }
