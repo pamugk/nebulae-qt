@@ -59,6 +59,7 @@ void CollapsibleArea::setContentLayout(QLayout *contentLayout)
         spoilerAnimation->setStartValue(collapsedHeight);
         spoilerAnimation->setEndValue(collapsedHeight + contentHeight);
     }
+    ui->scrollArea->setFixedWidth(contentLayout->sizeHint().width());
     QPropertyAnimation * contentAnimation = static_cast<QPropertyAnimation *>(toggleAnimation.animationAt(toggleAnimation.animationCount() - 1));
     contentAnimation->setDuration(300);
     contentAnimation->setStartValue(0);

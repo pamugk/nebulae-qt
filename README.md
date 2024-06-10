@@ -6,14 +6,14 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 ## Roadmap
 
 * core GOG store functionality:
-	- browse store,
-	- view store product information (description, details, reviews...),
-	- view wishlist,
-	- view order history;
+	- browse store (✅),
+	- view store product information (description, details, reviews...) (✅),
+	- view wishlist (WIP),
+	- view order history (WIP);
 * core GOG Galaxy functionality:
-	- browse owned products,
-	- view owned product information,
-	- view user statistics;	
+	- browse owned products (WIP),
+	- view owned product information (WIP),
+	- view user statistics (WIP);	
 * owned content management functionality:
 	- download games & goodies,
 	- install & run native games,

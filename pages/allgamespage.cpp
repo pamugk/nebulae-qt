@@ -339,8 +339,10 @@ void AllGamesPage::initialize(const QVariant &data)
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
+            area = new CollapsibleArea("DLCs", ui->filtersScrollAreaContents);
+            layout = new QVBoxLayout();
             clearFilterButton = new ClearFilterButton("Showing without DLCs and extras", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Hide DLCs and extras", ui->filtersScrollAreaContents);
+            checkbox = new QCheckBox("Hide DLCs and extras", area);
             checkbox->setChecked(!filter.productTypes.contains("dlc"));
             if (checkbox->isChecked())
             {
@@ -383,7 +385,10 @@ void AllGamesPage::initialize(const QVariant &data)
                     fetchData();
                 }
             });
-            ui->filtersScrollAreaLayout->addWidget(checkbox);
+            layout->addWidget(checkbox);
+            area->setContentLayout(layout);
+            maxWidth = std::max(maxWidth, layout->sizeHint().width());
+            ui->filtersScrollAreaLayout->addWidget(area);
 
             clearFilterButton = new ClearFilterButton("Excluding owned products", QString(), ui->appliedFiltersHolder);
             clearFilterButton->setVisible(false);
@@ -744,7 +749,7 @@ void AllGamesPage::initialize(const QVariant &data)
             });
             layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
-            for (const api::MetaTag &item : std::as_const(this->data.filters.tags))
+            for (const api::MetaTag &item : std::as_const(this->data.filters.fullTagsList))
             {
                 auto clearFilterButton = new ClearFilterButton("Tag", item.name, ui->appliedFiltersHolder);
                 auto clearHideFilterButton = new ClearFilterButton("Hide tag", item.name, ui->appliedFiltersHolder);
