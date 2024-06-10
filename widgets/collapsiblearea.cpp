@@ -3,12 +3,21 @@
 
 #include <QPropertyAnimation>
 
+#include "./clickablelabel.h"
+
 CollapsibleArea::CollapsibleArea(const QString &header, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::CollapsibleArea)
 {
     ui->setupUi(this);
-    ui->label->setText(header);
+    auto titleLabel = new ClickableLabel(this);
+    titleLabel->setText(header);
+    titleLabel->setCursor(Qt::PointingHandCursor);
+    connect(titleLabel, &ClickableLabel::clicked, this, [this]()
+    {
+        ui->expandButton->setChecked(!ui->expandButton->isChecked());
+    });
+    ui->labelPlaceholder->addWidget(titleLabel);
     toggleAnimation.addAnimation(new QPropertyAnimation(this, "minimumHeight"));
     toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
     toggleAnimation.addAnimation(new QPropertyAnimation(ui->scrollArea, "maximumHeight"));
@@ -29,6 +38,11 @@ void CollapsibleArea::on_expandButton_toggled(bool checked)
     toggleAnimation.start();
 }
 
+const QLayout *CollapsibleArea::contentLayout()
+{
+    return ui->scrollArea->layout();
+}
+
 void CollapsibleArea::setContentLayout(QLayout *contentLayout)
 {
     if (ui->scrollArea->layout() != nullptr)
@@ -45,6 +59,7 @@ void CollapsibleArea::setContentLayout(QLayout *contentLayout)
         spoilerAnimation->setStartValue(collapsedHeight);
         spoilerAnimation->setEndValue(collapsedHeight + contentHeight);
     }
+    ui->scrollArea->setFixedWidth(contentLayout->sizeHint().width());
     QPropertyAnimation * contentAnimation = static_cast<QPropertyAnimation *>(toggleAnimation.animationAt(toggleAnimation.animationCount() - 1));
     contentAnimation->setDuration(300);
     contentAnimation->setStartValue(0);

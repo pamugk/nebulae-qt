@@ -9,7 +9,9 @@ namespace api
     struct CatalogFilter
     {
         bool discounted;
+        bool free;
         bool hideOwned;
+        bool onlyWishlisted;
         QString query;
         QStringList genres;
         QStringList excludeGenres;
@@ -22,6 +24,9 @@ namespace api
         QStringList releaseStatuses;
         QStringList excludeReleaseStatuses;
         QStringList productTypes;
+        // Hidden filters available only via redirections
+        QStringList developers;
+        QStringList publishers;
     };
 }
 

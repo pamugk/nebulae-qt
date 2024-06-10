@@ -18,6 +18,7 @@
 #include "../api/utils/reviewserialization.h"
 #include "../api/utils/seriesgameserialization.h"
 #include "../internals/regionalutils.h"
+#include "../internals/tagutils.h"
 #include "../layouts/flowlayout.h"
 #include "../widgets/bonusitem.h"
 #include "../widgets/checkeditem.h"
@@ -568,7 +569,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 genreLabel->setFont(tagFont);
                 connect(genreLabel, &ClickableLabel::clicked, this, [this, genreSlug = genre.slug]()
                 {
-                    emit navigate({ ALL_GAMES });
+                    emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("genre", genreSlug) }) });
                 });
                 ui->genreHolder->layout()->addWidget(genreLabel);
             }
@@ -581,7 +582,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 tagLabel->setFont(tagFont);
                 connect(tagLabel, &ClickableLabel::clicked, this, [this, tagSlug = tag.slug]()
                 {
-                    emit navigate({ ALL_GAMES });
+                    emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("tag", tagSlug) }) });
                 });
                 ui->tagsHolder->layout()->addWidget(tagLabel);
             }
@@ -607,9 +608,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             developerLabel->setCursor(Qt::PointingHandCursor);
             developerLabel->setFont(tagFont);
             developerLabel->setText(data.developers[0]);
-            connect(developerLabel, &ClickableLabel::clicked, this, [this, developerSlug = data.publisher]()
+            connect(developerLabel, &ClickableLabel::clicked, this, [this, developerSlug = makeSlugFromText(data.developers[0])]()
             {
-                emit navigate({ ALL_GAMES });
+                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("developer", developerSlug) }) });
             });
             ui->companyHolder->layout()->addWidget(developerLabel);
 
@@ -617,9 +618,9 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             publisherLabel->setCursor(Qt::PointingHandCursor);
             publisherLabel->setFont(tagFont);
             publisherLabel->setText(data.publisher);
-            connect(publisherLabel, &ClickableLabel::clicked, this, [this, publisherSlug = data.publisher]()
+            connect(publisherLabel, &ClickableLabel::clicked, this, [this, publisherSlug = makeSlugFromText(data.publisher)]()
             {
-                emit navigate({ ALL_GAMES });
+                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("publisher", publisherSlug) }) });
             });
             ui->companyHolder->layout()->addWidget(publisherLabel);
 
@@ -707,7 +708,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 featureItem->setCursor(Qt::PointingHandCursor);
                 connect(featureItem, &FeatureItem::clicked, this, [this, featureSlug = feature.slug]()
                 {
-                    emit navigate({ Page::ALL_GAMES });
+                    emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("feature", featureSlug) }) });
                 });
                 ui->gameFeaturesLayout->addWidget(featureItem);
             }

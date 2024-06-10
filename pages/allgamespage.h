@@ -22,7 +22,9 @@ public:
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
 private:
+    unsigned short activatedFilterCount;
     api::GogApiClient *apiClient;
+    bool applyFilters;
     int currentSortOrder;
     api::SearchCatalogResponse data;
     QVector<api::SortOrder> orders;
