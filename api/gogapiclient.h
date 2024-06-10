@@ -1,10 +1,8 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
-#include <QNetworkAccessManager>
-#include <QObject>
 #include <QOAuth2AuthorizationCodeFlow>
-#include <QSettings>
+#include <QObject>
 
 #include "./models/catalogfilter.h"
 #include "./models/orderfilter.h"
@@ -75,9 +73,7 @@ namespace api
         void authenticated(bool authenticated);
 
     private:
-        QNetworkAccessManager client_tmp;
-        QOAuth2AuthorizationCodeFlow client;
-        QSettings settings;
+        QOAuth2AuthorizationCodeFlow *client;
         bool storeTokens;
     };
 }
