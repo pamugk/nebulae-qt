@@ -1,79 +1,78 @@
 #include "gogapiclient.h"
 
+#include <QNetworkAccessManager>
 #include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QOAuthHttpServerReplyHandler>
 #include <QProcessEnvironment>
 #include <QUrlQuery>
 
-api::GogApiClient::GogApiClient(QObject *parent)
-    : QObject{parent}
+api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
+    : QObject{parent},
+      client(new QNetworkAccessManager(this), this)
 {
     auto environment = QProcessEnvironment::systemEnvironment();
 
     client.setReplyHandler(new QOAuthHttpServerReplyHandler(6543, &client));
+    connect(tokenStorage, &TokenStorage::tokenAcquired, this, [this](const QString &token)
+    {
+        client.setToken(token);
+        if (!token.isEmpty())
+        {
+            emit authenticated(true);
+        }
+    });
+    connect(tokenStorage, &TokenStorage::refreshTokenAcquired, this, [this](const QString &refreshToken)
+    {
+        client.setRefreshToken(refreshToken);
+    });
+    tokenStorage->getTokens();
     client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
     client.setClientIdentifierSharedKey(environment.value("GOG_CLIENT_SECRET"));
     client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
     client.setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
-    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters) {
-                                            switch (stage)
-                                            {
-                                            case QAbstractOAuth::Stage::RequestingTemporaryCredentials:
-                                            case QAbstractOAuth::Stage::RequestingAuthorization:
-                                            {
-                                                parameters->insert("layout", "client2");
-                                            }
-                                            case QAbstractOAuth::Stage::RequestingAccessToken:
-                                            {
-                                                parameters->remove("redirect_uri");
-                                                parameters->insert("redirect_uri", "https://embed.gog.com/on_login_success?origin=client");
-                                                break;
-                                            }
-                                            case QAbstractOAuth::Stage::RefreshingAccessToken:
-                                                break;
-                                            }
-                                        });
-
-    connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged, this, [this](
-                QAbstractOAuth::Status status) {
-            if (status == QAbstractOAuth::Status::Granted) {
-                emit authenticated(true);
-            }
-        });
-    connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
-
-    if (settings.contains("/credentials/refresh_token"))
+    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters)
     {
-        client.setRefreshToken(settings.value("/credentials/refresh_token").toString());
-        client.setToken(settings.value("/credentials/token", QString()).toString());
-    }
-
-    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, [this](const QString & newToken){
-        if (storeTokens)
+        switch (stage)
         {
-            if (newToken.isEmpty())
+            case QAbstractOAuth::Stage::RequestingTemporaryCredentials:
+            case QAbstractOAuth::Stage::RequestingAuthorization:
             {
-                settings.remove("/credentials/token");
+                parameters->insert("layout", "client2");
             }
-            else
+            case QAbstractOAuth::Stage::RequestingAccessToken:
             {
-                settings.setValue("/credentials/token", newToken);
+                parameters->remove("redirect_uri");
+                parameters->insert("redirect_uri", "https://embed.gog.com/on_login_success?origin=client");
+                break;
             }
+            case QAbstractOAuth::Stage::RefreshingAccessToken:
+                break;
         }
     });
 
-    connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, this, [this](const QString & newToken){
-        if (storeTokens)
+    connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged,
+            this, [this](QAbstractOAuth::Status status)
+    {
+        if (status == QAbstractOAuth::Status::Granted)
         {
-            if (newToken.isEmpty())
-            {
-                settings.remove("/credentials/refresh_token");
-            }
-            else
-            {
-                settings.setValue("/credentials/refresh_token", newToken);
-            }
+            emit authenticated(true);
         }
+    });
+    connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
+
+    connect(tokenStorage, &TokenStorage::tokensRequested, this, [this, tokenStorage]()
+    {
+        tokenStorage->setToken(client.token());
+        tokenStorage->setRefreshToken(client.refreshToken());
+    });
+    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, tokenStorage, [tokenStorage](const QString & newToken)
+    {
+        tokenStorage->setToken(newToken);
+    });
+    connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, tokenStorage, [tokenStorage](const QString & newToken)
+    {
+        tokenStorage->setRefreshToken(newToken);
     });
 }
 
@@ -419,7 +418,13 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
 
     QUrl url("https://catalog.gog.com/v1/catalog");
     url.setQuery(query);
-    return client_tmp.get(QNetworkRequest(url));
+
+    return client.token().isEmpty()
+            // This is needed to circumvent strict bearer token validation on catalog endpoints.
+            // QAbstractOAuth2::prepareRequest sets empty token to Authorization header,
+            // and this causes request to fail.
+            ? client.networkAccessManager()->get(QNetworkRequest(url))
+            : client.get(url);
 }
 
 void api::GogApiClient::grant()
@@ -427,17 +432,9 @@ void api::GogApiClient::grant()
     client.grant();
 }
 
-void api::GogApiClient::setStoreCredentials(bool value)
+void api::GogApiClient::logout()
 {
-    storeTokens = value;
-    if (storeTokens)
-    {
-        settings.setValue("/credentials/refresh_token", client.refreshToken());
-        settings.setValue("/credentials/token", client.token());
-    }
-    else
-    {
-        settings.remove("/credentials/refresh_token");
-        settings.remove("/credentials/token");
-    }
+    client.setToken(QString());
+    client.setRefreshToken(QString());
+    emit authenticated(false);
 }

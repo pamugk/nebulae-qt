@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets WebEngineWidgets Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets Widgets WebEngineWidgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR}Keychain)
 
 set(TS_FILES nebulae_en_US.ts)
 
@@ -20,6 +21,7 @@ set(PROJECT_SOURCES
         main.cpp
 
         api/gogapiclient.h api/gogapiclient.cpp
+        api/tokenstorage.h
 
         api/models/catalog.h api/models/catalogfilter.h
         api/models/catalogproductinfo.h
@@ -58,6 +60,7 @@ set(PROJECT_SOURCES
 
         internals/navigationdestination.h
         internals/pages.h
+        internals/protectedtokenstorage.h internals/protectedtokenstorage.cpp
         internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
         internals/tagutils.h internals/tagutils.cpp
@@ -134,7 +137,13 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(nebulae PRIVATE Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::SvgWidgets Qt${QT_VERSION_MAJOR}::NetworkAuth Qt${QT_VERSION_MAJOR}::WebEngineWidgets Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(nebulae PRIVATE
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::SvgWidgets
+    Qt${QT_VERSION_MAJOR}::NetworkAuth
+    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+    Qt${QT_VERSION_MAJOR}::Widgets
+    qt${QT_VERSION_MAJOR}keychain)
 
 set_target_properties(nebulae PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

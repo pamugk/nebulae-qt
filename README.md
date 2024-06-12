@@ -32,7 +32,8 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 
 ## Used libraries & frameworks
 
-* [Qt](https://www.qt.io/)
+* [Qt](https://www.qt.io/),
+* [QtKeychain](https://github.com/frankosterfeld/qtkeychain/).
 
 ## Additional useful materials
 

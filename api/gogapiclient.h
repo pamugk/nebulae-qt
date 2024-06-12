@@ -1,11 +1,10 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
-#include <QNetworkAccessManager>
-#include <QObject>
 #include <QOAuth2AuthorizationCodeFlow>
-#include <QSettings>
+#include <QObject>
 
+#include "tokenstorage.h"
 #include "./models/catalogfilter.h"
 #include "./models/orderfilter.h"
 #include "./models/reviewfilters.h"
@@ -18,7 +17,7 @@ namespace api
         Q_OBJECT
 
     public:
-        explicit GogApiClient(QObject *parent = nullptr);
+        explicit GogApiClient(TokenStorage *tokenStorage, QObject *parent = nullptr);
         bool isAuthenticated();
 
         QNetworkReply *getAchievements();
@@ -68,17 +67,14 @@ namespace api
 
     public slots:
         void grant();
-        void setStoreCredentials(bool value);
+        void logout();
 
     signals:
         void authorize(const QUrl &authUrl);
         void authenticated(bool authenticated);
 
     private:
-        QNetworkAccessManager client_tmp;
         QOAuth2AuthorizationCodeFlow client;
-        QSettings settings;
-        bool storeTokens;
     };
 }
 

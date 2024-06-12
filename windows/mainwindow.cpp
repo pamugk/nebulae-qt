@@ -93,6 +93,7 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
 void MainWindow::switchUiAuthenticatedState(bool authenticated)
 {
     ui->loginButton->setVisible(!authenticated);
+    ui->logoutButton->setVisible(authenticated);
     ui->galaxyLabel->setVisible(authenticated);
     ui->discoverButton->setVisible(authenticated);
     ui->recentButton->setVisible(authenticated);
@@ -242,5 +243,11 @@ void MainWindow::on_navigateBackButton_clicked()
 void MainWindow::on_navigateForwardButton_clicked()
 {
     navigateForward();
+}
+
+
+void MainWindow::on_logoutButton_clicked()
+{
+    apiClient->logout();
 }
 

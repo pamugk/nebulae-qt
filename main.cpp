@@ -6,6 +6,7 @@
 
 #include "api/gogapiclient.h"
 #include "internals/settingsmanager.h"
+#include "internals/protectedtokenstorage.h"
 #include "windows/mainwindow.h"
 
 int main(int argc, char *argv[])
@@ -27,21 +28,18 @@ int main(int argc, char *argv[])
     }
 
     SettingsManager settingsManager(&a);
-
-    api::GogApiClient apiClient(&a);
-    apiClient.setStoreCredentials(settingsManager.isAutoLogin());
-    QObject::connect(&settingsManager, &SettingsManager::autoLoginChanged,
-            &apiClient, &api::GogApiClient::setStoreCredentials);
+    ProtectedTokenStorage tokenStorage(settingsManager.isAutoLogin());
+    api::GogApiClient apiClient(&tokenStorage, &a);
 
     MainWindow w(&apiClient, &settingsManager);
     w.show();
 
     QSystemTrayIcon trayIcon(QIcon(":/icons/gog-galaxy.png"), &a);
     QMenu trayMenu;
-    QObject::connect(trayMenu.addAction("Show main window"), &QAction::triggered, [&w](bool checked){
+    QObject::connect(trayMenu.addAction("Show main window"), &QAction::triggered, &a, [&w](bool checked){
         w.show();
     });
-    QObject::connect(trayMenu.addAction("Exit"), &QAction::triggered, [&a](bool checked){
+    QObject::connect(trayMenu.addAction("Exit"), &QAction::triggered, &a, [&a](bool checked){
         a.exit();
     });
     trayIcon.setContextMenu(&trayMenu);
