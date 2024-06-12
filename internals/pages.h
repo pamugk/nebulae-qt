@@ -14,7 +14,9 @@ enum Page
     FRIENDS,
     CATALOG_PRODUCT,
     OWNED_PRODUCT,
-    NEWS
+    NEWS,
+    DEALS,
+    CART,
 };
 
 #endif // PAGES_H
