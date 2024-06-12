@@ -74,7 +74,7 @@ namespace api
         void authenticated(bool authenticated);
 
     private:
-        QOAuth2AuthorizationCodeFlow *client;
+        QOAuth2AuthorizationCodeFlow client;
     };
 }
 

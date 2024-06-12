@@ -52,6 +52,8 @@ private slots:
 
     void on_navigateForwardButton_clicked();
 
+    void on_logoutButton_clicked();
+
 private:
     api::GogApiClient *apiClient;
     QStack<NavigationDestination> navigationHistory;

@@ -34,6 +34,8 @@ AuthDialog::AuthDialog(const QUrl &authUrl, QWidget *parent) :
     connect(ui->webEngineView, &QWebEngineView::loadProgress,
             ui->progressBar, &QProgressBar::setValue);
 
+    // TODO: replace with widget-based implementation
+    ui->contentStack->setCurrentWidget(ui->loadingPage);
     auto authPage = new AuthPage(ui->webEngineView);
     ui->webEngineView->setPage(authPage);
     ui->webEngineView->setUrl(authUrl);

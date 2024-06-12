@@ -5,13 +5,16 @@
 
 class ProtectedTokenStorage : public api::TokenStorage
 {
+    Q_OBJECT
+
 public:
     ProtectedTokenStorage(bool storeTokens);
-
     virtual void setStoreTokens(bool storeTokens) override;
+    void getTokens() override;
+
+public slots:
     virtual void setRefreshToken(const QString &refreshToken) override;
     virtual void setToken(const QString &token) override;
-    const virtual std::tuple<QString, QString> tokens() const override;
 
 private:
     bool storeTokens;

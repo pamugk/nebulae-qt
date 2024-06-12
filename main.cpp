@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
 
     QSystemTrayIcon trayIcon(QIcon(":/icons/gog-galaxy.png"), &a);
     QMenu trayMenu;
-    QObject::connect(trayMenu.addAction("Show main window"), &QAction::triggered, [&w](bool checked){
+    QObject::connect(trayMenu.addAction("Show main window"), &QAction::triggered, &a, [&w](bool checked){
         w.show();
     });
-    QObject::connect(trayMenu.addAction("Exit"), &QAction::triggered, [&a](bool checked){
+    QObject::connect(trayMenu.addAction("Exit"), &QAction::triggered, &a, [&a](bool checked){
         a.exit();
     });
     trayIcon.setContextMenu(&trayMenu);
