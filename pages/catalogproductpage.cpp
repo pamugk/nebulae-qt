@@ -34,7 +34,7 @@
 #include "../windows/catalogproductmediadialog.h"
 
 CatalogProductPage::CatalogProductPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::CATALOG_PRODUCT, parent),
     averageRatingReply(nullptr),
     averageOwnerRatingReply(nullptr),
     backgroundReply(nullptr),
@@ -1046,6 +1046,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
 void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
 {
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
     ui->cartButton->setEnabled(authenticated);
     ui->seriesBuyButton->setEnabled(authenticated);
     ui->wishlistButton->setEnabled(authenticated);

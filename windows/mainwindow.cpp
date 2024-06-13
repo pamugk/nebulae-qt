@@ -88,6 +88,15 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
     // TODO: remove this check after all of navigation destinations are implemented
     if (page != nullptr)
     {
+        QLayoutItem *actionItem;
+        while ((actionItem = ui->pageActionsHolderLayout->takeAt(0)))
+        {
+            delete actionItem;
+        }
+        for (QWidget *actionWidget : page->getHeaderControls())
+        {
+            ui->pageActionsHolderLayout->addWidget(actionWidget);
+        }
         connect(page, &BasePage::navigate, this, &MainWindow::navigate);
         connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
         connect(apiClient, &api::GogApiClient::authenticated, page, &BasePage::switchUiAuthenticatedState);

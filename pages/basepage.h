@@ -14,7 +14,7 @@ public:
     explicit BasePage(QWidget *parent = nullptr);
     ~BasePage();
 
-    virtual QVector<QWidget *> getHeaderControls();
+    virtual const QVector<QWidget *> getHeaderControls();
     virtual void setApiClient(api::GogApiClient *apiClient) = 0;
 
 signals:

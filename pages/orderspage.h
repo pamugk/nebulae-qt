@@ -3,14 +3,14 @@
 
 #include <QWidget>
 
-#include "./basepage.h"
+#include "./storebasepage.h"
 #include "../widgets/pagination.h"
 
 namespace Ui {
 class OrdersPage;
 }
 
-class OrdersPage : public BasePage
+class OrdersPage : public StoreBasePage
 {
     Q_OBJECT
 

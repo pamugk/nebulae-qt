@@ -74,6 +74,7 @@ set(PROJECT_SOURCES
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/ownedgamepage.h pages/ownedgamepage.cpp pages/ownedgamepage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
+        pages/storebasepage.h pages/storebasepage.cpp
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 

@@ -3,14 +3,14 @@
 
 #include <QWidget>
 
-#include "./basepage.h"
+#include "./storebasepage.h"
 #include "../widgets/pagination.h"
 
 namespace Ui {
 class WishlistPage;
 }
 
-class WishlistPage : public BasePage
+class WishlistPage : public StoreBasePage
 {
 
 public:

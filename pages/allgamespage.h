@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "./basepage.h"
+#include "./storebasepage.h"
 #include "../api/models/catalog.h"
 #include "../widgets/pagination.h"
 
@@ -11,7 +11,7 @@ namespace Ui {
 class AllGamesPage;
 }
 
-class AllGamesPage : public BasePage
+class AllGamesPage : public StoreBasePage
 {
     Q_OBJECT
 

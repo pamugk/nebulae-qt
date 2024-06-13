@@ -10,7 +10,7 @@
 #include "../widgets/ordergroup.h"
 
 OrdersPage::OrdersPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::ORDER_HISTORY, parent),
     ui(new Ui::OrdersPage)
 {
     ui->setupUi(this);
@@ -156,7 +156,7 @@ void OrdersPage::initialize(const QVariant &data)
 
 void OrdersPage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }
 
 void OrdersPage::on_searchEdit_textChanged(const QString &arg1)

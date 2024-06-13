@@ -19,7 +19,7 @@
 #include "../widgets/storelistitem.h"
 
 AllGamesPage::AllGamesPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::ALL_GAMES, parent),
     activatedFilterCount(0),
     applyFilters(true),
     filter({}),
@@ -1132,7 +1132,7 @@ void AllGamesPage::initialize(const QVariant &data)
 
 void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }
 
 void AllGamesPage::on_lineEdit_textChanged(const QString &arg1)

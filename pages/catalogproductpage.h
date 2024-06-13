@@ -1,7 +1,7 @@
 #ifndef CATALOGPRODUCTPAGE_H
 #define CATALOGPRODUCTPAGE_H
 
-#include "./basepage.h"
+#include "./storebasepage.h"
 #include "../api/models/reviewfilters.h"
 #include "../api/models/catalogproductinfo.h"
 
@@ -9,7 +9,7 @@ namespace Ui {
 class CatalogProductPage;
 }
 
-class CatalogProductPage : public BasePage
+class CatalogProductPage : public StoreBasePage
 {
     Q_OBJECT
 

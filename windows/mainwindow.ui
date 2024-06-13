@@ -18,10 +18,10 @@
     <normaloff>:/icons/gog-galaxy.svg</normaloff>:/icons/gog-galaxy.svg</iconset>
   </property>
   <widget class="QWidget" name="scaffold">
-   <layout class="QGridLayout" name="scaffoldLayout">
-    <item row="0" column="1">
+   <layout class="QGridLayout" name="scaffoldLayout" columnstretch="0,1">
+    <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignTop">
      <widget class="QWidget" name="header" native="true">
-      <layout class="QHBoxLayout" name="mainContentHeader">
+      <layout class="QHBoxLayout" name="mainContentHeader" stretch="0,0,1">
        <item>
         <widget class="QPushButton" name="navigateBackButton">
          <property name="enabled">
@@ -62,18 +62,26 @@
          </property>
         </widget>
        </item>
-       <item>
-        <spacer name="mainContentHeaderSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
+        <widget class="QWidget" name="pageActionsHolder" native="true">
+         <layout class="QHBoxLayout" name="pageActionsHolderLayout">
+            <property name="spacing">
+              <number>24</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -469,7 +477,7 @@ QLabel {
        <item>
         <widget class="QLabel" name="friendsLabel">
          <property name="text">
-          <string>FRIENDS</string>
+          <string>FRIE&amp;NDS</string>
          </property>
         </widget>
        </item>

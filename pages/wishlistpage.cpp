@@ -11,7 +11,7 @@
 #include "../widgets/wishlistitem.h"
 
 WishlistPage::WishlistPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::WISHLIST, parent),
     ui(new Ui::WishlistPage)
 {
     ui->setupUi(this);
@@ -102,7 +102,7 @@ void WishlistPage::initialize(const QVariant &data)
 
 void WishlistPage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }
 
 void WishlistPage::onSearchTextChanged(const QString &arg1)

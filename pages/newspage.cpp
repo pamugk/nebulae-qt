@@ -10,7 +10,7 @@
 #include "../widgets/clickablelabel.h"
 
 NewsPage::NewsPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::NEWS, parent),
     bannerReply(nullptr),
     newsHeadlinesReply(nullptr),
     newsPageReply(nullptr),
@@ -218,5 +218,5 @@ void NewsPage::initialize(const QVariant &data)
 
 void NewsPage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }

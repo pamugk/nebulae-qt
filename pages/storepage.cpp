@@ -14,7 +14,7 @@
 #include "../widgets/newsitemtile.h"
 
 StorePage::StorePage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::STORE, parent),
     apiClient(nullptr),
     customSectionCDPRReply(nullptr),
     customSectionExclusivesReply(nullptr),
@@ -600,7 +600,7 @@ void StorePage::initialize(const QVariant &data)
 
 void StorePage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }
 
 void StorePage::on_showCatalogButton_clicked()

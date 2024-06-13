@@ -11,7 +11,7 @@ BasePage::~BasePage()
 
 }
 
-QVector<QWidget *> BasePage::getHeaderControls()
+const QVector<QWidget *> BasePage::getHeaderControls()
 {
     return QVector<QWidget *>();
 }
