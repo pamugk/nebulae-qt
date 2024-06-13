@@ -64,6 +64,7 @@ namespace api
                                      QString locale,
                                      QString currencyCode,
                                      unsigned short page = 1, unsigned int limit = 48);
+        QNetworkReply *setWishlistVisibility(int visibility);
 
     public slots:
         void grant();
@@ -75,6 +76,7 @@ namespace api
 
     private:
         QOAuth2AuthorizationCodeFlow client;
+        bool refreshingToken;
     };
 }
 

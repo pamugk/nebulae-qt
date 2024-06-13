@@ -443,6 +443,60 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="errorPage">
+      <layout class="QVBoxLayout" name="errorPageLayout" stretch="0,0,1,0">
+       <item>
+        <spacer name="errorPageVerticalSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="errorLabel">
+         <property name="text">
+          <string>Uh-oh, something bad happened. Check Internet connection and try again later.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
+        <widget class="QPushButton" name="retryButton">
+         <property name="text">
+          <string>Retry</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/icons/rotate.svg</normaloff>:/icons/rotate.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="errorPageVerticalSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="loaderPage">
       <layout class="QVBoxLayout" name="loaderPageLayout">
        <property name="spacing">
@@ -473,7 +527,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="emptyPage">
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="emptyPageLayout">
        <item>
         <widget class="QLabel" name="nothingFoundLabel">
          <property name="font">
@@ -495,6 +549,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
