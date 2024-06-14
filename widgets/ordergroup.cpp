@@ -1,6 +1,10 @@
 #include "ordergroup.h"
 #include "ui_ordergroup.h"
 
+#include <QDesktopServices>
+#include <QLocale>
+#include <QMenu>
+
 #include "./orderitem.h"
 
 OrderGroup::OrderGroup(const api::Order &data,
@@ -10,6 +14,18 @@ OrderGroup::OrderGroup(const api::Order &data,
     ui(new Ui::OrderGroup)
 {
     ui->setupUi(this);
+
+    auto systemLocale = QLocale::system();
+    auto infoMenu = new QMenu(ui->infoButton);
+    infoMenu->addAction("VIEW RECEIPT", this, [receiptLink = data.receiptLink]()
+    {
+        QDesktopServices::openUrl(QString("https://gog.com%1").arg(receiptLink));
+    });
+    infoMenu->addAction("CONTACT SUPPORT", this, []()
+    {
+        QDesktopServices::openUrl(QUrl("https://gog.com/support/contact"));
+    });
+    ui->infoButton->setMenu(infoMenu);
 
     ui->orderNumberLabel->setText(QString("ORDER #%1").arg(data.publicId.toUpper()));
     if (!data.giftRecipient.isNull())
@@ -29,26 +45,27 @@ OrderGroup::OrderGroup(const api::Order &data,
     {
         purchaseMethod = QString("PAID WITH %1").arg(data.paymentMethod.toUpper());
     }
-    ui->priceLabel->setText(QString("%1 (%2)").arg(data.total.full, purchaseMethod));
+    ui->priceLabel->setText(QString("%1 (%2)").arg(systemLocale.toCurrencyString(data.total.amount, data.total.symbol), purchaseMethod));
     if (!data.giftCode.isNull())
     {
         ui->giftCodeLabel->setText(QString("Gift code: %1").arg(data.giftCode));
     }
-    ui->dateLabel->setText(data.date.toString());
+    ui->dateLabel->setText(systemLocale.toString(data.date));
 
     for (const api::OrderProduct &product : std::as_const(data.products))
     {
-        ui->productsLayout->addWidget(new OrderItem(product, apiClient, this));
+        auto productOrderItem = new OrderItem(product, apiClient, this);
+        productOrderItem->setCursor(Qt::PointingHandCursor);
+        connect(productOrderItem, &OrderItem::clicked, this, [this, productId = product.id]()
+        {
+           emit navigateToProduct(productId.toULongLong());
+        });
+        ui->productsLayout->addWidget(productOrderItem);
     }
 }
 
 OrderGroup::~OrderGroup()
 {
     delete ui;
-}
-
-void OrderGroup::on_infoButton_clicked()
-{
-
 }
 

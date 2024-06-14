@@ -1,6 +1,8 @@
 #include "orderitem.h"
 #include "ui_orderitem.h"
 
+#include <QLocale>
+
 OrderItem::OrderItem(const api::OrderProduct &data,
                      api::GogApiClient *apiClient,
                      QWidget *parent) :
@@ -12,15 +14,16 @@ OrderItem::OrderItem(const api::OrderProduct &data,
     ui->titleLabel->setText(data.title);
     if (data.status.isNull())
     {
+        auto systemLocale = QLocale::system();
         if (data.price.discounted)
         {
-            ui->oldPriceLabel->setText(QString("%1 %2").arg(data.price.symbol, data.price.baseAmount));
+            ui->oldPriceLabel->setText(systemLocale.toCurrencyString(data.price.baseAmount, data.price.symbol));
         }
         else
         {
             ui->oldPriceLabel->setVisible(false);
         }
-        ui->priceLabel->setText(data.cashValue.full);
+        ui->priceLabel->setText(systemLocale.toCurrencyString(data.cashValue.amount, data.cashValue.symbol));
     }
     else
     {
@@ -49,4 +52,9 @@ OrderItem::~OrderItem()
         imageReply->abort();
     }
     delete ui;
+}
+
+void OrderItem::mousePressEvent(QMouseEvent *event)
+{
+    emit clicked();
 }

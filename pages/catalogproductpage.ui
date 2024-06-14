@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#CatalogProductPage { background: rgb(217, 217, 217); }</string>
+   <string notr="true">QWidget#CatalogProductPage { background: #cccccc; }</string>
   </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
@@ -239,8 +239,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1271</width>
-            <height>3220</height>
+            <width>1060</width>
+            <height>3215</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -339,7 +339,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>1271</width>
+                   <width>100</width>
                    <height>210</height>
                   </rect>
                  </property>
@@ -1034,9 +1034,9 @@
                     <item>
                      <widget class="QWidget" name="userReviewsContents" native="true">
                       <layout class="QVBoxLayout" name="userReviewsContentsLayout">
-                        <property name="spacing">
-                          <number>16</number>
-                        </property>
+                       <property name="spacing">
+                        <number>16</number>
+                       </property>
                       </layout>
                      </widget>
                     </item>

@@ -4,8 +4,8 @@
 
 void parseProductPrice(const QJsonObject &json, api::OrderProductPrice &data)
 {
-    data.baseAmount = json["baseAmount"].toString();
-    data.amount = json["amount"].toString();
+    data.baseAmount = json["baseAmount"].toString().toDouble();
+    data.amount = json["amount"].toString().toDouble();
     data.free = json["isFree"].toBool();
     data.discounted = json["isDiscounted"].toBool();
     data.symbol = json["symbol"].toString();
@@ -13,7 +13,7 @@ void parseProductPrice(const QJsonObject &json, api::OrderProductPrice &data)
 
 void parseOrderPrice(const QJsonObject &json, api::OrderPrice &data)
 {
-    data.amount = json["amount"].toString();
+    data.amount = json["amount"].toString().toDouble();
     data.symbol = json["symbol"].toString();
     data.code = json["code"].toString();
     data.zero = json["isZero"].toBool();

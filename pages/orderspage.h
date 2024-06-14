@@ -27,6 +27,8 @@ private:
     Pagination *paginator;
     Ui::OrdersPage *ui;
 
+    QNetworkReply *ordersReply;
+
     void fetchData();
 
 public slots:
@@ -34,6 +36,7 @@ public slots:
     virtual void switchUiAuthenticatedState(bool authenticated) override;
 private slots:
     void on_searchEdit_textChanged(const QString &arg1);
+    void on_retryButton_clicked();
 };
 
 #endif // ORDERSPAGE_H

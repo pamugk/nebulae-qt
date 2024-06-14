@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: rgb(217, 217, 217);</string>
+   <string notr="true">background: #cccccc;</string>
   </property>
   <layout class="QVBoxLayout" name="rootLayout">
    <property name="spacing">
@@ -65,7 +65,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-146</y>
+            <y>0</y>
             <width>1092</width>
             <height>734</height>
            </rect>

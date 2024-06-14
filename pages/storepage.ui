@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(217, 217, 217);</string>
+   <string notr="true">background-color: #cccccc;</string>
   </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-843</y>
+        <y>0</y>
         <width>579</width>
-        <height>3735</height>
+        <height>3734</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
@@ -689,7 +689,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>563</width>
+                <width>100</width>
                 <height>234</height>
                </rect>
               </property>

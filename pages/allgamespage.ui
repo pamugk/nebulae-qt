@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(217, 217, 217);</string>
+   <string notr="true">background-color: #cccccc;</string>
   </property>
   <layout class="QGridLayout" name="contentLayout">
    <property name="spacing">
