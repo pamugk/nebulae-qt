@@ -80,13 +80,30 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         break;
     case NEWS:
         page = new NewsPage(ui->scaffold);
+    case DEALS:
+        break;
+    case CART:
+        break;
     }
-    connect(page, &BasePage::navigate, this, &MainWindow::navigate);
-    connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
-    connect(apiClient, &api::GogApiClient::authenticated, page, &BasePage::switchUiAuthenticatedState);
-    page->switchUiAuthenticatedState(apiClient->isAuthenticated());
-    page->setApiClient(apiClient);
-    page->initialize(destination.parameters);
+    // TODO: remove this check after all of navigation destinations are implemented
+    if (page != nullptr)
+    {
+        QLayoutItem *actionItem;
+        while ((actionItem = ui->pageActionsHolderLayout->takeAt(0)))
+        {
+            delete actionItem;
+        }
+        for (QWidget *actionWidget : page->getHeaderControls())
+        {
+            ui->pageActionsHolderLayout->addWidget(actionWidget);
+        }
+        connect(page, &BasePage::navigate, this, &MainWindow::navigate);
+        connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
+        connect(apiClient, &api::GogApiClient::authenticated, page, &BasePage::switchUiAuthenticatedState);
+        page->switchUiAuthenticatedState(apiClient->isAuthenticated());
+        page->setApiClient(apiClient);
+        page->initialize(destination.parameters);
+    }
     return page;
 }
 
@@ -98,6 +115,7 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
     ui->discoverButton->setVisible(authenticated);
     ui->recentButton->setVisible(authenticated);
     ui->wishlistButton->setVisible(authenticated);
+    ui->cartButton->setVisible(authenticated);
     ui->ordersButton->setVisible(authenticated);
     ui->gamesLabel->setVisible(authenticated);
     ui->libraryButton->setVisible(authenticated);
@@ -111,10 +129,12 @@ void MainWindow::updateCheckedDrawerDestination(Page currentPage)
     ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
     ui->recentButton->setChecked(currentPage == Page::RECENT);
     ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::NEWS);
+    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES);
+    ui->dealsButton->setChecked(currentPage == Page::DEALS);
     ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
-    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES || currentPage == Page::CATALOG_PRODUCT);
+    ui->cartButton->setChecked(currentPage == Page::DEALS);
     ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
-    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES || currentPage == Page::OWNED_PRODUCT);
+    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES);
     ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
     ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
 }
@@ -124,6 +144,11 @@ void MainWindow::navigate(NavigationDestination destination)
     if (navigationHistory.top() != destination)
     {
         QWidget *nextPage = initializePage(destination);
+        // TODO: remove this check after all of navigation destinations are implemented
+        if (nextPage == nullptr)
+        {
+            return;
+        }
         QWidget *previousPage = ui->scaffoldLayout->itemAtPosition(1, 1)->widget();
         QLayoutItem *replacedItem = ui->scaffoldLayout->replaceWidget(previousPage, nextPage);
         delete replacedItem;

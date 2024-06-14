@@ -9,8 +9,17 @@
 
 api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
     : QObject{parent},
-      client(new QNetworkAccessManager(this), this)
+      client(new QNetworkAccessManager(this), this),
+      refreshingToken(false)
 {
+    connect(client.networkAccessManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply *reply)
+    {
+        if (reply->error() == QNetworkReply::AuthenticationRequiredError && !refreshingToken)
+        {
+            refreshingToken = true;
+            client.refreshAccessToken();
+        }
+    });
     auto environment = QProcessEnvironment::systemEnvironment();
 
     client.setReplyHandler(new QOAuthHttpServerReplyHandler(6543, &client));
@@ -54,9 +63,14 @@ api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
     connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged,
             this, [this](QAbstractOAuth::Status status)
     {
+        refreshingToken = false;
         if (status == QAbstractOAuth::Status::Granted)
         {
             emit authenticated(true);
+        }
+        else if (status == QAbstractOAuth::Status::NotAuthenticated)
+        {
+            logout();
         }
     });
     connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
@@ -66,8 +80,9 @@ api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
         tokenStorage->setToken(client.token());
         tokenStorage->setRefreshToken(client.refreshToken());
     });
-    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, tokenStorage, [tokenStorage](const QString & newToken)
+    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, tokenStorage, [this, tokenStorage](const QString & newToken)
     {
+        refreshingToken = false;
         tokenStorage->setToken(newToken);
     });
     connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, tokenStorage, [tokenStorage](const QString & newToken)
@@ -425,6 +440,11 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
             // and this causes request to fail.
             ? client.networkAccessManager()->get(QNetworkRequest(url))
             : client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::setWishlistVisibility(int visibility)
+{
+    return client.get(QString("https://embed.gog.com/account/save_sharing_wishlist/%1").arg(visibility));
 }
 
 void api::GogApiClient::grant()

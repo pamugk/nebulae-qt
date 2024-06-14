@@ -10,3 +10,8 @@ BasePage::~BasePage()
 {
 
 }
+
+const QVector<QWidget *> BasePage::getHeaderControls()
+{
+    return QVector<QWidget *>();
+}

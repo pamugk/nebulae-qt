@@ -11,13 +11,16 @@
 #include "../widgets/wishlistitem.h"
 
 WishlistPage::WishlistPage(QWidget *parent) :
-    BasePage(parent),
+    StoreBasePage(Page::WISHLIST, parent),
+    getWishlistReply(nullptr),
+    setWishlistSharingReply(nullptr),
     ui(new Ui::WishlistPage)
 {
     ui->setupUi(this);
     ui->resultsScrollAreaContentsLayout->setAlignment(Qt::AlignTop);
     connect(ui->searchEdit, &QLineEdit::textChanged, this, &WishlistPage::onSearchTextChanged);
     connect(ui->orderComboBox, &QComboBox::currentIndexChanged, this, &WishlistPage::onCurrentOrderChanged);
+    connect(ui->visibilityComboBox, &QComboBox::currentIndexChanged, this, &WishlistPage::onCurrentVisibilityChanged);
 
     orders = {"title", "date_added", "user_reviews"};
     currentOrder = 0;
@@ -35,6 +38,14 @@ WishlistPage::WishlistPage(QWidget *parent) :
 
 WishlistPage::~WishlistPage()
 {
+    if (getWishlistReply != nullptr)
+    {
+        getWishlistReply->abort();
+    }
+    if (setWishlistSharingReply != nullptr)
+    {
+        setWishlistSharingReply->abort();
+    }
     delete ui;
 }
 
@@ -45,6 +56,10 @@ void WishlistPage::setApiClient(api::GogApiClient *apiClient)
 
 void WishlistPage::fetchData()
 {
+    if (getWishlistReply != nullptr)
+    {
+        getWishlistReply->abort();
+    }
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsScrollArea->verticalScrollBar()->setValue(0);
     paginator->setVisible(false);
@@ -56,8 +71,12 @@ void WishlistPage::fetchData()
         delete item;
     }
 
-    auto networkReply = apiClient->getWishlist(query, orders[currentOrder], page);
-    connect(networkReply, &QNetworkReply::finished, this, [=](){
+    getWishlistReply = apiClient->getWishlist(query, orders[currentOrder], page);
+    connect(getWishlistReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = getWishlistReply;
+        getWishlistReply = nullptr;
+
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -85,13 +104,13 @@ void WishlistPage::fetchData()
             }
             networkReply->deleteLater();
         }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            networkReply->deleteLater();
+            ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
         }
+
+        networkReply->deleteLater();
     });
 }
 
@@ -102,7 +121,7 @@ void WishlistPage::initialize(const QVariant &data)
 
 void WishlistPage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    StoreBasePage::switchUiAuthenticatedState(authenticated);
 }
 
 void WishlistPage::onSearchTextChanged(const QString &arg1)
@@ -120,6 +139,44 @@ void WishlistPage::onCurrentOrderChanged(int index)
     }
     currentOrder = index;
     page = 1;
+    fetchData();
+}
+
+void WishlistPage::onCurrentVisibilityChanged(int index)
+{
+    int wishlistVisibility;
+    switch (index)
+    {
+    case 1:
+        wishlistVisibility = 2;
+        break;
+    case 2:
+        wishlistVisibility = 1;
+        break;
+    default:
+        wishlistVisibility = 0;
+    }
+
+    setWishlistSharingReply = apiClient->setWishlistVisibility(wishlistVisibility);
+    connect(setWishlistSharingReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = setWishlistSharingReply;
+        setWishlistSharingReply = nullptr;
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            // TODO: show some kind of notification?
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+        }
+
+        networkReply->deleteLater();
+    });
+}
+
+void WishlistPage::on_retryButton_clicked()
+{
     fetchData();
 }
 

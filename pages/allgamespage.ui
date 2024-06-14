@@ -112,8 +112,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-     <widget class="QWidget" name="appliedFiltersHolder">
-     </widget>
+    <widget class="QWidget" name="appliedFiltersHolder" native="true"/>
    </item>
    <item row="2" column="1">
     <widget class="QStackedWidget" name="contentsStack">
@@ -315,8 +314,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>382</width>
-                <height>486</height>
+                <width>100</width>
+                <height>30</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsListLayout">
@@ -413,10 +412,13 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Uh-oh, something bad happened. Retry?</string>
+          <string>Uh-oh, something bad happened. Check Internet connection and try again later</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

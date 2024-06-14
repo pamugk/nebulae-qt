@@ -3,13 +3,13 @@
 
 #include <QWidget>
 
-#include "./basepage.h"
+#include "./storebasepage.h"
 
 namespace Ui {
 class StorePage;
 }
 
-class StorePage : public BasePage
+class StorePage : public StoreBasePage
 {
     Q_OBJECT
 
