@@ -175,7 +175,6 @@ void WishlistPage::onCurrentVisibilityChanged(int index)
     });
 }
 
-
 void WishlistPage::on_retryButton_clicked()
 {
     fetchData();
