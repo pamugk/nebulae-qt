@@ -8,7 +8,7 @@ namespace api
 {
     struct OrderPrice
     {
-        QString amount;
+        double amount;
         QString symbol;
         QString code;
         bool zero;
@@ -20,8 +20,8 @@ namespace api
 
     struct OrderProductPrice
     {
-        QString baseAmount;
-        QString amount;
+        double baseAmount;
+        double amount;
         bool free;
         bool discounted;
         QString symbol;

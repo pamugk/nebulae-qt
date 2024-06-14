@@ -21,6 +21,12 @@ public:
                        QWidget *parent = nullptr);
     ~OrderItem();
 
+signals:
+    void clicked();
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+
 private:
     QNetworkReply *imageReply;
     Ui::OrderItem *ui;

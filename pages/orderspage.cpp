@@ -5,12 +5,14 @@
 #include <QJsonObject>
 #include <QMenu>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/utils/orderserialization.h"
 #include "../widgets/ordergroup.h"
 
 OrdersPage::OrdersPage(QWidget *parent) :
     StoreBasePage(Page::ORDER_HISTORY, parent),
+    ordersReply(nullptr),
     ui(new Ui::OrdersPage)
 {
     ui->setupUi(this);
@@ -96,6 +98,10 @@ OrdersPage::OrdersPage(QWidget *parent) :
 
 OrdersPage::~OrdersPage()
 {
+    if (ordersReply != nullptr)
+    {
+        ordersReply->abort();
+    }
     delete ui;
 }
 
@@ -106,8 +112,13 @@ void OrdersPage::setApiClient(api::GogApiClient *apiClient)
 
 void OrdersPage::fetchData()
 {
+    if (ordersReply != nullptr)
+    {
+        ordersReply->abort();
+    }
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     paginator->setVisible(false);
+    ui->resultsScrollArea->verticalScrollBar()->setValue(0);
     while (!ui->resultsScrollContentsLayout->isEmpty())
     {
         auto item = ui->resultsScrollContentsLayout->itemAt(0);
@@ -116,8 +127,12 @@ void OrdersPage::fetchData()
         delete item;
     }
 
-    auto networkReply = apiClient->getOrdersHistory(filter, page);
-    connect(networkReply, &QNetworkReply::finished, this, [=](){
+    ordersReply = apiClient->getOrdersHistory(filter, page);
+    connect(ordersReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = ordersReply;
+        ordersReply = nullptr;
+
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -131,21 +146,25 @@ void OrdersPage::fetchData()
             {
                 for (const api::Order &item : std::as_const(data.orders))
                 {
-                    ui->resultsScrollContentsLayout->addWidget(new OrderGroup(item, apiClient, ui->resultsScrollContents));
+                    auto orderGroup = new OrderGroup(item, apiClient, ui->resultsScrollContents);
+                    connect(orderGroup, &OrderGroup::navigateToProduct, this, [this](unsigned long long productId)
+                    {
+                        emit navigate({ Page::CATALOG_PRODUCT, productId });
+                    });
+                    ui->resultsScrollContentsLayout->addWidget(orderGroup);
                 }
                 paginator->changePages(page, data.totalPages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
             networkReply->deleteLater();
         }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << error;
-            networkReply->deleteLater();
+            ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
         }
+
+        networkReply->deleteLater();
     });
 }
 
@@ -163,6 +182,12 @@ void OrdersPage::on_searchEdit_textChanged(const QString &arg1)
 {
     page = 1;
     filter.query = arg1.trimmed();
+    fetchData();
+}
+
+
+void OrdersPage::on_retryButton_clicked()
+{
     fetchData();
 }
 

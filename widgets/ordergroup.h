@@ -20,8 +20,8 @@ public:
                         QWidget *parent = nullptr);
     ~OrderGroup();
 
-private slots:
-    void on_infoButton_clicked();
+signals:
+    void navigateToProduct(unsigned long long productId);
 
 private:
     Ui::OrderGroup *ui;

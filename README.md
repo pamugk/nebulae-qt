@@ -9,7 +9,7 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 	- browse store (✅),
 	- view store product information (description, details, reviews...) (✅),
 	- view wishlist (✅; most filters are not yet implemented),
-	- view order history (WIP);
+	- view order history (✅; no info on payment options for now);
 * core GOG Galaxy functionality:
 	- browse owned products (WIP),
 	- view owned product information (WIP),
