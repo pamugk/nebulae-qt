@@ -21,14 +21,34 @@ public:
                                   QWidget *parent = nullptr);
     ~OwnedProductGridItem();
 
+    enum AdditionalInfo
+    {
+        COMPANY,
+        GENRES,
+        STATS,
+        TAGS,
+        PLATFORM
+    };
+
+public slots:
+    void setAdditionalDataVisibility(bool visible);
+    void setAdditionalDataDisplayed(int kind);
+    void setImageSize(const QSize &imageSize);
+    void setRatingVisibility(bool visible);
+    void setStatusVisibility(bool visible);
+    void setTitleVisibility(bool visible);
+
 signals:
-    void navigateToProduct(unsigned long long id);
+    void clicked();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    unsigned long long itemId;
+    QString company;
+    QString genres;
+    QString tags;
+    QString title;
     QNetworkReply *imageReply;
     Ui::OwnedProductGridItem *ui;
 };

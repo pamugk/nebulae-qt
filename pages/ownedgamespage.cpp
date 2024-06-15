@@ -1,13 +1,16 @@
 #include "ownedgamespage.h"
 #include "ui_ownedgamespage.h"
 
+#include <QActionGroup>
 #include <QJsonDocument>
 #include <QLineEdit>
 #include <QMenu>
 #include <QNetworkReply>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QSlider>
 #include <QToolButton>
+#include <QWidgetAction>
 
 #include "../api/utils/ownedproductserialization.h"
 #include "../layouts/flowlayout.h"
@@ -15,6 +18,8 @@
 
 OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     BasePage(parent),
+    currentGridImageSize(1),
+    gridImageSizes({ QSize(110, 155), QSize(120, 170), QSize(150, 210), QSize(185, 260), QSize(190, 265), QSize(260, 365) }),
     ownedGamesReply(nullptr),
     ui(new Ui::OwnedGamesPage)
 {
@@ -104,53 +109,136 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     listModeItem->setCheckable(true);
 
     viewSettingsMenu->addSeparator();
-    auto settingsSubmenu = viewSettingsMenu->addMenu("Customize grid view");
-    auto gridCustomizationItem = settingsSubmenu->addAction("Title");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Rating");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Status");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Additional data");
-    gridCustomizationItem->setCheckable(true);
 
-    connect(gridModeItem, &QAction::toggled, this, [this, settingsSubmenu, listModeItem](bool toggled)
+    auto gridImageScaleSlider = new QSlider(Qt::Horizontal);
+    gridImageScaleSlider->setMinimum(0);
+    gridImageScaleSlider->setMaximum(5);
+    gridImageScaleSlider->setValue(currentGridImageSize);
+    connect(gridImageScaleSlider, &QSlider::valueChanged, this, [this](int newValue)
+    {
+        currentGridImageSize = newValue;
+        emit gridItemImageSizeChanged(gridImageSizes[newValue]);
+    });
+
+    auto gridSettingsSubmenu = viewSettingsMenu->addMenu("Customize grid view");
+    auto gridImageScaleAction = new QWidgetAction(gridSettingsSubmenu);
+    gridImageScaleAction->setDefaultWidget(gridImageScaleSlider);
+    gridSettingsSubmenu->addAction(gridImageScaleAction);
+    gridSettingsSubmenu->addSeparator();
+    auto gridCustomizationItem = gridSettingsSubmenu->addAction("Title");
+    gridCustomizationItem->setCheckable(true);
+    connect(gridCustomizationItem, &QAction::toggled, this, &OwnedGamesPage::gridItemTitleVisibilityChanged);
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Rating");
+    connect(gridCustomizationItem, &QAction::toggled, this, &OwnedGamesPage::gridItemRatingVisibilityChanged);
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Status");
+    connect(gridCustomizationItem, &QAction::toggled, this, &OwnedGamesPage::gridItemStatusVisibilityChanged);
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Additional data");
+    connect(gridCustomizationItem, &QAction::toggled, this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged);
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem = gridSettingsSubmenu->addSeparator();
+    gridCustomizationItem->setVisible(false);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    auto gridAdditionalCustomizationGroup = new QActionGroup(gridSettingsSubmenu);
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Company");
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem->setVisible(false);
+    gridAdditionalCustomizationGroup->addAction(gridCustomizationItem);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    connect(gridCustomizationItem, &QAction::toggled, this, [this](bool checked)
+    {
+       if (checked)
+       {
+           emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::COMPANY);
+       }
+    });
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Genres");
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem->setVisible(false);
+    gridAdditionalCustomizationGroup->addAction(gridCustomizationItem);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    connect(gridCustomizationItem, &QAction::toggled, this, [this](bool checked)
+    {
+       if (checked)
+       {
+           emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::GENRES);
+       }
+    });
+    gridCustomizationItem = gridSettingsSubmenu->addAction("My stats");
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem->setVisible(false);
+    gridAdditionalCustomizationGroup->addAction(gridCustomizationItem);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    connect(gridCustomizationItem, &QAction::toggled, this, [this](bool checked)
+    {
+       if (checked)
+       {
+           emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::STATS);
+       }
+    });
+    gridCustomizationItem = gridSettingsSubmenu->addAction("My tags");
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem->setVisible(false);
+    gridAdditionalCustomizationGroup->addAction(gridCustomizationItem);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    connect(gridCustomizationItem, &QAction::toggled, this, [this](bool checked)
+    {
+       if (checked)
+       {
+           emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::TAGS);
+       }
+    });
+    gridCustomizationItem = gridSettingsSubmenu->addAction("Platform");
+    gridCustomizationItem->setCheckable(true);
+    gridCustomizationItem->setVisible(false);
+    gridAdditionalCustomizationGroup->addAction(gridCustomizationItem);
+    gridCustomizationItem->setChecked(true);
+    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged, gridCustomizationItem, &QAction::setVisible);
+    connect(gridCustomizationItem, &QAction::toggled, this, [this](bool checked)
+    {
+       if (checked)
+       {
+           emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
+       }
+    });
+
+    connect(gridModeItem, &QAction::toggled, this, [this, gridSettingsSubmenu, listModeItem](bool toggled)
     {
         if (toggled)
         {
-
         }
         listModeItem->setChecked(!toggled);
-        settingsSubmenu->menuAction()->setVisible(toggled);
+        gridSettingsSubmenu->menuAction()->setVisible(toggled);
     });
 
-    settingsSubmenu = viewSettingsMenu->addMenu("Customize list view");
-    gridCustomizationItem = settingsSubmenu->addAction("Achievements %");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Critics rating");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Game icon");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Game time");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Genres");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Last played");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Platform icon");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Platform name");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Rating");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Release date");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Size on disk");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Status");
-    gridCustomizationItem->setCheckable(true);
-    gridCustomizationItem = settingsSubmenu->addAction("Tags");
-    gridCustomizationItem->setCheckable(true);
+    auto settingsSubmenu = viewSettingsMenu->addMenu("Customize list view");
+    auto listCustomizationItem = settingsSubmenu->addAction("Achievements %");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Critics rating");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Game icon");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Game time");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Genres");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Last played");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Platform icon");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Platform name");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Rating");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Release date");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Size on disk");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Status");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem = settingsSubmenu->addAction("Tags");
+    listCustomizationItem->setCheckable(true);
     settingsSubmenu->menuAction()->setVisible(false);
 
     connect(listModeItem, &QAction::toggled, this, [this, settingsSubmenu, gridModeItem](bool toggled)
@@ -200,10 +288,6 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
 OwnedGamesPage::~OwnedGamesPage()
 {
-    for (QWidget *uiAction : std::as_const(uiActions))
-    {
-        delete uiAction;
-    }
     uiActions.clear();
     if (ownedGamesReply != nullptr)
     {
@@ -257,8 +341,21 @@ void OwnedGamesPage::updateData()
                 for (const api::OwnedProduct &item : std::as_const(data.products))
                 {
                     auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
-                    auto productId = item.id;
-                    connect(gridItem, &OwnedProductGridItem::navigateToProduct, this, [this, productId]()
+                    gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
+                    gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
+                    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
+                            gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
+                    connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
+                            gridItem, &OwnedProductGridItem::setAdditionalDataDisplayed);
+                    connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
+                            gridItem, &OwnedProductGridItem::setImageSize);
+                    connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
+                            gridItem, &OwnedProductGridItem::setStatusVisibility);
+                    connect(this, &OwnedGamesPage::gridItemRatingVisibilityChanged,
+                            gridItem, &OwnedProductGridItem::setRatingVisibility);
+                    connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
+                            gridItem, &OwnedProductGridItem::setTitleVisibility);
+                    connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.id]()
                     {
                         emit navigate({Page::OWNED_PRODUCT, productId});
                     });
@@ -285,5 +382,11 @@ void OwnedGamesPage::initialize(const QVariant &data)
 void OwnedGamesPage::switchUiAuthenticatedState(bool authenticated)
 {
 
+}
+
+
+void OwnedGamesPage::on_retryButton_clicked()
+{
+    updateData();
 }
 
