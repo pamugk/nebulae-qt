@@ -2,9 +2,12 @@
 #include "ui_ownedgamespage.h"
 
 #include <QJsonDocument>
+#include <QLineEdit>
 #include <QMenu>
 #include <QNetworkReply>
+#include <QPushButton>
 #include <QScrollBar>
+#include <QToolButton>
 
 #include "../api/utils/ownedproductserialization.h"
 #include "../layouts/flowlayout.h"
@@ -12,20 +15,96 @@
 
 OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     BasePage(parent),
+    ownedGamesReply(nullptr),
     ui(new Ui::OwnedGamesPage)
 {
     ui->setupUi(this);
 
-    auto settingsMenu = new QMenu(ui->settingsToolButton);
+    auto popularFiltersHolder = new QWidget(this);
+    auto popularFiltersHolderLayout = new QHBoxLayout();
+    popularFiltersHolderLayout->setContentsMargins(0, 0, 0, 0);
+    popularFiltersHolderLayout->setSpacing(0);
+    popularFiltersHolder->setLayout(popularFiltersHolderLayout);
+    popularFiltersHolder->layout()->addWidget(new QPushButton("Owned games", popularFiltersHolder));
+#ifdef Q_OS_WINDOWS
+    popularFiltersHolder->layout()->addWidget(new QPushButton("Windows", popularFiltersHolder));
+#endif
+#ifdef Q_OS_LINUX
+    popularFiltersHolder->layout()->addWidget(new QPushButton("Linux", popularFiltersHolder));
+#endif
+#ifdef Q_OS_MACOS
+    popularFiltersHolder->layout()->addWidget(new QPushButton("macOS", popularFiltersHolder));
+#endif
+    uiActions.append(popularFiltersHolder);
 
-    auto gridModeItem = settingsMenu->addAction("Grid");
+    auto filterToolButton = new QToolButton(this);
+    filterToolButton->setIcon(QIcon(":icons/filter.svg"));
+    filterToolButton->setPopupMode(QToolButton::InstantPopup);
+    filterToolButton->setText("Filter");
+    filterToolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    auto filterMenu = new QMenu(filterToolButton);
+    filterMenu->addMenu("Genre");
+    filterMenu->addMenu("Platform")->addAction("GOG.com")->setCheckable(true);
+    auto filterSubmenu = filterMenu->addMenu("OS & consoles");
+    filterSubmenu->addAction("Windows")->setCheckable(true);
+    filterSubmenu->addAction("macOS")->setCheckable(true);
+    filterSubmenu->addAction("Linux")->setCheckable(true);
+    filterMenu->addSeparator();
+    filterMenu->addMenu("Rating")->addAction("No rating")->setCheckable(true);
+    filterMenu->addMenu("Tags")->addAction("No tags")->setCheckable(true);
+    filterSubmenu = filterMenu->addMenu("Status");
+    filterSubmenu->addAction("Owned")->setCheckable(true);
+    filterSubmenu->addAction("Subscriptions")->setCheckable(true);
+    filterSubmenu->addSeparator();
+    filterSubmenu->addAction("Installed")->setCheckable(true);
+    filterSubmenu->addAction("Not installed")->setCheckable(true);
+    filterSubmenu->addSeparator();
+    filterSubmenu->addAction("Hidden")->setCheckable(true);
+    filterToolButton->setMenu(filterMenu);
+    uiActions.append(filterToolButton);
+
+    auto addToolButton = new QToolButton(this);
+    addToolButton->setIcon(QIcon(":icons/plus.svg"));
+    addToolButton->setPopupMode(QToolButton::InstantPopup);
+    auto addMenu = new QMenu(addToolButton);
+    addMenu->addAction("Connect gaming accounts");
+    addMenu->addSeparator();
+    addMenu->addAction("Add game manually");
+    addMenu->addAction("Redeem GOG code");
+    addMenu->addAction("Scan folders for GOG games");
+    addMenu->addSeparator();
+    addMenu->addAction("Add friends");
+    addToolButton->setMenu(addMenu);
+    uiActions.append(addToolButton);
+
+    auto searchLineEdit = new QLineEdit(this);
+    searchLineEdit->setClearButtonEnabled(true);
+    searchLineEdit->setPlaceholderText("Search");
+    connect(searchLineEdit, &QLineEdit::textChanged, this, [this](const QString &newSearchText)
+    {
+        auto newSearchQuery = newSearchText.trimmed();
+        if (newSearchQuery != searchQuery)
+        {
+            searchQuery = newSearchQuery;
+            updateData();
+        }
+    });
+    uiActions.append(searchLineEdit);
+
+    auto viewSettingsToolButton = new QToolButton(this);
+    viewSettingsToolButton->setIcon(QIcon(":icons/sliders.svg"));
+    viewSettingsToolButton->setPopupMode(QToolButton::InstantPopup);
+
+    auto viewSettingsMenu = new QMenu(viewSettingsToolButton);
+
+    auto gridModeItem = viewSettingsMenu->addAction("Grid");
     gridModeItem->setCheckable(true);
     gridModeItem->setChecked(true);
-    auto listModeItem = settingsMenu->addAction("List");
+    auto listModeItem = viewSettingsMenu->addAction("List");
     listModeItem->setCheckable(true);
 
-    settingsMenu->addSeparator();
-    auto settingsSubmenu = settingsMenu->addMenu("Customize grid view");
+    viewSettingsMenu->addSeparator();
+    auto settingsSubmenu = viewSettingsMenu->addMenu("Customize grid view");
     auto gridCustomizationItem = settingsSubmenu->addAction("Title");
     gridCustomizationItem->setCheckable(true);
     gridCustomizationItem = settingsSubmenu->addAction("Rating");
@@ -45,7 +124,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
         settingsSubmenu->menuAction()->setVisible(toggled);
     });
 
-    settingsSubmenu = settingsMenu->addMenu("Customize list view");
+    settingsSubmenu = viewSettingsMenu->addMenu("Customize list view");
     gridCustomizationItem = settingsSubmenu->addAction("Achievements %");
     gridCustomizationItem->setCheckable(true);
     gridCustomizationItem = settingsSubmenu->addAction("Critics rating");
@@ -84,9 +163,9 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
         settingsSubmenu->menuAction()->setVisible(toggled);
     });
 
-    settingsMenu->addSeparator();
+    viewSettingsMenu->addSeparator();
 
-    settingsSubmenu = settingsMenu->addMenu("Sort by");
+    settingsSubmenu = viewSettingsMenu->addMenu("Sort by");
     settingsSubmenu->addAction("Achievements %");
     settingsSubmenu->addAction("Critics rating");
     settingsSubmenu->addAction("Game time");
@@ -99,7 +178,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     settingsSubmenu->addAction("Tags");
     settingsSubmenu->addAction("Title");
 
-    settingsSubmenu = settingsMenu->addMenu("Group by");
+    settingsSubmenu = viewSettingsMenu->addMenu("Group by");
     settingsSubmenu->addAction("Don't group");
     settingsSubmenu->addSeparator();
     settingsSubmenu->addAction("Critics rating");
@@ -111,7 +190,8 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     settingsSubmenu->addAction("Subscription");
     settingsSubmenu->addAction("Tags");
 
-    ui->settingsToolButton->setMenu(settingsMenu);
+    viewSettingsToolButton->setMenu(viewSettingsMenu);
+    uiActions.append(viewSettingsToolButton);
 
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsStack->setCurrentWidget(ui->resultsGridPage);
@@ -120,7 +200,21 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
 OwnedGamesPage::~OwnedGamesPage()
 {
+    for (QWidget *uiAction : std::as_const(uiActions))
+    {
+        delete uiAction;
+    }
+    uiActions.clear();
+    if (ownedGamesReply != nullptr)
+    {
+        ownedGamesReply->abort();
+    }
     delete ui;
+}
+
+const QVector<QWidget *> OwnedGamesPage::getHeaderControls()
+{
+    return uiActions;
 }
 
 void OwnedGamesPage::setApiClient(api::GogApiClient *apiClient)
@@ -130,6 +224,10 @@ void OwnedGamesPage::setApiClient(api::GogApiClient *apiClient)
 
 void OwnedGamesPage::updateData()
 {
+    if (ownedGamesReply != nullptr)
+    {
+        ownedGamesReply->abort();
+    }
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
     while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
@@ -140,9 +238,11 @@ void OwnedGamesPage::updateData()
         delete item;
     }
 
-    auto networkReply = apiClient->getOwnedProducts(searchQuery);
-    connect(networkReply, &QNetworkReply::finished, this, [=]()
+    ownedGamesReply = apiClient->getOwnedProducts(searchQuery);
+    connect(ownedGamesReply, &QNetworkReply::finished, this, [=]()
     {
+        auto networkReply = ownedGamesReply;
+        ownedGamesReply = nullptr;
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -166,16 +266,14 @@ void OwnedGamesPage::updateData()
                 }
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
-            networkReply->deleteLater();
         }
-    });
-    connect(networkReply, &QNetworkReply::errorOccurred, this, [=](QNetworkReply::NetworkError error)
-    {
-        if (error != QNetworkReply::NoError)
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << error;
-            networkReply->deleteLater();
+            ui->contentsStack->setCurrentWidget(ui->errorPage);
+            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
         }
+
+        networkReply->deleteLater();
     });
 }
 
@@ -187,11 +285,5 @@ void OwnedGamesPage::initialize(const QVariant &data)
 void OwnedGamesPage::switchUiAuthenticatedState(bool authenticated)
 {
 
-}
-
-void OwnedGamesPage::on_searchLineEdit_textChanged(const QString &arg1)
-{
-    searchQuery = arg1;
-    updateData();
 }
 

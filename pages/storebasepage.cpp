@@ -70,6 +70,10 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
 
 StoreBasePage::~StoreBasePage()
 {
+    for (QWidget *action : std::as_const(actions))
+    {
+        delete action;
+    }
     actions.clear();
 }
 

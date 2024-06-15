@@ -36,31 +36,6 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="headerLayout">
-     <item>
-      <widget class="QLineEdit" name="searchLineEdit">
-       <property name="placeholderText">
-        <string>Search</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="settingsToolButton">
-       <property name="text">
-        <string notr="true"/>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/icons/gear.svg</normaloff>:/icons/gear.svg</iconset>
-       </property>
-       <property name="popupMode">
-        <enum>QToolButton::ToolButtonPopupMode::MenuButtonPopup</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
     <widget class="QStackedWidget" name="contentsStack">
      <widget class="QWidget" name="emptyPage">
       <layout class="QVBoxLayout" name="emptyPageLayout">
@@ -205,8 +180,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

@@ -85,5 +85,7 @@
         <file>icons/circle-play.svg</file>
         <file>icons/right-from-bracket.svg</file>
         <file>icons/square-full.svg</file>
+        <file>icons/plus.svg</file>
+        <file>icons/filter.svg</file>
     </qresource>
 </RCC>
