@@ -20,8 +20,8 @@ set(QRC_FILES resources.qrc)
 set(PROJECT_SOURCES
         main.cpp
 
+        api/authdatastorage.h
         api/gogapiclient.h api/gogapiclient.cpp
-        api/tokenstorage.h
 
         api/models/catalog.h api/models/catalogfilter.h
         api/models/catalogproductinfo.h
@@ -60,7 +60,7 @@ set(PROJECT_SOURCES
 
         internals/navigationdestination.h
         internals/pages.h
-        internals/protectedtokenstorage.h internals/protectedtokenstorage.cpp
+        internals/protectedauthdatastorage.h internals/protectedauthdatastorage.cpp
         internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
         internals/tagutils.h internals/tagutils.cpp

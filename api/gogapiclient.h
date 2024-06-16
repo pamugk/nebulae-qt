@@ -4,7 +4,7 @@
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QObject>
 
-#include "tokenstorage.h"
+#include "authdatastorage.h"
 #include "./models/catalogfilter.h"
 #include "./models/orderfilter.h"
 #include "./models/reviewfilters.h"
@@ -17,7 +17,7 @@ namespace api
         Q_OBJECT
 
     public:
-        explicit GogApiClient(TokenStorage *tokenStorage, QObject *parent = nullptr);
+        explicit GogApiClient(AuthDataStorage *tokenStorage, QObject *parent = nullptr);
         bool isAuthenticated();
 
         QNetworkReply *getAchievements();
@@ -77,6 +77,7 @@ namespace api
     private:
         QOAuth2AuthorizationCodeFlow client;
         bool refreshingToken;
+        std::optional<unsigned long long> userId;
     };
 }
 

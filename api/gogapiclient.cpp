@@ -7,10 +7,11 @@
 #include <QProcessEnvironment>
 #include <QUrlQuery>
 
-api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
+api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
     : QObject{parent},
       client(new QNetworkAccessManager(this), this),
-      refreshingToken(false)
+      refreshingToken(false),
+      userId({})
 {
     connect(client.networkAccessManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply *reply)
     {
@@ -22,20 +23,37 @@ api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
     });
     auto environment = QProcessEnvironment::systemEnvironment();
 
-    client.setReplyHandler(new QOAuthHttpServerReplyHandler(6543, &client));
-    connect(tokenStorage, &TokenStorage::tokenAcquired, this, [this](const QString &token)
+    auto replyHandler = new QOAuthHttpServerReplyHandler(6543, &client);
+    connect(replyHandler, &QOAuthHttpServerReplyHandler::tokensReceived,
+            this, [this, tokenStorage](const QVariantMap &data)
     {
-        client.setToken(token);
-        if (!token.isEmpty())
+        refreshingToken = false;
+        QVariantMap savedData(
+                    {
+                        std::pair("access_token", data["access_token"]),
+                        std::pair("refresh_token", data["refresh_token"]),
+                        std::pair("user_id", data["user_id"].toString().toULongLong()),
+                    });
+        userId = data["user_id"].toULongLong();
+        tokenStorage->setAuthData(savedData);
+    });
+    client.setReplyHandler(replyHandler);
+    connect(tokenStorage, &AuthDataStorage::authDataAcquired,
+            this, [this](const QVariantMap &data)
+    {
+        client.setToken(data["access_token"].toString());
+        client.setRefreshToken(data["refresh_token"].toString());
+        if (data.contains("user_id"))
         {
-            emit authenticated(true);
+            userId = data["user_id"].toULongLong();
         }
+        else
+        {
+            userId = {};
+        }
+        emit authenticated(!client.token().isEmpty());
     });
-    connect(tokenStorage, &TokenStorage::refreshTokenAcquired, this, [this](const QString &refreshToken)
-    {
-        client.setRefreshToken(refreshToken);
-    });
-    tokenStorage->getTokens();
+    tokenStorage->getAuthData();
     client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
     client.setClientIdentifierSharedKey(environment.value("GOG_CLIENT_SECRET"));
     client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
@@ -75,19 +93,19 @@ api::GogApiClient::GogApiClient(TokenStorage *tokenStorage, QObject *parent)
     });
     connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
 
-    connect(tokenStorage, &TokenStorage::tokensRequested, this, [this, tokenStorage]()
+    connect(tokenStorage, &AuthDataStorage::authDataRequested, this, [this, tokenStorage]()
     {
-        tokenStorage->setToken(client.token());
-        tokenStorage->setRefreshToken(client.refreshToken());
-    });
-    connect(&client, &QOAuth2AuthorizationCodeFlow::tokenChanged, tokenStorage, [this, tokenStorage](const QString & newToken)
-    {
-        refreshingToken = false;
-        tokenStorage->setToken(newToken);
-    });
-    connect(&client, &QOAuth2AuthorizationCodeFlow::refreshTokenChanged, tokenStorage, [tokenStorage](const QString & newToken)
-    {
-        tokenStorage->setRefreshToken(newToken);
+        QVariantMap data;
+        if (!client.token().isEmpty())
+        {
+            data["access_token"] = client.token();
+            data["refresh_token"] = client.token();
+            if (userId.has_value())
+            {
+                data["user_id"] = userId.value();
+            }
+        }
+        tokenStorage->setAuthData(data);
     });
 }
 

@@ -6,7 +6,7 @@
 
 #include "api/gogapiclient.h"
 #include "internals/settingsmanager.h"
-#include "internals/protectedtokenstorage.h"
+#include "internals/protectedauthdatastorage.h"
 #include "windows/mainwindow.h"
 
 int main(int argc, char *argv[])
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     }
 
     SettingsManager settingsManager(&a);
-    ProtectedTokenStorage tokenStorage(settingsManager.isAutoLogin());
+    ProtectedAuthDataStorage tokenStorage(settingsManager.isAutoLogin());
     api::GogApiClient apiClient(&tokenStorage, &a);
 
     MainWindow w(&apiClient, &settingsManager);
