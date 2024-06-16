@@ -11,28 +11,35 @@ namespace api
     struct Avatar
     {
         QString gogImageId;
-        QUrl small;
-        QUrl small2X;
-        QUrl medium;
-        QUrl medium2X;
-        QUrl large;
-        QUrl large2X;
-        QUrl sdkImg32;
-        QUrl sdkImg64;
-        QUrl sdkImg184;
-        QUrl menuSmall;
-        QUrl menuSmall2;
-        QUrl menuBig;
-        QUrl menuBig2;
+    };
+
+    struct Settings
+    {
+        QString allowToBeInvitedBy;
+        bool allowToBeSearched;
+        bool useTwoStepAuthentication;
+        bool allowDrmProducts;
     };
 
     struct User
     {
-        QString id;
+        unsigned long long id;
         QString username;
         QDateTime created;
         Avatar avatar;
         bool employee;
+    };
+
+    struct UserFullData : User
+    {
+        QVector<QString> tags;
+        QString email;
+        QVector<QString> roles;
+        int status;
+        QString checksum;
+        Settings settings;
+        bool passwordSet;
+        QVariant marketingConsent;
     };
 }
 

@@ -131,6 +131,11 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, c
     return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getCurrentUser()
+{
+    return getUser(userId.value());
+}
+
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
                                           unsigned char limit)
 {
@@ -346,6 +351,11 @@ QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
 QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
 {
     return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
+}
+
+QNetworkReply *api::GogApiClient::getUser(unsigned long long id)
+{
+    return client.get(QString("https://users.gog.com/users/%1").arg(id));
 }
 
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
