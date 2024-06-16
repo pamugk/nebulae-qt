@@ -3,14 +3,15 @@
 
 #include <QNetworkReply>
 
-StoreDiscoverItem::StoreDiscoverItem(unsigned long long id, QWidget *parent) :
+StoreDiscoverItem::StoreDiscoverItem(QWidget *parent) :
     QWidget(parent),
-    id(id),
     ui(new Ui::StoreDiscoverItem)
 {
     ui->setupUi(this);
 
-    ui->comingSoonLabel->setVisible(false);
+    ui->ownedLabel->setVisible(false);
+    ui->upcomingLabel->setVisible(false);
+    ui->wishlistedLabel->setVisible(false);
 }
 
 StoreDiscoverItem::~StoreDiscoverItem()
@@ -38,14 +39,24 @@ void StoreDiscoverItem::setCover(const QString &coverUrl, api::GogApiClient *api
     });
 }
 
+void StoreDiscoverItem::setOwned(bool owned)
+{
+    ui->ownedLabel->setVisible(owned);
+}
+
 void StoreDiscoverItem::setPreorder(bool preorder)
 {
-    ui->comingSoonLabel->setVisible(preorder);
+    ui->upcomingLabel->setVisible(preorder);
 }
 
 void StoreDiscoverItem::setTitle(const QString &title)
 {
     ui->titleLabel->setText(title);
+}
+
+void StoreDiscoverItem::setWishlisted(bool wishlisted)
+{
+    ui->wishlistedLabel->setVisible(wishlisted);
 }
 
 void StoreDiscoverItem::setPrice(double basePrice, double finalPrice,
@@ -77,5 +88,5 @@ void StoreDiscoverItem::switchUiAuthenticatedState(bool authenticated)
 
 void StoreDiscoverItem::mousePressEvent(QMouseEvent *event)
 {
-    emit navigateToProduct(id);
+    emit clicked();
 }

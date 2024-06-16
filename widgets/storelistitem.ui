@@ -68,7 +68,7 @@
    </item>
    <item>
     <widget class="QWidget" name="info" native="true">
-     <layout class="QGridLayout" name="infoLayout">
+     <layout class="QGridLayout" name="infoLayout" columnstretch="1,0,0,0">
       <property name="leftMargin">
        <number>16</number>
       </property>
@@ -170,19 +170,6 @@ padding: 10px;</string>
         </property>
        </spacer>
       </item>
-      <item row="2" column="0" rowspan="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="0" column="0" colspan="4">
        <widget class="QLabel" name="titleLabel">
         <property name="font">
@@ -194,6 +181,92 @@ padding: 10px;</string>
         <property name="text">
          <string notr="true">Title</string>
         </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QWidget" name="statusHolder" native="true">
+        <property name="styleSheet">
+         <string notr="true">QLabel
+{
+	padding: 8px;
+	padding-bottom: 6px;
+}</string>
+        </property>
+        <layout class="QHBoxLayout" name="statusLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="upcomingLabel">
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background: rgb(230, 247, 254); border: 1px solid rgba(1, 17, 25, 0.15); color: rgb(1, 17, 25);</string>
+           </property>
+           <property name="text">
+            <string>SOON</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="wishlistedLabel">
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background: rgb(255, 241, 219); border: 1px solid rgba(99, 65, 9, 0.15); color: rgb(99, 65, 9);</string>
+           </property>
+           <property name="text">
+            <string>WISHLISTED</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="ownedLabel">
+           <property name="font">
+            <font>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background: rgb(237, 237, 237); border: 1px solid rgba(64, 64, 64, 0.15); color: rgb(64, 64, 64);</string>
+           </property>
+           <property name="text">
+            <string>IN LIBRARY</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="statusSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

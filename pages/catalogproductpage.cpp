@@ -41,6 +41,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     lastReviewsReply(nullptr),
     logotypeReply(nullptr),
     mainReply(nullptr),
+    ownedProductsReply(nullptr),
     pricesReply(nullptr),
     recommendedPurchasedTogetherReply(nullptr),
     recommendedSimilarReply(nullptr),
@@ -50,6 +51,7 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
     reviewsOrder({"votes", false}),
     seriesGamesReply(nullptr),
     seriesTotalPriceReply(nullptr),
+    wishlistReply(nullptr),
     ui(new Ui::CatalogProductPage)
 {
     ui->setupUi(this);
@@ -140,6 +142,10 @@ CatalogProductPage::~CatalogProductPage()
     {
         mainReply->abort();
     }
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
     if (pricesReply != nullptr)
     {
         pricesReply->abort();
@@ -166,6 +172,10 @@ CatalogProductPage::~CatalogProductPage()
     if (seriesTotalPriceReply != nullptr)
     {
         seriesTotalPriceReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
     }
     delete ui;
 }
@@ -860,15 +870,28 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             if (item.visibleInCatalog)
                             {
                                 count++;
-                                auto productItem = new SimpleProductItem(item.id, ui->seriesResultPage);
+                                auto productItem = new SimpleProductItem(ui->seriesResultPage);
                                 productItem->setCover(item.imageLink, apiClient);
                                 productItem->setTitle(item.title);
 
+                                connect(this, &CatalogProductPage::ownedProductsChanged,
+                                        productItem, [productItem, productId = item.id](const QSet<unsigned long long> &ids)
+                                {
+                                    productItem->setOwned(ids.contains(productId));
+                                });
+                                productItem->setOwned(ownedProducts.contains(item.id));
+                                connect(this, &CatalogProductPage::wishlistChanged,
+                                        productItem, [productItem, productId = item.id](const QSet<unsigned long long> &ids)
+                                {
+                                    productItem->setWishlisted(ids.contains(productId));
+                                });
+                                productItem->setWishlisted(wishlist.contains(item.id));
                                 connect(apiClient, &api::GogApiClient::authenticated,
                                         productItem, &SimpleProductItem::switchUiAuthenticatedState);
                                 productItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
 
-                                connect(productItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                                connect(productItem, &SimpleProductItem::clicked,
+                                        this, [this, productId = item.id]()
                                 {
                                     emit navigate({Page::CATALOG_PRODUCT, productId});
                                 });
@@ -936,7 +959,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
-                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->purchasedTogetherResultPage);
+                        auto recommendationItem = new SimpleProductItem(ui->purchasedTogetherResultPage);
                         recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
@@ -949,11 +972,24 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                                          recommendation.pricing.currency);
                         }
 
+                        connect(this, &CatalogProductPage::ownedProductsChanged,
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                        {
+                            recommendationItem->setOwned(ids.contains(productId));
+                        });
+                        recommendationItem->setOwned(ownedProducts.contains(recommendation.productId));
+                        connect(this, &CatalogProductPage::wishlistChanged,
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                        {
+                            recommendationItem->setWishlisted(ids.contains(productId));
+                        });
+                        recommendationItem->setWishlisted(wishlist.contains(recommendation.productId));
                         connect(apiClient, &api::GogApiClient::authenticated,
                                 recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
                         recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
 
-                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        connect(recommendationItem, &SimpleProductItem::clicked,
+                                this, [this, productId = recommendation.productId]()
                         {
                             emit navigate({Page::CATALOG_PRODUCT, productId});
                         });
@@ -982,7 +1018,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
-                        auto recommendationItem = new SimpleProductItem(recommendation.productId, ui->similarProductsResultPage);
+                        auto recommendationItem = new SimpleProductItem(ui->similarProductsResultPage);
                         recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
@@ -995,11 +1031,24 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                                          recommendation.pricing.currency);
                         }
 
+                        connect(this, &CatalogProductPage::ownedProductsChanged,
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                        {
+                            recommendationItem->setOwned(ids.contains(productId));
+                        });
+                        recommendationItem->setOwned(ownedProducts.contains(recommendation.productId));
+                        connect(this, &CatalogProductPage::wishlistChanged,
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                        {
+                            recommendationItem->setWishlisted(ids.contains(productId));
+                        });
+                        recommendationItem->setWishlisted(wishlist.contains(recommendation.productId));
                         connect(apiClient, &api::GogApiClient::authenticated,
                                 recommendationItem, &SimpleProductItem::switchUiAuthenticatedState);
                         recommendationItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
 
-                        connect(recommendationItem, &SimpleProductItem::navigateToProduct, this, [this](unsigned long long productId)
+                        connect(recommendationItem, &SimpleProductItem::clicked,
+                                this, [this, productId = recommendation.productId]()
                         {
                             emit navigate({Page::CATALOG_PRODUCT, productId});
                         });
@@ -1050,13 +1099,82 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
     ui->cartButton->setEnabled(authenticated);
     ui->seriesBuyButton->setEnabled(authenticated);
     ui->wishlistButton->setEnabled(authenticated);
+
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
+    }
+    if (authenticated)
+    {
+        ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = ownedProductsReply;
+            ownedProductsReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto ownedProducts = resultJson.toVariant().toList();
+                for (const QVariant &id : std::as_const(ownedProducts))
+                {
+                    this->ownedProducts.insert(id.toULongLong());
+                }
+                emit ownedProductsChanged(this->ownedProducts);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+        wishlistReply = apiClient->getWishlistIds();
+        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = wishlistReply;
+            wishlistReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto wishlistedItems = resultJson["wishlist"].toObject();
+                for (const QString &key : wishlistedItems.keys())
+                {
+                    if (wishlistedItems[key].toBool())
+                    {
+                        wishlist.insert(key.toULongLong());
+                    }
+                }
+                emit wishlistChanged(wishlist);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+    }
+    else
+    {
+        ownedProducts.clear();
+        emit ownedProductsChanged(ownedProducts);
+        wishlist.clear();
+        emit wishlistChanged(wishlist);
+    }
 }
 
 void CatalogProductPage::on_acceptContentWarningButton_clicked()
 {
     ui->contentStack->setCurrentWidget(ui->mainPage);
 }
-
 
 void CatalogProductPage::on_goBackButton_clicked()
 {

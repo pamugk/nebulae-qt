@@ -181,6 +181,11 @@ QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, un
     return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getOwnedLicensesIds()
+{
+    return client.get(QUrl("https://menu.gog.com/v1/account/licences"));
+}
+
 QNetworkReply *api::GogApiClient::getOwnedProductInfo(unsigned long long id, const QString &locale)
 {
     QVariantMap parameters;
@@ -370,6 +375,11 @@ QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QStrin
         parameters["search"] = query;
     }
     return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
+}
+
+QNetworkReply *api::GogApiClient::getWishlistIds()
+{
+    return client.get(QUrl("https://embed.gog.com/user/wishlist.json"));
 }
 
 QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,

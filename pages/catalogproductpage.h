@@ -57,7 +57,9 @@ private:
     api::ReviewFilters reviewFilters;
     QVector<api::FormattedLink> screenshots;
     QVector<api::ThumbnailedVideo> videos;
+    QSet<unsigned long long> ownedProducts;
     Ui::CatalogProductPage *ui;
+    QSet<unsigned long long> wishlist;
 
     QNetworkReply *averageRatingReply;
     QNetworkReply *averageOwnerRatingReply;
@@ -66,18 +68,22 @@ private:
     QNetworkReply *lastReviewsReply;
     QNetworkReply *logotypeReply;
     QNetworkReply *mainReply;
+    QNetworkReply *ownedProductsReply;
     QNetworkReply *pricesReply;
     QNetworkReply *recommendedPurchasedTogetherReply;
     QNetworkReply *recommendedSimilarReply;
     QVector<QNetworkReply *> requiredProductReplies;
     QNetworkReply *seriesGamesReply;
     QNetworkReply *seriesTotalPriceReply;
+    QNetworkReply *wishlistReply;
 
     unsigned short reviewsPage;
     unsigned short reviewsPageSize;
     api::SortOrder reviewsOrder;
 
     void initializeUserReviewsFilters();
+    Q_SIGNAL void ownedProductsChanged(const QSet<unsigned long long> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<unsigned long long> &ids);
 };
 
 #endif // CATALOGPRODUCTPAGE_H

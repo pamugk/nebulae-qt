@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: #cccccc;</string>
+   <string notr="true">background-color: #d9d9d9;</string>
   </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
@@ -501,7 +501,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>542</height>
+               <height>568</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -516,7 +516,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>100</width>
-                <height>542</height>
+                <height>568</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="customSectionExclusivesResultsScrollAreaContentsLayout">
@@ -675,7 +675,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>234</height>
+               <height>273</height>
               </size>
              </property>
              <property name="verticalScrollBarPolicy">
@@ -690,7 +690,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>100</width>
-                <height>234</height>
+                <height>273</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="customSectionCDPRScrollAreaContentsLayout">

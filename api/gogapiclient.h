@@ -29,6 +29,7 @@ namespace api
         QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
+        QNetworkReply *getOwnedLicensesIds();
         QNetworkReply *getOwnedProductInfo(unsigned long long id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                    const QString &order = "title",
@@ -60,6 +61,7 @@ namespace api
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);
+        QNetworkReply *getWishlistIds();
         QNetworkReply *searchCatalog(const SortOrder &order,
                                      const CatalogFilter &filter,
                                      QString countryCode,

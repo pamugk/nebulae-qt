@@ -25,6 +25,8 @@ StorePage::StorePage(QWidget *parent) :
     discoverUpcomingReply(nullptr),
     newsReply(nullptr),
     nowOnSaleReply(nullptr),
+    ownedProductsReply(nullptr),
+    wishlistReply(nullptr),
     ui(new Ui::StorePage)
 {
     ui->setupUi(this);
@@ -72,8 +74,16 @@ StorePage::~StorePage()
     {
         if (nowOnSaleSectionReply != nullptr)
         {
-            nowOnSaleReply->abort();
+            nowOnSaleSectionReply->abort();
         }
+    }
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
     }
     delete ui;
 }
@@ -101,16 +111,28 @@ void StorePage::getCustomSectionCDPRGames()
 
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
-                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionCDPRScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(ui->customSectionCDPRScrollAreaContents);
                 itemWidget->setCover(item.product.image, apiClient);
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.product.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.product.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.product.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -149,16 +171,28 @@ void StorePage::getCustomSectionExclusiveGames()
             int row = 0;
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
-                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionExclusivesResultsScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(ui->customSectionExclusivesResultsScrollAreaContents);
                 itemWidget->setCover(item.product.image, apiClient);
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.product.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.product.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.product.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -198,16 +232,28 @@ void StorePage::getCustomSectionGOGGames()
             int row = 0;
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
-                auto itemWidget = new SimpleProductItem(item.product.id, ui->customSectionCDPRScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(ui->customSectionCDPRScrollAreaContents);
                 itemWidget->setCover(item.product.image, apiClient);
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.product.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.product.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.product.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -250,17 +296,29 @@ void StorePage::getDealOfTheDay()
             {
                 for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
                 {
-                    auto itemWidget = new SimpleProductItem(item.product.id, ui->dealOfTheDayScrollAreaContents);
+                    auto itemWidget = new SimpleProductItem(ui->dealOfTheDayScrollAreaContents);
                     itemWidget->setCover(item.product.image, apiClient);
                     itemWidget->setTitle(item.product.title);
                     itemWidget->setDeal(item.dealActiveTo);
                     itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                          item.product.price.discountPercentage, item.product.price.free, "");
+                    connect(this, &StorePage::ownedProductsChanged,
+                            itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                    {
+                        itemWidget->setOwned(ids.contains(productId));
+                    });
+                    itemWidget->setOwned(ownedProducts.contains(item.product.id));
+                    connect(this, &StorePage::wishlistChanged,
+                            itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                    {
+                        itemWidget->setWishlisted(ids.contains(productId));
+                    });
+                    itemWidget->setWishlisted(wishlist.contains(item.product.id));
                     connect(apiClient, &api::GogApiClient::authenticated,
                             itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                     itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                    connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                            this, [this](unsigned long long productId)
+                    connect(itemWidget, &SimpleProductItem::clicked,
+                            this, [this, productId = item.product.id]()
                     {
                         emit navigate({Page::CATALOG_PRODUCT, productId});
                     });
@@ -302,7 +360,7 @@ void StorePage::getDiscoverBestsellingGames()
 
             for (const api::CatalogProduct &item : std::as_const(data.products))
             {
-                auto itemWidget = new StoreDiscoverItem(item.id.toULongLong(), ui->discoverBestsellingResultsPage);
+                auto itemWidget = new StoreDiscoverItem(ui->discoverBestsellingResultsPage);
                 itemWidget->setCover(item.coverHorizontal, apiClient);
                 itemWidget->setTitle(item.title);
                 itemWidget->setPrice(item.price.baseMoney.amount, item.price.finalMoney.amount,
@@ -310,11 +368,23 @@ void StorePage::getDiscoverBestsellingGames()
                                         ? 0
                                         : round(100. * (item.price.baseMoney.amount - item.price.finalMoney.amount) / item.price.baseMoney.amount),
                                      item.price.finalMoney.amount == 0, item.price.finalMoney.currency);
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &StoreDiscoverItem::clicked,
+                        this, [this, productId = item.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -350,16 +420,28 @@ void StorePage::getDiscoverNewGames()
 
             for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
             {
-                auto itemWidget = new StoreDiscoverItem(item.id, ui->discoverNewResultsPage);
+                auto itemWidget = new StoreDiscoverItem(ui->discoverNewResultsPage);
                 itemWidget->setCover(item.image, apiClient);
                 itemWidget->setTitle(item.title);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &StoreDiscoverItem::clicked,
+                        this, [this, productId = item.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -395,17 +477,29 @@ void StorePage::getDiscoverUpcomingGames()
 
             for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
             {
-                auto itemWidget = new StoreDiscoverItem(item.id, ui->discoverUpcomingResultsPage);
+                auto itemWidget = new StoreDiscoverItem(ui->discoverUpcomingResultsPage);
                 itemWidget->setCover(item.image, apiClient);
                 itemWidget->setPreorder(item.preorder);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
                 itemWidget->setTitle(item.title);
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &StoreDiscoverItem::clicked,
+                        this, [this, productId = item.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -534,23 +628,35 @@ void StorePage::getNowOnSale()
 
             for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
             {
-                if (discountedProduct.id.isNull())
+                if (discountedProduct.id == 0)
                 {
                     continue;
                 }
 
-                auto discountedProductItem = new SimpleProductItem(discountedProduct.id.toULongLong(), ui->nowOnSaleDealsScrollAreaContents);
+                auto discountedProductItem = new SimpleProductItem(ui->nowOnSaleDealsScrollAreaContents);
                 discountedProductItem->setCover(discountedProduct.coverHorizontal, apiClient);
                 discountedProductItem->setTitle(discountedProduct.title);
                 auto discount = round((discountedProduct.price.baseMoney.amount - discountedProduct.price.finalMoney.amount) / discountedProduct.price.baseMoney.amount * 100);
                 discountedProductItem->setPrice(discountedProduct.price.baseMoney.amount, discountedProduct.price.finalMoney.amount,
                                                 discount, discountedProduct.price.baseMoney.amount == 0,
                                                 discountedProduct.price.baseMoney.currency);
+                connect(this, &StorePage::ownedProductsChanged,
+                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<unsigned long long> &ids)
+                {
+                    discountedProductItem->setOwned(ids.contains(productId));
+                });
+                discountedProductItem->setOwned(ownedProducts.contains(discountedProduct.id));
+                connect(this, &StorePage::wishlistChanged,
+                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<unsigned long long> &ids)
+                {
+                    discountedProductItem->setWishlisted(ids.contains(productId));
+                });
+                discountedProductItem->setWishlisted(wishlist.contains(discountedProduct.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         discountedProductItem, &SimpleProductItem::switchUiAuthenticatedState);
                 discountedProductItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(discountedProductItem, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(discountedProductItem, &SimpleProductItem::clicked,
+                        this, [this, productId = discountedProduct.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -601,6 +707,75 @@ void StorePage::initialize(const QVariant &data)
 void StorePage::switchUiAuthenticatedState(bool authenticated)
 {
     StoreBasePage::switchUiAuthenticatedState(authenticated);
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
+    }
+    if (authenticated)
+    {
+        ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = ownedProductsReply;
+            ownedProductsReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto ownedProducts = resultJson.toVariant().toList();
+                for (const QVariant &id : std::as_const(ownedProducts))
+                {
+                    this->ownedProducts.insert(id.toULongLong());
+                }
+                emit ownedProductsChanged(this->ownedProducts);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+        wishlistReply = apiClient->getWishlistIds();
+        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = wishlistReply;
+            wishlistReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto wishlistedItems = resultJson["wishlist"].toObject();
+                for (const QString &key : wishlistedItems.keys())
+                {
+                    if (wishlistedItems[key].toBool())
+                    {
+                        wishlist.insert(key.toULongLong());
+                    }
+                }
+                emit wishlistChanged(wishlist);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+    }
+    else
+    {
+        ownedProducts.clear();
+        emit ownedProductsChanged(ownedProducts);
+        wishlist.clear();
+        emit wishlistChanged(wishlist);
+    }
 }
 
 void StorePage::on_showCatalogButton_clicked()
@@ -652,17 +827,29 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
             for (std::size_t i = 0; i < 2 && data.personalizedProducts.count(); i++)
             {
                 const api::StoreProduct &item = data.personalizedProducts[i];
-                auto itemWidget = new SimpleProductItem(item.id, dealTabScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(dealTabScrollAreaContents);
                 itemWidget->setCover(item.image, apiClient);
                 itemWidget->setTitle(item.title);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
                                      item.price.discountPercentage, item.price.free,
                                      "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });
@@ -685,17 +872,29 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
             for (std::size_t i = 2; i < data.personalizedProducts.count(); i++)
             {
                 const api::StoreProduct &item = data.personalizedProducts[i];
-                auto itemWidget = new SimpleProductItem(item.id, dealTabScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(dealTabScrollAreaContents);
                 itemWidget->setCover(item.image, apiClient);
                 itemWidget->setTitle(item.title);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
                                      item.price.discountPercentage, item.price.free,
                                      "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
                 connect(apiClient, &api::GogApiClient::authenticated,
                         itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
                 itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &SimpleProductItem::navigateToProduct,
-                        this, [this](unsigned long long productId)
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.id]()
                 {
                     emit navigate({Page::CATALOG_PRODUCT, productId});
                 });

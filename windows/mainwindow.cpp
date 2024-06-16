@@ -216,9 +216,9 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         }
         connect(page, &BasePage::navigate, this, &MainWindow::navigate);
         connect(page, &BasePage::navigateBack, this, &MainWindow::navigateBack);
+        page->setApiClient(apiClient);
         connect(apiClient, &api::GogApiClient::authenticated, page, &BasePage::switchUiAuthenticatedState);
         page->switchUiAuthenticatedState(apiClient->isAuthenticated());
-        page->setApiClient(apiClient);
         page->initialize(destination.parameters);
     }
     return page;

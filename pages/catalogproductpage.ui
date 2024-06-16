@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#CatalogProductPage { background: #cccccc; }</string>
+   <string notr="true">QWidget#CatalogProductPage { background: #d9d9d9; }</string>
   </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">

@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: #cccccc;</string>
+   <string notr="true">background-color: #d9d9d9;</string>
   </property>
   <layout class="QGridLayout" name="contentLayout">
    <property name="spacing">
@@ -68,6 +68,9 @@
         </property>
         <property name="placeholderText">
          <string>Search store by title, publisher or tag</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
