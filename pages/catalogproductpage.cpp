@@ -1099,6 +1099,7 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
     ui->cartButton->setEnabled(authenticated);
     ui->seriesBuyButton->setEnabled(authenticated);
     ui->wishlistButton->setEnabled(authenticated);
+    ui->wishlistButton->setVisible(true);
 
     if (ownedProductsReply != nullptr)
     {
@@ -1122,6 +1123,14 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
                     this->ownedProducts.insert(id.toULongLong());
+                }
+                if (this->ownedProducts.contains(id))
+                {
+                    ui->cartButton->setIcon(QIcon(":icons/gift.svg"));
+                    ui->cartButton->setStyleSheet("QPushButton { border: 1px solid #648600; background: transparent; color: #648600; padding: 15px; } QPushButton:hover { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 230, 60), stop:1 rgb(140, 202, 39)); border-color: #96bd27; color: white; }");
+                    ui->cartButton->setText("Buy as gift");
+                    ui->libraryButton->setVisible(true);
+                    ui->wishlistButton->setVisible(false);
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
@@ -1150,6 +1159,7 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                         wishlist.insert(key.toULongLong());
                     }
                 }
+                ui->wishlistButton->setChecked(wishlist.contains(id));
                 emit wishlistChanged(wishlist);
             }
             else if (networkReply->error() != QNetworkReply::OperationCanceledError)
@@ -1164,6 +1174,10 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
     }
     else
     {
+        ui->cartButton->setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 230, 60), stop:1 rgb(140, 202, 39)); color: white; padding: 15px;");
+        ui->cartButton->setText("Add to cart");
+        ui->wishlistButton->setChecked(false);
+        ui->libraryButton->setVisible(false);
         ownedProducts.clear();
         emit ownedProductsChanged(ownedProducts);
         wishlist.clear();
@@ -1443,3 +1457,28 @@ void CatalogProductPage::openGalleryOnItem(std::size_t index)
     dialog.viewMedia(index);
     dialog.exec();
 }
+
+void CatalogProductPage::on_wishlistButton_clicked()
+{
+
+}
+
+
+void CatalogProductPage::on_wishlistButton_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->wishlistButton->setText("Wishlisted");
+    }
+    else
+    {
+        ui->wishlistButton->setText("Wishlist it");
+    }
+}
+
+
+void CatalogProductPage::on_libraryButton_clicked()
+{
+    emit navigate({ Page::OWNED_PRODUCT, id });
+}
+

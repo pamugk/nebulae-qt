@@ -50,11 +50,13 @@ namespace api
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
+        QNetworkReply *getRecommendedDlcs();
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
         QNetworkReply *getStoreCustomSection(const QString &id);
+        QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
         QNetworkReply *getUser(unsigned long long id);

@@ -321,6 +321,11 @@ QNetworkReply *api::GogApiClient::getProductReviews(unsigned long long productId
     return client.get(url);
 }
 
+QNetworkReply *api::GogApiClient::getRecommendedDlcs()
+{
+    return client.get(QUrl("https://api.gog.com/recommendations/dlcs"));
+}
+
 QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
 {
     QUrl url("https://api.gog.com/v2/games");
@@ -346,6 +351,11 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
 QNetworkReply *api::GogApiClient::getStoreCustomSection(const QString &id)
 {
     return client.get(QUrl(QString("https://api.gog.com/custom_sections/%1").arg(id)));
+}
+
+QNetworkReply *api::GogApiClient::getStoreDiscoverGamesForYou()
+{
+    return client.get(QUrl("https://api.gog.com/discover_games/for_you"));
 }
 
 QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()

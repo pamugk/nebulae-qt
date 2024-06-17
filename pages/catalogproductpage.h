@@ -43,6 +43,12 @@ private slots:
 
     void openGalleryOnItem(std::size_t index);
 
+    void on_wishlistButton_clicked();
+
+    void on_wishlistButton_toggled(bool checked);
+
+    void on_libraryButton_clicked();
+
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
 

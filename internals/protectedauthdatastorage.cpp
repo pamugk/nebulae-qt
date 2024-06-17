@@ -10,6 +10,12 @@ ProtectedAuthDataStorage::ProtectedAuthDataStorage(bool storeTokens) :
 {
 }
 
+void ProtectedAuthDataStorage::dropAuthData()
+{
+    auto deleteTokenJob = new QKeychain::DeletePasswordJob("com.github.pamugk.Nebulae");
+    deleteTokenJob->start();
+}
+
 void ProtectedAuthDataStorage::getAuthData()
 {
     auto job = new QKeychain::ReadPasswordJob("com.github.pamugk.Nebulae");

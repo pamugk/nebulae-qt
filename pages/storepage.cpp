@@ -21,11 +21,13 @@ StorePage::StorePage(QWidget *parent) :
     customSectionGOGReply(nullptr),
     dealOfTheDayReply(nullptr),
     discoverBestsellingReply(nullptr),
+    discoverGamesForYouReply(nullptr),
     discoverNewReply(nullptr),
     discoverUpcomingReply(nullptr),
     newsReply(nullptr),
     nowOnSaleReply(nullptr),
     ownedProductsReply(nullptr),
+    recommendedDlcReply(nullptr),
     wishlistReply(nullptr),
     ui(new Ui::StorePage)
 {
@@ -54,6 +56,10 @@ StorePage::~StorePage()
     {
         discoverBestsellingReply->abort();
     }
+    if (discoverGamesForYouReply != nullptr)
+    {
+        discoverGamesForYouReply->abort();
+    }
     if (discoverNewReply != nullptr)
     {
         discoverNewReply->abort();
@@ -80,6 +86,10 @@ StorePage::~StorePage()
     if (ownedProductsReply != nullptr)
     {
         ownedProductsReply->abort();
+    }
+    if (recommendedDlcReply != nullptr)
+    {
+        recommendedDlcReply->abort();
     }
     if (wishlistReply != nullptr)
     {
@@ -403,6 +413,63 @@ void StorePage::getDiscoverBestsellingGames()
     });
 }
 
+void StorePage::getDiscoverGamesForYou()
+{
+    ui->discoverGamesForYouStackedWidget->setCurrentWidget(ui->discoverGamesForYouLoadingPage);
+    discoverGamesForYouReply = apiClient->getStoreDiscoverGamesForYou();
+    connect(discoverGamesForYouReply, &QNetworkReply::finished,
+            this, [this]() {
+        auto networkReply = discoverGamesForYouReply;
+        discoverGamesForYouReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreDiscoverGamesSectionResponse data;
+            parseGetStoreDiscoverGamesResponse(resultJson, data);
+
+            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
+            {
+                auto itemWidget = new StoreDiscoverItem(ui->discoverGamesForYouResultsPage);
+                itemWidget->setCover(item.image, apiClient);
+                itemWidget->setTitle(item.title);
+                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
+                                     item.price.free, "");
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                connect(itemWidget, &StoreDiscoverItem::clicked,
+                        this, [this, productId = item.id]()
+                {
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
+                });
+                ui->discoverGamesForYouResultsPageLayout->addWidget(itemWidget);
+            }
+            ui->discoverGamesForYouResultsPageLayout->addStretch();
+            ui->discoverGamesForYouStackedWidget->setCurrentWidget(ui->discoverGamesForYouResultsPage);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
 void StorePage::getDiscoverNewGames()
 {
     ui->discoverNewStackedWidget->setCurrentWidget(ui->discoverNewLoadingPage);
@@ -690,6 +757,66 @@ void StorePage::getNowOnSale()
     });
 }
 
+void StorePage::getRecommendedDlc()
+{
+    ui->recommendedDlcStackedWidget->setCurrentWidget(ui->recommendedDlcLoadingPage);
+    recommendedDlcReply = apiClient->getRecommendedDlcs();
+    connect(recommendedDlcReply, &QNetworkReply::finished, this, [this]()
+    {
+        auto networkReply = recommendedDlcReply;
+        recommendedDlcReply = nullptr;
+
+        if (networkReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            api::GetStoreRecommendedDlcsResponse data;
+            parseGetStoreRecommendedDlcsResponse(resultJson, data);
+
+            for (const api::StoreProduct &item : std::as_const(data.recommendations))
+            {
+                auto itemWidget = new SimpleProductItem(ui->discoverUpcomingResultsPage);
+                itemWidget->setCover(item.image, apiClient);
+                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
+                                     item.price.free, "");
+                itemWidget->setTitle(item.title);
+                connect(this, &StorePage::ownedProductsChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setOwned(ids.contains(productId));
+                });
+                itemWidget->setOwned(ownedProducts.contains(item.id));
+                connect(this, &StorePage::wishlistChanged,
+                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                {
+                    itemWidget->setWishlisted(ids.contains(productId));
+                });
+                itemWidget->setWishlisted(wishlist.contains(item.id));
+                connect(apiClient, &api::GogApiClient::authenticated,
+                        itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                connect(itemWidget, &SimpleProductItem::clicked,
+                        this, [this, productId = item.id]()
+                {
+                    emit navigate({Page::CATALOG_PRODUCT, productId});
+                });
+                ui->recommendedDlcScrollAreaContentsLayout->addWidget(itemWidget);
+            }
+            ui->recommendedDlcScrollAreaContentsLayout->addStretch();
+            ui->recommendedDlcStackedWidget->setCurrentWidget(ui->recommendedDlcResultsPage);
+
+            ui->recommendedDlcLabel->setVisible(data.hasRecommendations);
+            ui->recommendedDlcStackedWidget->setVisible(data.hasRecommendations);
+        }
+        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << networkReply->error()
+                     << networkReply->errorString()
+                     << QString(networkReply->readAll()).toUtf8();
+        }
+        networkReply->deleteLater();
+    });
+}
+
 void StorePage::initialize(const QVariant &data)
 {
     ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
@@ -715,8 +842,45 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
     {
         wishlistReply->abort();
     }
+
+    QLayoutItem *item;
+    if (discoverGamesForYouReply != nullptr)
+    {
+        discoverGamesForYouReply->abort();
+    }
+    while ((item = ui->discoverGamesForYouResultsPageLayout->takeAt(0)))
+    {
+        auto widget = item->widget();
+        delete item;
+        if (widget != nullptr)
+        {
+            delete widget;
+        }
+    }
+    ui->discoverTabWidget->setTabVisible(0, authenticated);
+
+    if (recommendedDlcReply != nullptr)
+    {
+        recommendedDlcReply->abort();
+    }
+    ui->recommendedDlcLabel->setVisible(false);
+    ui->recommendedDlcStackedWidget->setVisible(false);
+
+    while ((item = ui->recommendedDlcScrollAreaContentsLayout->takeAt(0)))
+    {
+        auto widget = item->widget();
+        delete item;
+        if (widget != nullptr)
+        {
+            delete widget;
+        }
+    }
+
     if (authenticated)
     {
+        getDiscoverGamesForYou();
+        getRecommendedDlc();
+
         ownedProductsReply = apiClient->getOwnedLicensesIds();
         connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
         {
@@ -771,6 +935,10 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
     }
     else
     {
+        if (ui->discoverTabWidget->currentWidget() == ui->discoverGamesForYouTab)
+        {
+            ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
+        }
         ownedProducts.clear();
         emit ownedProductsChanged(ownedProducts);
         wishlist.clear();
@@ -912,5 +1080,11 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
         }
         networkReply->deleteLater();
     });
+}
+
+
+void StorePage::on_discoverTabWidget_currentChanged(int index)
+{
+    ui->showCatalogButton->setVisible(index > 0);
 }
 

@@ -11,6 +11,7 @@ namespace api
         Q_OBJECT
 
     public:
+        virtual void dropAuthData() = 0;
         virtual void getAuthData() = 0;
         virtual void setStoreAuthData(bool storeTokens) = 0;
 

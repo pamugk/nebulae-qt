@@ -142,3 +142,14 @@ void parseGetStoreNowOnSaleSectionResponse(const QJsonObject &json, api::GetStor
     }
     parseStoreNowOnSaleTabCard(json["bigThingy"].toObject(), data.bigThingy);
 }
+
+void parseGetStoreRecommendedDlcsResponse(const QJsonObject &json, api::GetStoreRecommendedDlcsResponse &data)
+{
+    data.hasRecommendations = json["hasRecommendations"].toBool();
+    auto recommendations = json["recommendations"].toArray();
+    data.recommendations.resize(recommendations.count());
+    for (std::size_t i = 0; i < recommendations.count(); i++)
+    {
+        parseProduct(recommendations[i].toObject(), data.recommendations[i], "_product_tile_256.webp");
+    }
+}

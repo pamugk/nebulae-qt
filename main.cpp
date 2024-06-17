@@ -30,6 +30,14 @@ int main(int argc, char *argv[])
     SettingsManager settingsManager(&a);
     ProtectedAuthDataStorage tokenStorage(settingsManager.isAutoLogin());
     api::GogApiClient apiClient(&tokenStorage, &a);
+    QObject::connect(&apiClient, &api::GogApiClient::authenticated,
+                     [&tokenStorage](bool authenticated)
+    {
+        if (authenticated)
+        {
+            tokenStorage.dropAuthData();
+        }
+    });
 
     MainWindow w(&apiClient, &settingsManager);
     w.show();

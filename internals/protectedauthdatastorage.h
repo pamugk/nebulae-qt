@@ -9,7 +9,9 @@ class ProtectedAuthDataStorage : public api::AuthDataStorage
 
 public:
     ProtectedAuthDataStorage(bool storeTokens);
-    void getAuthData() override;
+
+    virtual void dropAuthData() override;
+    virtual void getAuthData() override;
     virtual void setStoreAuthData(bool storeTokens) override;
 
 public slots:
