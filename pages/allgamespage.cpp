@@ -352,18 +352,16 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (value)
                 {
                     activatedFilterCount++;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-                    clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-                    clearFilterButton->setVisible(false);
                 }
                 filter.discounted = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
 
                 if (applyFilters)
                 {
@@ -371,6 +369,112 @@ void AllGamesPage::initialize(const QVariant &data)
                     fetchData();
                 }
             });
+            ui->filtersScrollAreaLayout->addWidget(checkbox);
+
+            clearFilterButton = new ClearFilterButton("Excluding owned products", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Hide all owned products", ui->filtersScrollAreaContents);
+            maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.hideOwned);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.hideOwned = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
+            ui->filtersScrollAreaLayout->addWidget(checkbox);
+
+            clearFilterButton = new ClearFilterButton("Showing only wishlisted games", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Show only games on my wishlist", ui->filtersScrollAreaContents);
+            maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.onlyWishlisted);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.onlyWishlisted = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
             area = new CollapsibleArea("DLCs", ui->filtersScrollAreaContents);
@@ -399,19 +503,17 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (value)
                 {
                     activatedFilterCount++;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack"});
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-                    clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack","dlc","extras"});
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-                    clearFilterButton->setVisible(false);
                 }
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
 
                 if (applyFilters)
                 {
@@ -419,6 +521,58 @@ void AllGamesPage::initialize(const QVariant &data)
                     fetchData();
                 }
             });
+            layout->addWidget(checkbox);
+            clearFilterButton = new ClearFilterButton("Showing only DLCs for owned games", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Show only DLCs for my games", area);
+            checkbox->setChecked(filter.onlyDlcForOwned);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            maxWidth = std::max(maxWidth, checkbox->width());
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.onlyDlcForOwned = value;
+                clearFilterButton->setVisible(value);
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
             layout->addWidget(checkbox);
             area->setContentLayout(layout);
             maxWidth = std::max(maxWidth, layout->sizeHint().width());

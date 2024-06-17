@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     QObject::connect(&apiClient, &api::GogApiClient::authenticated,
                      [&tokenStorage](bool authenticated)
     {
-        if (authenticated)
+        if (!authenticated)
         {
             tokenStorage.dropAuthData();
         }

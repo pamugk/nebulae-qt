@@ -409,10 +409,6 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         query.addQueryItem("price", "between:0,0");
     }
-    if (filter.onlyWishlisted)
-    {
-        query.addQueryItem("wishlist", "eq:true");
-    }
     if (!filter.developers.isEmpty())
     {
         query.addQueryItem("developers", "in:" + filter.developers.join(','));
@@ -473,6 +469,14 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     if(filter.hideOwned)
     {
         query.addQueryItem("hideOwned", "true");
+    }
+    if(filter.onlyDlcForOwned)
+    {
+        query.addQueryItem("onlyDlcForOwned", "true");
+    }
+    if (filter.onlyWishlisted)
+    {
+        query.addQueryItem("wishlist", "eq:true");
     }
     query.addQueryItem("page", QString::number(page));
     query.addQueryItem("countryCode", countryCode);

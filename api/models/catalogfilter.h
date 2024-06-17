@@ -11,6 +11,7 @@ namespace api
         bool discounted;
         bool free;
         bool hideOwned;
+        bool onlyDlcForOwned;
         bool onlyWishlisted;
         QString query;
         QStringList genres;
