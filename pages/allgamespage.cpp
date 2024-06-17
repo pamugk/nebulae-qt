@@ -24,6 +24,8 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
     applyFilters(true),
     filter({}),
     lastCatalogReply(nullptr),
+    ownedProductsReply(nullptr),
+    wishlistReply(nullptr),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);
@@ -71,6 +73,14 @@ AllGamesPage::~AllGamesPage()
     if (lastCatalogReply != nullptr)
     {
         lastCatalogReply->abort();
+    }
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
     }
     delete ui;
 }
@@ -152,10 +162,22 @@ void AllGamesPage::layoutResults()
         for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
+            connect(this, &AllGamesPage::ownedProductsChanged,
+                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+            {
+                storeItem->setOwned(ids.contains(productId));
+            });
+            storeItem->setOwned(ownedProducts.contains(product.id));
+            connect(this, &AllGamesPage::wishlistChanged,
+                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+            {
+                storeItem->setWishlisted(ids.contains(productId));
+            });
+            storeItem->setWishlisted(wishlist.contains(product.id));
             connect(apiClient, &api::GogApiClient::authenticated, storeItem,
                     &StoreGridTile::switchUiAuthenticatedState);
             storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-            connect(storeItem, &StoreGridTile::navigateToProduct, this, [this](quint64 productId)
+            connect(storeItem, &StoreGridTile::clicked, this, [this, productId = product.id]()
             {
                 emit navigate({Page::CATALOG_PRODUCT, productId});
             });
@@ -168,10 +190,22 @@ void AllGamesPage::layoutResults()
         for (const api::CatalogProduct &product : std::as_const(data.products))
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
+            connect(this, &AllGamesPage::ownedProductsChanged,
+                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+            {
+                storeItem->setOwned(ids.contains(productId));
+            });
+            storeItem->setOwned(ownedProducts.contains(product.id));
+            connect(this, &AllGamesPage::wishlistChanged,
+                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+            {
+                storeItem->setWishlisted(ids.contains(productId));
+            });
+            storeItem->setWishlisted(wishlist.contains(product.id));
             connect(apiClient, &api::GogApiClient::authenticated, storeItem,
                     &StoreListItem::switchUiAuthenticatedState);
             storeItem->switchUiAuthenticatedState(apiClient->isAuthenticated());
-            connect(storeItem, &StoreListItem::navigateToProduct, this, [this](quint64 productId)
+            connect(storeItem, &StoreListItem::clicked, this, [this, productId = product.id]()
             {
                 emit navigate({Page::CATALOG_PRODUCT, productId});
             });
@@ -318,18 +352,16 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (value)
                 {
                     activatedFilterCount++;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-                    clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-                    clearFilterButton->setVisible(false);
                 }
                 filter.discounted = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
 
                 if (applyFilters)
                 {
@@ -337,6 +369,112 @@ void AllGamesPage::initialize(const QVariant &data)
                     fetchData();
                 }
             });
+            ui->filtersScrollAreaLayout->addWidget(checkbox);
+
+            clearFilterButton = new ClearFilterButton("Excluding owned products", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Hide all owned products", ui->filtersScrollAreaContents);
+            maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.hideOwned);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.hideOwned = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
+            ui->filtersScrollAreaLayout->addWidget(checkbox);
+
+            clearFilterButton = new ClearFilterButton("Showing only wishlisted games", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Show only games on my wishlist", ui->filtersScrollAreaContents);
+            maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.onlyWishlisted);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.onlyWishlisted = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
             area = new CollapsibleArea("DLCs", ui->filtersScrollAreaContents);
@@ -365,19 +503,17 @@ void AllGamesPage::initialize(const QVariant &data)
                 if (value)
                 {
                     activatedFilterCount++;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack"});
                     ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
-                    clearFilterButton->setVisible(true);
                 }
                 else
                 {
                     activatedFilterCount--;
-                    clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                     filter.productTypes = QStringList({"game","pack","dlc","extras"});
                     ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
-                    clearFilterButton->setVisible(false);
                 }
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
 
                 if (applyFilters)
                 {
@@ -385,6 +521,58 @@ void AllGamesPage::initialize(const QVariant &data)
                     fetchData();
                 }
             });
+            layout->addWidget(checkbox);
+            clearFilterButton = new ClearFilterButton("Showing only DLCs for owned games", QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox("Show only DLCs for my games", area);
+            checkbox->setChecked(filter.onlyDlcForOwned);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            maxWidth = std::max(maxWidth, checkbox->width());
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.onlyDlcForOwned = value;
+                clearFilterButton->setVisible(value);
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            connect(apiClient, &api::GogApiClient::authenticated,
+                    checkbox, [checkbox](bool authenticated)
+            {
+                checkbox->setVisible(authenticated);
+                if (!authenticated)
+                {
+                    checkbox->setChecked(false);
+                }
+            });
+            checkbox->setVisible(apiClient->isAuthenticated());
             layout->addWidget(checkbox);
             area->setContentLayout(layout);
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
@@ -1133,6 +1321,75 @@ void AllGamesPage::initialize(const QVariant &data)
 void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
 {
     StoreBasePage::switchUiAuthenticatedState(authenticated);
+    if (ownedProductsReply != nullptr)
+    {
+        ownedProductsReply->abort();
+    }
+    if (wishlistReply != nullptr)
+    {
+        wishlistReply->abort();
+    }
+    if (authenticated)
+    {
+        ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = ownedProductsReply;
+            ownedProductsReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto ownedProducts = resultJson.toVariant().toList();
+                for (const QVariant &id : std::as_const(ownedProducts))
+                {
+                    this->ownedProducts.insert(id.toULongLong());
+                }
+                emit ownedProductsChanged(this->ownedProducts);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+        wishlistReply = apiClient->getWishlistIds();
+        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = wishlistReply;
+            wishlistReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto wishlistedItems = resultJson["wishlist"].toObject();
+                for (const QString &key : wishlistedItems.keys())
+                {
+                    if (wishlistedItems[key].toBool())
+                    {
+                        wishlist.insert(key.toULongLong());
+                    }
+                }
+                emit wishlistChanged(wishlist);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+    }
+    else
+    {
+        ownedProducts.clear();
+        emit ownedProductsChanged(ownedProducts);
+        wishlist.clear();
+        emit wishlistChanged(wishlist);
+    }
 }
 
 void AllGamesPage::on_lineEdit_textChanged(const QString &arg1)

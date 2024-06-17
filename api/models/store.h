@@ -90,6 +90,12 @@ namespace api
         QVector<StoreProduct> personalizedProducts;
         StoreNowOnSaleTabCard bigThingy;
     };
+
+    struct GetStoreRecommendedDlcsResponse
+    {
+        bool hasRecommendations;
+        QVector<StoreProduct> recommendations;
+    };
 }
 
 #endif // STORE_H

@@ -1,15 +1,16 @@
 #include "simpleproductitem.h"
 #include "ui_simpleproductitem.h"
 
-SimpleProductItem::SimpleProductItem(unsigned long long productId,
-                                     QWidget *parent) :
+SimpleProductItem::SimpleProductItem(QWidget *parent) :
     QWidget(parent),
-    itemId(productId),
     imageReply(nullptr),
     ui(new Ui::SimpleProductItem)
 {
     ui->setupUi(this);
 
+    ui->ownedLabel->setVisible(false);
+    ui->upcomingLabel->setVisible(false);
+    ui->wishlistedLabel->setVisible(false);
     ui->dealLabel->setVisible(false);
     ui->discountLabel->setVisible(false);
     ui->oldPriceLabel->setVisible(false);
@@ -37,7 +38,7 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
             image.loadFromData(networkReply->readAll());
             this->setMinimumWidth(image.width());
             this->setMaximumWidth(this->minimumWidth());
-            this->setMinimumHeight(image.height() + 84);
+            this->setMinimumHeight(image.height() + 97);
             this->setMaximumHeight(this->minimumHeight());
 
             ui->coverWidget->setMinimumSize(image.size());
@@ -56,6 +57,11 @@ void SimpleProductItem::setDeal(const QDateTime &dealEnd)
 {
     ui->dealLabel->setText(QLocale::system().toString(dealEnd, QLocale::NarrowFormat));
     ui->dealLabel->setVisible(true);
+}
+
+void SimpleProductItem::setOwned(bool owned)
+{
+    ui->ownedLabel->setVisible(owned);
 }
 
 void SimpleProductItem::setPrice(double basePrice, double finalPrice,
@@ -83,6 +89,11 @@ void SimpleProductItem::setTitle(const QString &title)
     ui->titleLabel->setText(title);
 }
 
+void SimpleProductItem::setWishlisted(bool wishlisted)
+{
+    ui->wishlistedLabel->setVisible(wishlisted);
+}
+
 void SimpleProductItem::switchUiAuthenticatedState(bool authenticated)
 {
     ui->wishlistButton->setEnabled(authenticated);
@@ -91,5 +102,5 @@ void SimpleProductItem::switchUiAuthenticatedState(bool authenticated)
 
 void SimpleProductItem::mousePressEvent(QMouseEvent *event)
 {
-    emit navigateToProduct(itemId);
+    emit clicked();
 }

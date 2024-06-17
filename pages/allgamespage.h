@@ -30,14 +30,20 @@ private:
     QVector<api::SortOrder> orders;
     api::CatalogFilter filter;
     bool gridLayout;
+    QSet<unsigned long long> ownedProducts;
     unsigned short page;
     Pagination *paginator;
     Ui::AllGamesPage *ui;
+    QSet<unsigned long long> wishlist;
 
     QNetworkReply *lastCatalogReply;
+    QNetworkReply *ownedProductsReply;
+    QNetworkReply *wishlistReply;
 
     void fetchData();
     void layoutResults();
+    Q_SIGNAL void ownedProductsChanged(const QSet<unsigned long long> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<unsigned long long> &ids);
 
 public slots:
     virtual void initialize(const QVariant &data) override;

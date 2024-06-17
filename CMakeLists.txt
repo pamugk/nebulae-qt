@@ -20,8 +20,8 @@ set(QRC_FILES resources.qrc)
 set(PROJECT_SOURCES
         main.cpp
 
+        api/authdatastorage.h
         api/gogapiclient.h api/gogapiclient.cpp
-        api/tokenstorage.h
 
         api/models/catalog.h api/models/catalogfilter.h
         api/models/catalogproductinfo.h
@@ -57,10 +57,11 @@ set(PROJECT_SOURCES
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
         api/utils/storeserialization.h api/utils/storeserialization.cpp
+        api/utils/userserialization.h api/utils/userserialization.cpp
 
         internals/navigationdestination.h
         internals/pages.h
-        internals/protectedtokenstorage.h internals/protectedtokenstorage.cpp
+        internals/protectedauthdatastorage.h internals/protectedauthdatastorage.cpp
         internals/regionalutils.h internals/regionalutils.cpp
         internals/settingsmanager.h internals/settingsmanager.cpp
         internals/tagutils.h internals/tagutils.cpp
@@ -104,6 +105,7 @@ set(PROJECT_SOURCES
 
         windows/authdialog.h windows/authdialog.cpp windows/authdialog.ui
         windows/catalogproductmediadialog.h windows/catalogproductmediadialog.cpp windows/catalogproductmediadialog.ui
+        windows/legalinfodialog.h windows/legalinfodialog.cpp windows/legalinfodialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
         windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui
