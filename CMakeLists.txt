@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets WebEngineWidgets Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth SvgWidgets Widgets WebEngineWidgets LinguistTools)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth Sql SvgWidgets WebEngineWidgets Widgets LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui NetworkAuth Sql SvgWidgets Widgets WebEngineWidgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR}Keychain)
 
 set(TS_FILES nebulae_en_US.ts)
@@ -42,6 +42,7 @@ set(PROJECT_SOURCES
         api/models/store.h
         api/models/tag.h
         api/models/user.h
+        api/models/userrelease.h
         api/models/wishlist.h
 
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
@@ -57,8 +58,12 @@ set(PROJECT_SOURCES
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
         api/utils/storeserialization.h api/utils/storeserialization.cpp
+        api/utils/userreleaseserialization.h api/utils/userreleaseserialization.cpp
         api/utils/userserialization.h api/utils/userserialization.cpp
 
+        db/database.h db/database.cpp
+
+        internals/jobmanager.h internals/jobmanager.cpp
         internals/navigationdestination.h
         internals/pages.h
         internals/protectedauthdatastorage.h internals/protectedauthdatastorage.cpp
@@ -142,8 +147,9 @@ endif()
 
 target_link_libraries(nebulae PRIVATE
     Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::SvgWidgets
     Qt${QT_VERSION_MAJOR}::NetworkAuth
+    Qt${QT_VERSION_MAJOR}::Sql
+    Qt${QT_VERSION_MAJOR}::SvgWidgets
     Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     Qt${QT_VERSION_MAJOR}::Widgets
     qt${QT_VERSION_MAJOR}keychain)

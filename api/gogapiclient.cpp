@@ -136,6 +136,11 @@ QNetworkReply *api::GogApiClient::getCurrentUser()
     return getUser(userId.value());
 }
 
+QNetworkReply *api::GogApiClient::getCurrentUserReleases()
+{
+    return client.get(QString("https://galaxy-library.gog.com/users/%1/releases").arg(userId.value()));
+}
+
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
                                           unsigned char limit)
 {

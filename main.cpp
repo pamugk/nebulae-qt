@@ -5,6 +5,8 @@
 #include <QTranslator>
 
 #include "api/gogapiclient.h"
+#include "db/database.h"
+#include "internals/jobmanager.h"
 #include "internals/settingsmanager.h"
 #include "internals/protectedauthdatastorage.h"
 #include "windows/mainwindow.h"
@@ -27,6 +29,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    db::initialize();
+
     SettingsManager settingsManager(&a);
     ProtectedAuthDataStorage tokenStorage(settingsManager.isAutoLogin());
     api::GogApiClient apiClient(&tokenStorage, &a);
@@ -38,6 +42,14 @@ int main(int argc, char *argv[])
             tokenStorage.dropAuthData();
         }
     });
+
+    JobManager jobManager(&apiClient, &a);
+    QObject::connect(&jobManager, &JobManager::receivedUserLibrary, [](const api::GetUserReleasesResponse &data)
+    {
+        db::saveUserReleases(data.items);
+    });
+    QObject::connect(&apiClient, &api::GogApiClient::authenticated, &jobManager, &JobManager::setAuthenticated);
+    jobManager.setAuthenticated(apiClient.isAuthenticated());
 
     MainWindow w(&apiClient, &settingsManager);
     w.show();

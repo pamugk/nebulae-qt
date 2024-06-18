@@ -24,6 +24,7 @@ namespace api
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
         QNetworkReply *getCurrentUser();
+        QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
