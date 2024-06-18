@@ -87,5 +87,7 @@
         <file>icons/square-full.svg</file>
         <file>icons/plus.svg</file>
         <file>icons/filter.svg</file>
+        <file>icons/gift.svg</file>
+        <file>icons/heart-solid.svg</file>
     </qresource>
 </RCC>

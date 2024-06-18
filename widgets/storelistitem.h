@@ -23,16 +23,17 @@ public:
     ~StoreListItem();
 
 signals:
-    void navigateToProduct(unsigned long long id);
+    void clicked();
 
 public slots:
+    void setOwned(bool owned);
+    void setWishlisted(bool wishlisted);
     void switchUiAuthenticatedState(bool authenticated);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    unsigned long long itemId;
     QNetworkReply *imageReply;
     Ui::StoreListItem *ui;
 };

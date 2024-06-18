@@ -4,7 +4,7 @@
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QObject>
 
-#include "tokenstorage.h"
+#include "authdatastorage.h"
 #include "./models/catalogfilter.h"
 #include "./models/orderfilter.h"
 #include "./models/reviewfilters.h"
@@ -17,17 +17,19 @@ namespace api
         Q_OBJECT
 
     public:
-        explicit GogApiClient(TokenStorage *tokenStorage, QObject *parent = nullptr);
+        explicit GogApiClient(AuthDataStorage *tokenStorage, QObject *parent = nullptr);
         bool isAuthenticated();
 
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getCurrentUser();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
+        QNetworkReply *getOwnedLicensesIds();
         QNetworkReply *getOwnedProductInfo(unsigned long long id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                    const QString &order = "title",
@@ -48,16 +50,20 @@ namespace api
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
+        QNetworkReply *getRecommendedDlcs();
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
         QNetworkReply *getStoreCustomSection(const QString &id);
+        QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getUser(unsigned long long id);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);
+        QNetworkReply *getWishlistIds();
         QNetworkReply *searchCatalog(const SortOrder &order,
                                      const CatalogFilter &filter,
                                      QString countryCode,
@@ -77,6 +83,7 @@ namespace api
     private:
         QOAuth2AuthorizationCodeFlow client;
         bool refreshingToken;
+        std::optional<unsigned long long> userId;
     };
 }
 

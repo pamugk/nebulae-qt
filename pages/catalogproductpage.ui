@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#CatalogProductPage { background: #cccccc; }</string>
+   <string notr="true">QWidget#CatalogProductPage { background: #d9d9d9; }</string>
   </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
@@ -238,8 +238,8 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>1060</width>
+            <y>-526</y>
+            <width>1271</width>
             <height>3215</height>
            </rect>
           </property>
@@ -339,7 +339,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>100</width>
+                   <width>1271</width>
                    <height>210</height>
                   </rect>
                  </property>
@@ -442,6 +442,9 @@
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgb(180, 230, 60), stop:1 rgb(140, 202, 39)); color: white; padding: 15px;</string>
                    </property>
@@ -508,15 +511,31 @@
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
                    <property name="styleSheet">
-                    <string notr="true">padding: 15px;</string>
+                    <string notr="true">QPushButton
+{
+color: black;
+padding: 15px;
+}
+
+QPushButton:checked
+{
+color: #a16600;
+}</string>
                    </property>
                    <property name="text">
                     <string>Wishlist it</string>
                    </property>
                    <property name="icon">
                     <iconset resource="../resources.qrc">
-                     <normaloff>:/icons/heart.svg</normaloff>:/icons/heart.svg</iconset>
+                     <normaloff>:/icons/heart.svg</normaloff>
+                     <normalon>:/icons/heart-solid.svg</normalon>:/icons/heart.svg</iconset>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
                    </property>
                    <property name="flat">
                     <bool>true</bool>
@@ -542,6 +561,9 @@
                      <pointsize>12</pointsize>
                      <bold>true</bold>
                     </font>
+                   </property>
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">padding: 15px;</string>
@@ -769,7 +791,7 @@
                  <string notr="true">background: transparent; padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
                 </property>
                 <property name="text">
-                 <string> System re&amp;quirements </string>
+                 <string> System requirements </string>
                 </property>
                </widget>
               </item>
@@ -1408,7 +1430,7 @@
                     <string notr="true">background: transparent; padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
                    </property>
                    <property name="text">
-                    <string> To play this game you also &amp;need </string>
+                    <string> To play this game you also need </string>
                    </property>
                    <property name="wordWrap">
                     <bool>true</bool>

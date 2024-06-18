@@ -44,23 +44,22 @@ private slots:
 
     void on_friendsButton_clicked();
 
-    void on_settingsButton_clicked();
-
     void on_actionButton_clicked();
 
     void on_navigateBackButton_clicked();
 
     void on_navigateForwardButton_clicked();
 
-    void on_logoutButton_clicked();
-
 private:
     api::GogApiClient *apiClient;
+    bool initialized;
     QStack<NavigationDestination> navigationHistory;
     QStack<NavigationDestination> navigationHistoryReplay;
     SettingsManager *settingsManager;
-
     Ui::MainWindow *ui;
+
+    QNetworkReply *userAvatarReply;
+    QNetworkReply *userReply;
 
     QWidget *initializePage(const NavigationDestination &destination);
     void switchUiAuthenticatedState(bool authenticated);

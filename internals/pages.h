@@ -17,6 +17,7 @@ enum Page
     NEWS,
     DEALS,
     CART,
+    STORE_ACCOUNT_SETTINGS
 };
 
 #endif // PAGES_H

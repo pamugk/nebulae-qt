@@ -186,7 +186,7 @@
        </widget>
       </item>
       <item row="0" column="0" colspan="4">
-       <widget class="QLabel" name="coverLabel">
+       <widget class="QWidget" name="coverHolder" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -196,18 +196,100 @@
         <property name="minimumSize">
          <size>
           <width>255</width>
-          <height>118</height>
+          <height>131</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>255</width>
-          <height>118</height>
+          <height>131</height>
          </size>
         </property>
-        <property name="text">
-         <string notr="true"/>
+        <property name="styleSheet">
+         <string notr="true">background-color: #d9d9d9;</string>
         </property>
+        <widget class="QLabel" name="coverLabel">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>13</y>
+           <width>255</width>
+           <height>118</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>255</width>
+           <height>118</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>255</width>
+           <height>118</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background: rgb(237, 237, 237);</string>
+         </property>
+         <property name="text">
+          <string notr="true"/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="ownedLabel">
+         <property name="geometry">
+          <rect>
+           <x>8</x>
+           <y>0</y>
+           <width>91</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background: rgb(237, 237, 237); border: 1px solid rgba(64, 64, 64, 0.15); color: rgb(64, 64, 64); padding: 8px; padding-bottom: 6px;</string>
+         </property>
+         <property name="text">
+          <string>IN LIBRARY</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="wishlistedLabel">
+         <property name="geometry">
+          <rect>
+           <x>8</x>
+           <y>0</y>
+           <width>91</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background: rgb(255, 241, 219); border: 1px solid rgba(99, 65, 9, 0.15); color: rgb(99, 65, 9); padding: 8px; padding-bottom: 6px;</string>
+         </property>
+         <property name="text">
+          <string>WISHLISTED</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="upcomingLabel">
+         <property name="geometry">
+          <rect>
+           <x>8</x>
+           <y>0</y>
+           <width>51</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background: rgb(230, 247, 254); border: 1px solid rgba(1, 17, 25, 0.15); color: rgb(1, 17, 25); padding: 8px; padding-bottom: 6px;</string>
+         </property>
+         <property name="text">
+          <string>SOON</string>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>

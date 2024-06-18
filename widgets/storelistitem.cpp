@@ -10,6 +10,9 @@ StoreListItem::StoreListItem(const api::CatalogProduct &data,
     ui->setupUi(this);
 
     ui->titleLabel->setText(data.title);
+    ui->ownedLabel->setVisible(false);
+    ui->upcomingLabel->setVisible(false);
+    ui->wishlistedLabel->setVisible(false);
     if (data.price.discount.isNull())
     {
         ui->discountLabel->setVisible(false);
@@ -33,8 +36,6 @@ StoreListItem::StoreListItem(const api::CatalogProduct &data,
         }
         networkReply->deleteLater();
     });
-
-    itemId = data.id.toLongLong();
 }
 
 StoreListItem::~StoreListItem()
@@ -46,6 +47,16 @@ StoreListItem::~StoreListItem()
     delete ui;
 }
 
+void StoreListItem::setOwned(bool owned)
+{
+    ui->ownedLabel->setVisible(owned);
+}
+
+void StoreListItem::setWishlisted(bool wishlisted)
+{
+    ui->wishlistedLabel->setVisible(wishlisted);
+}
+
 void StoreListItem::switchUiAuthenticatedState(bool authenticated)
 {
     ui->addToCartButton->setEnabled(authenticated);
@@ -53,5 +64,5 @@ void StoreListItem::switchUiAuthenticatedState(bool authenticated)
 
 void StoreListItem::mousePressEvent(QMouseEvent *event)
 {
-    emit navigateToProduct(itemId);
+    emit clicked();
 }

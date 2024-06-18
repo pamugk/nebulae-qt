@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background: #cccccc;</string>
+   <string notr="true">background: #d9d9d9;</string>
   </property>
   <layout class="QVBoxLayout" name="layout">
    <property name="spacing">

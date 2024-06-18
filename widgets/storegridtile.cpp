@@ -9,6 +9,9 @@ StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
 {
     ui->setupUi(this);
     ui->titleLabel->setText(data.title);
+    ui->ownedLabel->setVisible(false);
+    ui->upcomingLabel->setVisible(false);
+    ui->wishlistedLabel->setVisible(false);
     if (data.price.discount.isNull())
     {
         ui->discountLabel->setVisible(false);
@@ -32,8 +35,6 @@ StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
         }
         networkReply->deleteLater();
     });
-
-    itemId = data.id.toLongLong();
 }
 
 StoreGridTile::~StoreGridTile()
@@ -45,6 +46,16 @@ StoreGridTile::~StoreGridTile()
     delete ui;
 }
 
+void StoreGridTile::setOwned(bool owned)
+{
+    ui->ownedLabel->setVisible(owned);
+}
+
+void StoreGridTile::setWishlisted(bool wishlisted)
+{
+    ui->wishlistedLabel->setVisible(wishlisted);
+}
+
 void StoreGridTile::switchUiAuthenticatedState(bool authenticated)
 {
     ui->addToCartButton->setEnabled(authenticated);
@@ -52,5 +63,5 @@ void StoreGridTile::switchUiAuthenticatedState(bool authenticated)
 
 void StoreGridTile::mousePressEvent(QMouseEvent *event)
 {
-    emit navigateToProduct(itemId);
+    emit clicked();
 }

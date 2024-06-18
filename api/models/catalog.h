@@ -33,7 +33,7 @@ namespace api
 
     struct CatalogProduct
     {
-        QString id;
+        unsigned long long id;
         QString slug;
         QVector<MetaTag> features;
         QVector<QString> screenshots;

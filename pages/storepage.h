@@ -23,28 +23,38 @@ private:
     api::GogApiClient *apiClient;
     QVector<QString> nowOnSaleSectionIds;
     QVector<bool> nowOnSaleSectionsRequested;
+    QSet<unsigned long long> ownedProducts;
     Ui::StorePage *ui;
+    QSet<unsigned long long> wishlist;
 
     QNetworkReply *customSectionCDPRReply;
     QNetworkReply *customSectionExclusivesReply;
     QNetworkReply *customSectionGOGReply;
     QNetworkReply *dealOfTheDayReply;
     QNetworkReply *discoverBestsellingReply;
+    QNetworkReply *discoverGamesForYouReply;
     QNetworkReply *discoverNewReply;
     QNetworkReply *discoverUpcomingReply;
     QNetworkReply *newsReply;
     QNetworkReply *nowOnSaleReply;
     QVector<QNetworkReply *> nowOnSaleSectionReplies;
+    QNetworkReply *ownedProductsReply;
+    QNetworkReply *recommendedDlcReply;
+    QNetworkReply *wishlistReply;
 
     void getCustomSectionCDPRGames();
     void getCustomSectionExclusiveGames();
     void getCustomSectionGOGGames();
     void getDealOfTheDay();
     void getDiscoverBestsellingGames();
+    void getDiscoverGamesForYou();
     void getDiscoverNewGames();
     void getDiscoverUpcomingGames();
     void getNews();
     void getNowOnSale();
+    void getRecommendedDlc();
+    Q_SIGNAL void ownedProductsChanged(const QSet<unsigned long long> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<unsigned long long> &ids);
 
 public slots:
     virtual void initialize(const QVariant &data) override;
@@ -52,6 +62,7 @@ public slots:
 private slots:
     void on_showCatalogButton_clicked();
     void on_nowOnSaleTabWidget_currentChanged(int index);
+    void on_discoverTabWidget_currentChanged(int index);
 };
 
 #endif // STOREPAGE_H
