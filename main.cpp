@@ -44,12 +44,8 @@ int main(int argc, char *argv[])
     });
 
     JobManager jobManager(&apiClient, &a);
-    QObject::connect(&jobManager, &JobManager::receivedUserLibrary, [](const api::GetUserReleasesResponse &data)
-    {
-        db::saveUserReleases(data.items);
-    });
     QObject::connect(&apiClient, &api::GogApiClient::authenticated, &jobManager, &JobManager::setAuthenticated);
-    jobManager.setAuthenticated(apiClient.isAuthenticated());
+    jobManager.setAuthenticated(apiClient.isAuthenticated(), apiClient.getCurrentUserId());
 
     MainWindow w(&apiClient, &settingsManager);
     w.show();

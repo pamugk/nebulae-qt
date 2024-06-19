@@ -24,6 +24,7 @@ namespace api
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
         QNetworkReply *getCurrentUser();
+        std::optional<unsigned long long> getCurrentUserId() const;
         QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
@@ -79,7 +80,7 @@ namespace api
 
     signals:
         void authorize(const QUrl &authUrl);
-        void authenticated(bool authenticated);
+        void authenticated(bool authenticated, std::optional<unsigned long long> userId);
 
     private:
         QOAuth2AuthorizationCodeFlow client;

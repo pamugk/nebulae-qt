@@ -18,7 +18,7 @@ void parseUserRelease(const QJsonObject &json, api::UserRelease &data)
     data.dateCreated = QDateTime::fromSecsSinceEpoch(json["date_created"].toInteger());
     if (!json["owned_since"].isNull())
     {
-        data.ownedSince = QDateTime::fromSecsSinceEpoch(json["owned_sine"].toInteger());
+        data.ownedSince = QDateTime::fromSecsSinceEpoch(json["owned_since"].toInteger());
     }
     if (!json["hidden"].isNull())
     {

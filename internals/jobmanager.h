@@ -4,7 +4,6 @@
 #include <QObject>
 
 #include "../api/gogapiclient.h"
-#include "../api/models/userrelease.h"
 
 class JobManager : public QObject
 {
@@ -14,14 +13,14 @@ public:
     ~JobManager();
 
 signals:
-    void receivedUserLibrary(const api::GetUserReleasesResponse &data);
 
 public slots:
-    void setAuthenticated(bool authenticated);
+    void setAuthenticated(bool authenticated, std::optional<unsigned long long> userId);
 
 private:
     api::GogApiClient *apiClient;
     QNetworkReply *libraryReply;
+    std::optional<unsigned long long> userId;
 };
 
 #endif // JOBMANAGER_H

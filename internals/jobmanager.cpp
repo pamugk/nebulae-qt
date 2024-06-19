@@ -4,6 +4,7 @@
 #include <QNetworkReply>
 
 #include "../api/utils/userreleaseserialization.h"
+#include "../db/database.h"
 
 JobManager::JobManager(api::GogApiClient *apiClient, QObject *parent)
     : QObject{parent},
@@ -21,12 +22,13 @@ JobManager::~JobManager()
     }
 }
 
-void JobManager::setAuthenticated(bool authenticated)
+void JobManager::setAuthenticated(bool authenticated, std::optional<unsigned long long> userId)
 {
     if (libraryReply != nullptr)
     {
         libraryReply->abort();
     }
+    this->userId = userId;
 
     if (authenticated)
     {
@@ -42,7 +44,7 @@ void JobManager::setAuthenticated(bool authenticated)
                 auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
                 api::GetUserReleasesResponse data;
                 parseGetUserReleasesResponse(resultJson, data);
-                emit receivedUserLibrary(data);
+                db::saveUserReleases(this->userId.value(), data.items);
             }
             else if (networkReply->error() != QNetworkReply::OperationCanceledError)
             {

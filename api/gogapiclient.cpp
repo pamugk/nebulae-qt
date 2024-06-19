@@ -51,7 +51,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         {
             userId = {};
         }
-        emit authenticated(!client.token().isEmpty());
+        emit authenticated(!client.token().isEmpty(), userId);
     });
     tokenStorage->getAuthData();
     client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
@@ -84,7 +84,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         refreshingToken = false;
         if (status == QAbstractOAuth::Status::Granted)
         {
-            emit authenticated(true);
+            emit authenticated(true, userId);
         }
         else if (status == QAbstractOAuth::Status::NotAuthenticated)
         {
@@ -134,6 +134,11 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, c
 QNetworkReply *api::GogApiClient::getCurrentUser()
 {
     return getUser(userId.value());
+}
+
+std::optional<unsigned long long> api::GogApiClient::getCurrentUserId() const
+{
+    return userId;
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
@@ -513,5 +518,6 @@ void api::GogApiClient::logout()
 {
     client.setToken(QString());
     client.setRefreshToken(QString());
-    emit authenticated(false);
+    userId = {};
+    emit authenticated(false, userId);
 }
