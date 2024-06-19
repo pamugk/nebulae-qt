@@ -40,14 +40,14 @@ CREATE TABLE IF NOT EXISTS achievement_localized_description(
 // GamesDB basic entities & value objects
 const auto DEVELOPER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS developer(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto GAME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     parent_id INTEGER NULL,
     first_release_date NOT NULL,
     title TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS game_artwork(
 
 const auto GAME_MODE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_mode(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
@@ -100,27 +100,27 @@ CREATE TABLE IF NOT EXISTS game_video(
 
 const auto GENRE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS genre(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto OS_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS os(
-    slug TEXT PRIMARY KEY,
+    slug TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL);
 )");
 
 const auto PUBLISHER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS publisher(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto RELEASE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     parent_id INTEGER NULL,
     first_release_date NOT NULL,
     title TEXT NOT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS release_video(
 
 const auto THEME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS theme(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
