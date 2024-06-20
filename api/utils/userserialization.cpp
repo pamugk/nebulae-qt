@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseUserData(const QJsonObject &json, api::User &data)
+void parseUserData(const QJsonValue &json, api::User &data)
 {
     data.id = json["id"].toString();
     data.username = json["username"].toString();
@@ -11,7 +11,7 @@ void parseUserData(const QJsonObject &json, api::User &data)
     data.employee = json["is_employee"].toBool();
 }
 
-void parseUserSettings(const QJsonObject &json, api::Settings &data)
+void parseUserSettings(const QJsonValue &json, api::Settings &data)
 {
     data.allowToBeInvitedBy = json["allow_to_be_invited_by"].toString();
     data.allowToBeSearched = json["allow_to_be_searched"].toBool();
@@ -19,7 +19,7 @@ void parseUserSettings(const QJsonObject &json, api::Settings &data)
     data.allowDrmProducts = json["allow_drm_products"].toBool();
 }
 
-void parseUserFullData(const QJsonObject &json, api::UserFullData &data)
+void parseUserFullData(const QJsonValue &json, api::UserFullData &data)
 {
     parseUserData(json, data);
     data.email = json["email"].toString();
@@ -31,7 +31,7 @@ void parseUserFullData(const QJsonObject &json, api::UserFullData &data)
     }
     data.status = json["status"].toInt();
     data.checksum = json["checksum"].toString();
-    parseUserSettings(json["settings"].toObject(), data.settings);
+    parseUserSettings(json["settings"], data.settings);
     data.passwordSet = json["password_set"].toBool();
     data.marketingConsent = json["marketing_consent"].toVariant();
 }

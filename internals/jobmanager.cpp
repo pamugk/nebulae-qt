@@ -1,6 +1,7 @@
 #include "jobmanager.h"
 
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 
 #include "../api/utils/userreleaseserialization.h"

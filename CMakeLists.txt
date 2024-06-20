@@ -49,12 +49,14 @@ set(PROJECT_SOURCES
 
         api/utils/catalogserialization.h api/utils/catalogserialization.cpp
         api/utils/catalogproductserialization.h api/utils/catalogproductserialization.cpp
+        api/utils/gameserialization.h api/utils/gameserialization.cpp
         api/utils/newsserialization.h api/utils/newsserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
         api/utils/recommendationserialization.h api/utils/recommendationserialization.cpp
+        api/utils/releaseserialization.h api/utils/releaseserialization.cpp
         api/utils/reviewserialization.h api/utils/reviewserialization.cpp
         api/utils/serialization.h api/utils/serialization.cpp
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp

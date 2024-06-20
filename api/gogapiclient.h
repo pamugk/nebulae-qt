@@ -26,6 +26,7 @@ namespace api
         QNetworkReply *getCurrentUser();
         QString getCurrentUserId() const;
         QNetworkReply *getCurrentUserReleases();
+        QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
@@ -36,6 +37,7 @@ namespace api
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                         const QString &order = "title",
                                         unsigned short page = 1);
+        QNetworkReply *getPlatformRelease(const QString &platformId, const QString &platformReleaseId);
         QNetworkReply *getPlayTime();
         QNetworkReply *getProductAchievements(const QString &productId);
         QNetworkReply *getProductAverageRating(const QString &productId, const QString &reviewer = QString());
@@ -53,6 +55,7 @@ namespace api
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
         QNetworkReply *getRecommendedDlcs();
+        QNetworkReply *getRelease(const QString &id);
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,

@@ -17,7 +17,7 @@ namespace api
     struct LocalizedMetaTag
     {
         QString id;
-        QMap<QString, QString> name;
+        QVariantMap name;
         QString slug;
     };
 
@@ -44,8 +44,8 @@ namespace api
         QVector<QString> dlcsIds;
         QDateTime firstReleaseDate;
         QVector<PlatformRelease> releases;
-        QMap<QString, QString> title;
-        QMap<QString, QString> sortingTitle;
+        QVariantMap title;
+        QVariantMap sortingTitle;
         QString type;
         QVector<QString> developersIds;
         QVector<IdMetaTag> developers;
@@ -54,10 +54,11 @@ namespace api
         QVector<QString> genresIds;
         QVector<LocalizedMetaTag> genres;
         QVector<QString> themesIds;
+        QVector<LocalizedMetaTag> themes;
         QVector<QString> screenshots;
         QVector<NamedVideo> videos;
         QVector<QString> artworks;
-        QMap<QString, QString> summary;
+        QVariantMap summary;
         bool visibleInLibrary;
         double aggregatedRating;
         QVector<IdMetaTag> gameModes;

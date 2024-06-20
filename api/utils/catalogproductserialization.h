@@ -1,10 +1,10 @@
 #ifndef CATALOGPRODUCTSERIALIZATION_H
 #define CATALOGPRODUCTSERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/catalogproductinfo.h"
 
-void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogProductInfoResponse &data);
+void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProductInfoResponse &data);
 
 #endif // CATALOGPRODUCTSERIALIZATION_H

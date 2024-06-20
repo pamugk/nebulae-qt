@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseDownloadFile(const QJsonObject &json, api::DownloadFile &data)
+void parseDownloadFile(const QJsonValue &json, api::DownloadFile &data)
 {
     if (json["id"].isString())
     {
@@ -16,7 +16,7 @@ void parseDownloadFile(const QJsonObject &json, api::DownloadFile &data)
     data.downloadLink = json["downlink"].toString();
 }
 
-void parseDownload(const QJsonObject &json, api::Download &data)
+void parseDownload(const QJsonValue &json, api::Download &data)
 {
     if (json["id"].isString())
     {
@@ -30,13 +30,13 @@ void parseDownload(const QJsonObject &json, api::Download &data)
     data.totalSize = json["total_size"].toInt();
     auto files = json["files"].toArray();
     data.files.resize(files.count());
-    for (int i = 0; i < files.count(); i++)
+    for (std::size_t i = 0; i < files.count(); i++)
     {
-        parseDownloadFile(files[i].toObject(), data.files[i]);
+        parseDownloadFile(files[i], data.files[i]);
     }
 }
 
-void parseBonusDownload(const QJsonObject &json, api::BonusDownload &data)
+void parseBonusDownload(const QJsonValue &json, api::BonusDownload &data)
 {
     parseDownload(json, data);
     data.type = json["type"].toString();
@@ -44,7 +44,7 @@ void parseBonusDownload(const QJsonObject &json, api::BonusDownload &data)
 }
 
 
-void parseGameDownload(const QJsonObject &json, api::GameDownload &data)
+void parseGameDownload(const QJsonValue &json, api::GameDownload &data)
 {
     parseDownload(json, data);
     data.os = json["os"].toString();
@@ -53,7 +53,7 @@ void parseGameDownload(const QJsonObject &json, api::GameDownload &data)
     data.version = json["version"].toString();
 }
 
-void parseDownloads(const QJsonObject &json, api::Downloads &data)
+void parseDownloads(const QJsonValue &json, api::Downloads &data)
 {
     QMap<QString, api::GameDownload*> installers;
     QJsonArray downloads;
@@ -62,7 +62,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
     for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
-        parseGameDownload(item.toObject(), download);
+        parseGameDownload(item, download);
         if (installers.contains(download.name))
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
@@ -83,7 +83,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
     for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
-        parseGameDownload(item.toObject(), download);
+        parseGameDownload(item, download);
         if (installers.contains(download.name))
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
@@ -104,7 +104,7 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
     for (const QJsonValue &item : std::as_const(downloads))
     {
         api::GameDownload download;
-        parseGameDownload(item.toObject(), download);
+        parseGameDownload(item, download);
         if (installers.contains(download.name))
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
@@ -122,13 +122,13 @@ void parseDownloads(const QJsonObject &json, api::Downloads &data)
 
     downloads = json["bonus_content"].toArray();
     data.bonusContent.resize(downloads.count());
-    for (int i = 0; i < downloads.count(); i++)
+    for (std::size_t i = 0; i < downloads.count(); i++)
     {
-        parseBonusDownload(downloads[i].toObject(), data.bonusContent[i]);
+        parseBonusDownload(downloads[i], data.bonusContent[i]);
     }
 }
 
-void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
+void parseProductInfo(const QJsonValue &json, api::ProductInfo &data)
 {
     data.id = json["id"].toInteger();
     data.title = json["title"].toString();
@@ -157,10 +157,10 @@ void parseProductInfo(const QJsonObject &json, api::ProductInfo &data)
     {
         data.images[image] = value.toString();
     }
-    parseDownloads(json["downloads"].toObject(), data.downloads);
+    parseDownloads(json["downloads"], data.downloads);
 }
 
-void parseProductScreenshot(const QJsonObject &json, api::ProductScreenshot &data)
+void parseProductScreenshot(const QJsonValue &json, api::ProductScreenshot &data)
 {
     data.imageId = json["image_id"].toString();
     data.formattedTemplateUrl = json["formatter_template_url"].toString();
@@ -175,41 +175,41 @@ void parseProductScreenshot(const QJsonObject &json, api::ProductScreenshot &dat
     }
 }
 
-void parseProductVideo(const QJsonObject &json, api::ProductVideo &data)
+void parseProductVideo(const QJsonValue &json, api::ProductVideo &data)
 {
     data.videoUrl = json["video_url"].toString();
     data.thumbnailUrl = json["thumbnail_url"].toString();
     data.provider = json["provider"].toString();
 }
 
-void parseGetOwnedProductInfoResponse(const QJsonObject &json, api::GetOwnedProductInfoResponse &data)
+void parseGetOwnedProductInfoResponse(const QJsonValue &json, api::GetOwnedProductInfoResponse &data)
 {
     parseProductInfo(json, data.mainProductInfo);
     auto dlcs = json["expanded_dlcs"].toArray();
     data.expandedDlcs.resize(dlcs.count());
-    for (int i = 0; i < dlcs.count(); i++)
+    for (std::size_t i = 0; i < dlcs.count(); i++)
     {
-        parseProductInfo(dlcs[i].toObject(), data.expandedDlcs[i]);
+        parseProductInfo(dlcs[i], data.expandedDlcs[i]);
     }
     auto relatedProducts = json["related_products"].toArray();
     data.relatedProducts.resize(relatedProducts.count());
-    for (int i = 0; i < relatedProducts.count(); i++)
+    for (std::size_t i = 0; i < relatedProducts.count(); i++)
     {
-        parseProductInfo(relatedProducts[i].toObject(), data.relatedProducts[i]);
+        parseProductInfo(relatedProducts[i], data.relatedProducts[i]);
     }
 
     auto screenshots = json["videos"].toArray();
     data.screenshots.resize(screenshots.count());
-    for (int i = 0; i < screenshots.count(); i++)
+    for (std::size_t i = 0; i < screenshots.count(); i++)
     {
-        parseProductScreenshot(screenshots[i].toObject(), data.screenshots[i]);
+        parseProductScreenshot(screenshots[i], data.screenshots[i]);
     }
 
     auto videos = json["videos"].toArray();
     data.videos.resize(videos.count());
-    for (int i = 0; i < videos.count(); i++)
+    for (std::size_t i = 0; i < videos.count(); i++)
     {
-        parseProductVideo(videos[i].toObject(), data.videos[i]);
+        parseProductVideo(videos[i], data.videos[i]);
     }
 
     data.descriptionLead = json["description"]["lead"].toString();

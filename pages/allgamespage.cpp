@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QScrollBar>
 

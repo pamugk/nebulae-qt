@@ -3,6 +3,7 @@
 
 #include <QActionGroup>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QLineEdit>
 #include <QMenu>
 #include <QNetworkReply>

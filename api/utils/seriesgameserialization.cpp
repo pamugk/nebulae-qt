@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
+void parseSeriesGame(const QJsonValue &json, api::SeriesGame &data)
 {
     if (json["inDevelopment"].isObject())
     {
@@ -41,15 +41,15 @@ void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
     }
 }
 
-void parseGetSeriesGamesResponse(const QJsonObject &json, api::GetSeriesGamesResponse &data)
+void parseGetSeriesGamesResponse(const QJsonValue &json, api::GetSeriesGamesResponse &data)
 {
     data.limit = json["limit"].toInt();
     data.page = json["page"].toInt();
     data.pages = json["pages"].toInt();
     auto items = json["_embedded"]["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseSeriesGame(items[i].toObject(), data.items[i]);
+        parseSeriesGame(items[i], data.items[i]);
     }
 }

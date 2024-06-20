@@ -6,6 +6,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QLocale>
 #include <QPainter>
 #include <QRadioButton>
@@ -188,7 +189,7 @@ void CatalogProductPage::setApiClient(api::GogApiClient *apiClient)
 void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const api::SupportedOperatingSystem data)
 {
     int column = 0;
-    for (int i = 0; i < data.systemRequirements.count(); i++)
+    for (std::size_t i = 0; i < data.systemRequirements.count(); i++)
     {
         QString title;
         if (data.systemRequirements[i].type == "minimum")
@@ -208,14 +209,14 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
         column += grid->columnCount();
     }
 
-    for (int i = 0; i < data.definedRequirements.count(); i++)
+    for (std::size_t i = 0; i < data.definedRequirements.count(); i++)
     {
         int row = i + 1;
         auto definedRequirementLabel = new QLabel(data.definedRequirements[i].name, rootWidget);
         definedRequirementLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
         grid->addWidget(definedRequirementLabel, row, 0);
 
-        for (int j = 0; j < data.systemRequirements.count(); j++)
+        for (std::size_t j = 0; j < data.systemRequirements.count(); j++)
         {
             QString requirement = data.systemRequirements[j].requirements.value(data.definedRequirements[i].id, "⸺");
             auto requirementLabel = new QLabel(requirement, rootWidget);
@@ -423,7 +424,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
 
             bool setOS = false;
             QStringList supportedOSInfo(data.supportedOperatingSystems.count());
-            for (int i = 0; i < data.supportedOperatingSystems.count(); i++)
+            for (std::size_t i = 0; i < data.supportedOperatingSystems.count(); i++)
             {
                 supportedOSInfo[i] = data.supportedOperatingSystems[i].versions;
                 if (data.supportedOperatingSystems[i].name == "windows")
@@ -500,7 +501,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             {
                 ui->editionsComboBox->setVisible(true);
 
-                for (int i = 0; i < data.editions.count(); i++)
+                for (std::size_t i = 0; i < data.editions.count(); i++)
                 {
                     ui->editionsComboBox->addItem(data.editions[i].name);
 
@@ -546,14 +547,14 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     auto goodiesComparisonLabel = new QLabel("Contents", ui->goodiesComparisonSection);
                     goodiesComparisonLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
                     ui->goodiesComparisonSectionGrid->addWidget(goodiesComparisonLabel, 0, 0, 2, 1);
-                    for (int i = 0; i < data.fullBonusList.count(); i++)
+                    for (std::size_t i = 0; i < data.fullBonusList.count(); i++)
                     {
                         auto bonusName = data.fullBonusList[i];
                         auto rowIndex = i + 2;
                         auto goodieNameLabel = new QLabel(bonusName, ui->goodiesComparisonSection);
                         goodieNameLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
                         ui->goodiesComparisonSectionGrid->addWidget(goodieNameLabel, rowIndex, 0);
-                        for (int j = 0; j < data.editions.count(); j++)
+                        for (std::size_t j = 0; j < data.editions.count(); j++)
                         {
                             auto isIncluded = data.editions[j].bonusSet.contains(bonusName);
                             auto checkedItem = new CheckedItem(QString(), isIncluded, ui->goodiesComparisonSection);
@@ -727,7 +728,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             QString currencyCode = systemLocale.currencySymbol(QLocale::CurrencyIsoCode);
             QString systemLanguage = QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1);
             bool foundPreferredLanguage = false;
-            for (int i = 0; i < data.localizations.count(); i++)
+            for (std::size_t i = 0; i < data.localizations.count(); i++)
             {
                 auto languageLabel = new QLabel(data.localizations[i].language.name, ui->gameDetails);
                 foundPreferredLanguage = foundPreferredLanguage || data.localizations[i].language.code == systemLanguage;

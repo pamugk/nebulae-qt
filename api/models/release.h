@@ -18,14 +18,15 @@ namespace api
         QString externalId;
         QVector<QString> dlcsIds;
         QVector<PlatformRelease> dlcs;
+        QString parentId;
         QVector<MetaTag> supportedOperatingSystems;
         QVector<QString> availableLanguages;
         QDateTime firstReleaseDate;
         Game game;
-        QMap<QString, QString> title;
-        QMap<QString, QString> sortingTitle;
+        QVariantMap title;
+        QVariantMap sortingTitle;
         QString type;
-        QMap<QString, QString> summary;
+        QVariantMap summary;
         QVector<NamedVideo> videos;
         QVector<IdMetaTag> gameModes;
         QString logo;

@@ -5,7 +5,7 @@
 #include <QSet>
 #include <QVector>
 
-void parseSupportedOS(const QJsonObject &json, api::SupportedOperatingSystem &data)
+void parseSupportedOS(const QJsonValue &json, api::SupportedOperatingSystem &data)
 {
     data.name = json["operatingSystem"]["name"].toString();
     data.versions = json["operatingSystem"]["versions"].toString();
@@ -13,9 +13,9 @@ void parseSupportedOS(const QJsonObject &json, api::SupportedOperatingSystem &da
     QSet<QString> definedRequirements;
     auto systemRequirements = json["systemRequirements"].toArray();
     data.systemRequirements.resize(systemRequirements.count());
-    for (int i = 0; i < systemRequirements.count(); i++)
+    for (std::size_t i = 0; i < systemRequirements.count(); i++)
     {
-        auto systemRequirementSet = systemRequirements[i].toObject();
+        const QJsonValue &systemRequirementSet = systemRequirements[i];
         data.systemRequirements[i].type = systemRequirementSet["type"].toString();
         data.systemRequirements[i].description = systemRequirementSet["description"].toString();
 
@@ -32,20 +32,20 @@ void parseSupportedOS(const QJsonObject &json, api::SupportedOperatingSystem &da
     }
 }
 
-void parseRating(const QJsonObject &json, api::ContentRating &data)
+void parseRating(const QJsonValue &json, api::ContentRating &data)
 {
     data.ageRating = json["ageRating"].toInt();
     auto contentDescriptors = json["contentDescriptors"].toArray();
     data.contentDescriptors.resize(contentDescriptors.count());
-    for (int i = 0; i < contentDescriptors.count(); i++)
+    for (const QJsonValue &contentDescriptor : std::as_const(contentDescriptors))
     {
-        data.contentDescriptors[i] = contentDescriptors[i].toObject()["descriptor"].toString();
+        data.contentDescriptors.append(contentDescriptor["descriptor"].toString());
     }
     data.category = json["category"]["name"].toString();
     data.categoryId = json["category"]["id"].toInteger();
 }
 
-void parseBonus(const QJsonObject &json, api::Bonus &data)
+void parseBonus(const QJsonValue &json, api::Bonus &data)
 {
     data.id = json["id"].toInteger();
     data.name = json["name"].toString();
@@ -53,7 +53,7 @@ void parseBonus(const QJsonObject &json, api::Bonus &data)
     data.type.slug = json["type"]["slug"].toString();
 }
 
-void parseEdition(const QJsonObject &json,
+void parseEdition(const QJsonValue &json,
                   QMap<QString, api::Bonus> &bonusMap,
                   api::Edition &data)
 {
@@ -62,10 +62,10 @@ void parseEdition(const QJsonObject &json,
     auto bonuses = json["bonuses"].toArray();
     data.bonuses.resize(bonuses.count());
     data.bonusSet.reserve(bonuses.count());
-    for (int i = 0; i < bonuses.count(); i++)
+    for (std::size_t i = 0; i < bonuses.count(); i++)
     {
         api::Bonus bonus;
-        parseBonus(bonuses[i].toObject(), bonus);
+        parseBonus(bonuses[i], bonus);
         data.bonuses[i] = bonus.name;
         data.bonusSet.insert(bonus.name);
         if (!bonusMap.contains(bonus.name))
@@ -77,15 +77,15 @@ void parseEdition(const QJsonObject &json,
     data.link = json["_links"]["self"]["href"].toString();
 }
 
-void parseFormattedLink(const QJsonObject &json, api::FormattedLink &data)
+void parseFormattedLink(const QJsonValue &json, api::FormattedLink &data)
 {
     data.href = json["href"].toString();
     data.templated = json["templated"].toBool();
     auto formatters = json["formatters"].toArray();
     data.formatters.resize(formatters.count());
-    for (int i = 0; i < formatters.count(); i++)
+    for (const QJsonValue &formatter : std::as_const(formatters))
     {
-        data.formatters[i] = formatters[i].toString();
+        data.formatters.append(formatter.toString());
     }
 }
 
@@ -104,7 +104,7 @@ void parseLocalizations(const QJsonArray &json, QVector<api::Localization> &data
             data.append(api::Localization{{languageCode, language["name"].toString()}, false, false});
         }
 
-       auto localizationScope = locale["localizationScope"].toObject()["type"].toString();
+       auto localizationScope = locale["localizationScope"]["type"].toString();
        if (localizationScope == "text")
        {
            data[foundLocales[languageCode]].localizedText = true;
@@ -116,7 +116,7 @@ void parseLocalizations(const QJsonArray &json, QVector<api::Localization> &data
     }
 }
 
-void parseVideo(const QJsonObject &json, api::ThumbnailedVideo &data)
+void parseVideo(const QJsonValue &json, api::ThumbnailedVideo &data)
 {
     data.provider = json["provider"].toString();
     data.videoId = json["videoId"].toString();
@@ -129,7 +129,7 @@ void parseVideo(const QJsonObject &json, api::ThumbnailedVideo &data)
     }
 }
 
-void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogProductInfoResponse &data)
+void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProductInfoResponse &data)
 {
     if (json["inDevelopment"].isObject())
     {
@@ -196,7 +196,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
             if (product["_links"].isObject())
             {
                 auto links = product["_links"];
-                parseFormattedLink(links["image"].toObject(), data.imageLink);
+                parseFormattedLink(links["image"], data.imageLink);
                 data.checkoutLink = links["checkout"]["href"].toString();
             }
         }
@@ -207,46 +207,47 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
 
         auto videos = productData["videos"].toArray();
         data.videos.resize(videos.count());
-        for (int i = 0; i < videos.count(); i++)
+        for (std::size_t i = 0; i < videos.count(); i++)
         {
-            parseVideo(videos[i].toObject(), data.videos[i]);
+            parseVideo(videos[i], data.videos[i]);
         }
 
         auto bonuses = productData["bonuses"].toArray();
         data.bonuses.resize(bonuses.count());
-        for (int i = 0; i < bonuses.count(); i++)
+        for (std::size_t i = 0; i < bonuses.count(); i++)
         {
-            parseBonus(bonuses[i].toObject(), data.bonuses[i]);
+            parseBonus(bonuses[i], data.bonuses[i]);
         }
 
         auto screenshots = productData["screenshots"].toArray();
         data.screenshots.resize(screenshots.count());
-        for (int i = 0; i < screenshots.count(); i++)
+        for (std::size_t i = 0; i < screenshots.count(); i++)
         {
-            parseFormattedLink(screenshots[i].toObject()["_links"].toObject()["self"].toObject(), data.screenshots[i]);
+            const QJsonValue &screenshot = screenshots[i];
+            parseFormattedLink(screenshot["_links"]["self"], data.screenshots[i]);
         }
 
         data.publisher = productData["publisher"]["name"].toString();
 
         auto developers = productData["developers"].toArray();
         data.developers.resize(developers.count());
-        for (int i = 0; i < developers.count(); i++)
+        for (const QJsonValue &developer : std::as_const(developers))
         {
-            data.developers[i] = developers[i].toObject()["name"].toString();
+            data.developers.append(developer["name"].toString());
         }
 
         auto supportedOperatingSystems = productData["supportedOperatingSystems"].toArray();
         data.supportedOperatingSystems.resize(supportedOperatingSystems.count());
-        for (int i = 0; i < supportedOperatingSystems.count(); i++)
+        for (std::size_t i = 0; i < supportedOperatingSystems.count(); i++)
         {
-            parseSupportedOS(supportedOperatingSystems[i].toObject(), data.supportedOperatingSystems[i]);
+            parseSupportedOS(supportedOperatingSystems[i], data.supportedOperatingSystems[i]);
         }
 
         auto tags = productData["tags"].toArray();
         data.tags.resize(tags.count());
-        for (int i = 0; i < tags.count(); i++)
+        for (std::size_t i = 0; i < tags.count(); i++)
         {
-            auto tag = tags[i].toObject();
+            const QJsonValue &tag = tags[i];
             data.tags[i].name = tag["name"].toString();
             data.tags[i].level = tag["level"].toInt();
             data.tags[i].slug = tag["slug"].toString();
@@ -254,9 +255,9 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
 
         auto properties = productData["properties"].toArray();
         data.properties.resize(properties.count());
-        for (int i = 0; i < properties.count(); i++)
+        for (std::size_t i = 0; i < properties.count(); i++)
         {
-            auto property = properties[i].toObject();
+            const QJsonValue &property = properties[i];
             data.properties[i].name = property["name"].toString();
             data.properties[i].slug = property["slug"].toString();
         }
@@ -264,43 +265,43 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         if (productData["esrbRating"].isObject())
         {
             data.ratings.insert("ESRB", api::ContentRating());
-            parseRating(productData["esrbRating"].toObject(), data.ratings["ESRB"]);
+            parseRating(productData["esrbRating"], data.ratings["ESRB"]);
         }
         if (productData["pegiRating"].isObject())
         {
             data.ratings.insert("PEGI", api::ContentRating());
-            parseRating(productData["pegiRating"].toObject(), data.ratings["PEGI"]);
+            parseRating(productData["pegiRating"], data.ratings["PEGI"]);
         }
         if (productData["uskRating"].isObject())
         {
             data.ratings.insert("USK", api::ContentRating());
-            parseRating(productData["uskRating"].toObject(), data.ratings["USK"]);
+            parseRating(productData["uskRating"], data.ratings["USK"]);
         }
         if (productData["brRating"].isObject())
         {
             data.ratings.insert("BR", api::ContentRating());
-            parseRating(productData["brRating"].toObject(), data.ratings["BR"]);
+            parseRating(productData["brRating"], data.ratings["BR"]);
         }
         if (productData["gogRating"].isObject())
         {
             data.ratings.insert("GOG", api::ContentRating());
-            parseRating(productData["gogRating"].toObject(), data.ratings["GOG"]);
+            parseRating(productData["gogRating"], data.ratings["GOG"]);
         }
 
         auto features = productData["features"].toArray();
         data.features.resize(features.count());
-        for (int i = 0; i < features.count(); i++)
+        for (std::size_t i = 0; i < features.count(); i++)
         {
-            auto feature = features[i].toObject();
+            const QJsonValue &feature = features[i];
             data.features[i].name = feature["name"].toString();
             data.features[i].slug = feature["id"].toString();
         }
 
         auto editions = productData["editions"].toArray();
         data.editions.resize(editions.count());
-        for (int i = 0; i < editions.count(); i++)
+        for (std::size_t i = 0; i < editions.count(); i++)
         {
-            parseEdition(editions[i].toObject(), data.editionBonuses, data.editions[i]);
+            parseEdition(editions[i], data.editionBonuses, data.editions[i]);
         }
 
         if (productData["series"].isObject())
@@ -315,7 +316,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
         // For some reason, there can be several bonuses with the same name and different ids,
         // so they have to be merged by a name.
         QSet<QString> fullBonusSet;
-        for (int i = 0; i < data.editions.count() - 1; i++)
+        for (std::size_t i = 0; i < data.editions.count() - 1; i++)
         {
             for (const QString &bonusName : std::as_const(data.editions[i].bonuses))
             {
@@ -325,7 +326,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
                 }
 
                 bool isCommonBonus = true;
-                for (int j = i + 1; j < data.editions.count() && isCommonBonus; j++)
+                for (std::size_t j = i + 1; j < data.editions.count() && isCommonBonus; j++)
                 {
                     isCommonBonus = data.editions[j].bonusSet.contains(bonusName);
                 }
@@ -337,7 +338,7 @@ void parseCatalogProductInfoResponse(const QJsonObject &json, api::GetCatalogPro
                 }
             }
         }
-        for (int i = 0; i < data.editions.count(); i++)
+        for (std::size_t i = 0; i < data.editions.count(); i++)
         {
             for (const QString &bonusName: std::as_const(data.editions[i].bonuses))
             {

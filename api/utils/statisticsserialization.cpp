@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseAchievement(const QJsonObject &json, api::Achievement &data)
+void parseAchievement(const QJsonValue &json, api::Achievement &data)
 {
     data.achievementId = json["achievement_id"].toString();
     data.achievementKey = json["achievement_key"].toString();
@@ -20,7 +20,7 @@ void parseAchievement(const QJsonObject &json, api::Achievement &data)
     data.rarityLevelSlug = json["rarity_level_slug"].toString();
 }
 
-void parseGetAchievementsResponse(const QJsonObject &json, api::GetAchievementsResponse &data)
+void parseGetAchievementsResponse(const QJsonValue &json, api::GetAchievementsResponse &data)
 {
     data.totalCount = json["total_count"].toInt();
     data.limit = json["limit"].toInt();
@@ -29,13 +29,13 @@ void parseGetAchievementsResponse(const QJsonObject &json, api::GetAchievementsR
     data.achievementsMode = json["achievements_mode"].toString();
     auto items = json["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseAchievement(items[i].toObject(), data.items[i]);
+        parseAchievement(items[i], data.items[i]);
     }
 }
 
-void parseGetSessionsResponse(const QJsonObject &json, api::GetPlaySessionsResponse &data)
+void parseGetSessionsResponse(const QJsonValue &json, api::GetPlaySessionsResponse &data)
 {
     data.totalSum = json["total_sum"].toInt();
     auto gameTime = json["game_time"].toArray();

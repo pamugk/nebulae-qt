@@ -2,6 +2,7 @@
 #include "ui_storepage.h"
 
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 
 #include "../api/utils/catalogserialization.h"

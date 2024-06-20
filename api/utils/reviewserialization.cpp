@@ -2,13 +2,13 @@
 
 #include <QJsonArray>
 
-void parseRatingResponse(const QJsonObject &json, api::GetRatingResponse &data)
+void parseRatingResponse(const QJsonValue &json, api::GetRatingResponse &data)
 {
     data.value = json["value"].toDouble();
     data.count = json["count"].toInt();
 }
 
-void parseReview(const QJsonObject &json, api::Review &data)
+void parseReview(const QJsonValue &json, api::Review &data)
 {
     data.id = json["id"].toString();
     data.productId = json["productId"].toString();
@@ -23,7 +23,7 @@ void parseReview(const QJsonObject &json, api::Review &data)
 
     auto labels = json["labels"].toArray();
     data.labels.resize(labels.count());
-    for (int i = 0; i < labels.count(); i++)
+    for (std::size_t i = 0; i < labels.count(); i++)
     {
         data.labels[i] = labels[i].toString();
     }
@@ -39,7 +39,7 @@ void parseReview(const QJsonObject &json, api::Review &data)
     }
 }
 
-void parseReviewsResponse(const QJsonObject &json, api::GetReviewsResponse &data)
+void parseReviewsResponse(const QJsonValue &json, api::GetReviewsResponse &data)
 {
     data.page = json["page"].toInt();
     data.pages = json["pages"].toInt();
@@ -52,8 +52,8 @@ void parseReviewsResponse(const QJsonObject &json, api::GetReviewsResponse &data
 
     auto items = json["_embedded"]["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseReview(items[i].toObject(), data.items[i]);
+        parseReview(items[i], data.items[i]);
     }
 }

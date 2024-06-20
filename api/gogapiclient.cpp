@@ -113,7 +113,7 @@ bool api::GogApiClient::isAuthenticated()
 
 QNetworkReply *api::GogApiClient::getAchievements()
 {
-    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
+    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
 }
 
 QNetworkReply *api::GogApiClient::getAnything(const QString &url)
@@ -125,7 +125,7 @@ QNetworkReply *api::GogApiClient::getCatalogProductInfo(const QString &id, const
 {
     QVariantMap parameters;
     parameters["locale"] = locale;
-    return client.get(QUrl(QString("https://api.gog.com/v2/games/%1").arg(id)), parameters);
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/v2/games/%1").arg(id)), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUser()
@@ -141,6 +141,11 @@ QString api::GogApiClient::getCurrentUserId() const
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
 {
     return client.get(QStringLiteral("https://galaxy-library.gog.com/users/%1/releases").arg(userId));
+}
+
+QNetworkReply *api::GogApiClient::getGame(const QString &id)
+{
+    return client.get(QStringLiteral("https://gamesdb.gog.com/games/%1").arg(id));
 }
 
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
@@ -168,7 +173,7 @@ QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QStr
 
 QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
 {
-    return client.get(QUrl(QString("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
 }
 
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
@@ -215,6 +220,11 @@ QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const Q
     return client.get(QUrl("https://embed.gog.com/account/getFilteredProducts"), parameters);
 }
 
+QNetworkReply *api::GogApiClient::getPlatformRelease(const QString &platformId, const QString &platformReleaseId)
+{
+    return client.get(QStringLiteral("https://gamesdb.gog.com/platforms/%1/external_releases/%2").arg(platformId, platformReleaseId));
+}
+
 QNetworkReply *api::GogApiClient::getPlayTime()
 {
     return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
@@ -239,7 +249,7 @@ QNetworkReply *api::GogApiClient::getProductPrices(const QString &productId, con
 {
     QVariantMap parameters;
     parameters["countryCode"] = countryCode;
-    return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(productId)), parameters);
+    return client.get(QStringLiteral("https://api.gog.com/products/%1/prices").arg(productId), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(const QString &productId,
@@ -247,7 +257,7 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(con
                                                                             const QString &currency,
                                                                             unsigned char limit)
 {
-    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(productId));
+    QUrl url(QStringLiteral("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(productId));
     url.setQuery(QUrlQuery({
                                std::pair("country_code", countryCode),
                                std::pair("currency", currency),
@@ -261,7 +271,7 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(const QString
                                                                   const QString &currency,
                                                                   unsigned char limit)
 {
-    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(productId));
+    QUrl url(QStringLiteral("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(productId));
     url.setQuery(QUrlQuery({
                                std::pair("country_code", countryCode),
                                std::pair("currency", currency),
@@ -275,16 +285,16 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
                                                     const SortOrder &order,
                                                     unsigned short limit, unsigned short page)
 {
-    QUrl url(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(productId));
+    QUrl url(QStringLiteral("https://reviews.gog.com/v1/products/%1/reviews").arg(productId));
     QUrlQuery query({
                         std::pair("limit", QString::number(limit)),
-                        std::pair("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field)),
+                        std::pair("order", QStringLiteral("%1:%2").arg(order.ascending ? "asc" : "desc", order.field)),
                         std::pair("page", QString::number(page)),
                     });
     if (filters.lastDays.has_value())
     {
         QDateTime searchStart = QDateTime::currentDateTime().addDays(-1 * filters.lastDays.value());
-        query.addQueryItem("date", QString("gte:%1").arg(searchStart.toString(Qt::DateFormat::ISODate)));
+        query.addQueryItem("date", QStringLiteral("gte:%1").arg(searchStart.toString(Qt::DateFormat::ISODate)));
     }
     QStringList selectedLanguages;
     if (filters.otherLanguages)
@@ -307,7 +317,7 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
     if (!selectedLanguages.isEmpty())
     {
         query.addQueryItem("language",
-                           QString("%1:%2")
+                           QStringLiteral("%1:%2")
                             .arg(filters.otherLanguages ? "not_in" : "in", selectedLanguages.join(',')));
     }
     if (filters.reviewedByOwner.has_value())
@@ -340,6 +350,11 @@ QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
                                std::pair("seriesId", QString::number(seriesId)),
                            }));
     return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getRelease(const QString &id)
+{
+    return client.get(QStringLiteral("https://gamesdb.gog.com/releases/%1").arg(id));
 }
 
 QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,

@@ -2,21 +2,21 @@
 
 #include <QJsonArray>
 
-void parseZonedDateTime(const QJsonObject &json, api::ZonedDateTime &data)
+void parseZonedDateTime(const QJsonValue &json, api::ZonedDateTime &data)
 {
     data.date = QDateTime::fromString(json["date"].toString(), Qt::ISODateWithMs);
     data.timezoneType = json["timezone_type"].toInt();
     data.timezone = json["timezone"].toString();
 }
 
-void parseProductData(const QJsonObject &json, api::Product &data)
+void parseProductData(const QJsonValue &json, api::Product &data)
 {
     data.developer = json["developer"].toString();
     data.publisher = json["publisher"].toString();
 
     auto gallery = json["gallery"].toArray();
     data.gallery.resize(gallery.count());
-    for (int i = 0; i < gallery.count(); i++)
+    for (std::size_t i = 0; i < gallery.count(); i++)
     {
         data.gallery[i] = gallery[i].toString();
     }
@@ -30,14 +30,14 @@ void parseProductData(const QJsonObject &json, api::Product &data)
 
     auto supportedOperatingSystems = json["supportedOperatingSystems"].toArray();
     data.supportedOperatingSystems.resize(supportedOperatingSystems.count());
-    for (int i = 0; i < supportedOperatingSystems.count(); i++)
+    for (std::size_t i = 0; i < supportedOperatingSystems.count(); i++)
     {
         data.supportedOperatingSystems[i] = supportedOperatingSystems[i].toString();
     }
 
     auto genres = json["genres"].toArray();
     data.genres.resize(genres.count());
-    for (int i = 0; i < genres.count(); i++)
+    for (std::size_t i = 0; i < genres.count(); i++)
     {
         data.genres[i] = genres[i].toString();
     }
@@ -79,9 +79,9 @@ void parseProductData(const QJsonObject &json, api::Product &data)
     {
         auto salesVisibility = json["salesVisibility"];
         data.salesVisibility.active = salesVisibility["isActive"].toBool();
-        parseZonedDateTime(salesVisibility["fromObject"].toObject(), data.salesVisibility.fromObject);
+        parseZonedDateTime(salesVisibility["fromObject"], data.salesVisibility.fromObject);
         data.salesVisibility.from = QDateTime::fromSecsSinceEpoch(salesVisibility["from"].toInt());
-        parseZonedDateTime(salesVisibility["toObject"].toObject(), data.salesVisibility.toObject);
+        parseZonedDateTime(salesVisibility["toObject"], data.salesVisibility.toObject);
         data.salesVisibility.to = QDateTime::fromSecsSinceEpoch(salesVisibility["to"].toInt());
     }
     data.buyable = json["buyable"].toBool();
@@ -110,7 +110,7 @@ void parseProductData(const QJsonObject &json, api::Product &data)
     data.ageLimit = json["ageLimit"].toInt();
 }
 
-void parseSearchWishlistResponse(const QJsonObject &json, api::GetWishlistResponse &data)
+void parseSearchWishlistResponse(const QJsonValue &json, api::GetWishlistResponse &data)
 {
     data.page = json["page"].toInt(1);
     data.totalProducts = json["totalProducts"].toInt(0);
@@ -119,8 +119,8 @@ void parseSearchWishlistResponse(const QJsonObject &json, api::GetWishlistRespon
     auto products = json["products"].toArray();
     data.products.resize(products.count());
 
-    for (int i = 0; i < products.count(); i++)
+    for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseProductData(products[i].toObject(), data.products[i]);
+        parseProductData(products[i], data.products[i]);
     }
 }

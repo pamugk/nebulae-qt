@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseRecommendation(const QJsonObject &json, api::Recommendation &data)
+void parseRecommendation(const QJsonValue &json, api::Recommendation &data)
 {
     data.productId = QString::number(json["product_id"].toInteger());
     data.rating = json["rating"].toDouble();
@@ -26,14 +26,14 @@ void parseRecommendation(const QJsonObject &json, api::Recommendation &data)
 
 }
 
-void parseRecommendationsResponse(const QJsonObject &json, api::GetRecommendationsResponse &data)
+void parseRecommendationsResponse(const QJsonValue &json, api::GetRecommendationsResponse &data)
 {
     data.context = json["context"].toString();
     data.requestId = json["request_id"].toString();
     auto products = json["products"].toArray();
     data.products.resize(products.count());
-    for (int i = 0; i < products.count(); i++)
+    for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseRecommendation(products[i].toObject(), data.products[i]);
+        parseRecommendation(products[i], data.products[i]);
     }
 }

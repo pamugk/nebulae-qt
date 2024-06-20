@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseUserRelease(const QJsonObject &json, api::UserRelease &data)
+void parseUserRelease(const QJsonValue &json, api::UserRelease &data)
 {
     data.platformId = json["platform_id"].toString();
     data.externalId = json["external_id"].toString();
@@ -28,7 +28,7 @@ void parseUserRelease(const QJsonObject &json, api::UserRelease &data)
     data.owned = json["owned"].toBool();
 }
 
-void parseGetUserReleasesResponse(const QJsonObject &json, api::GetUserReleasesResponse &data)
+void parseGetUserReleasesResponse(const QJsonValue &json, api::GetUserReleasesResponse &data)
 {
     data.totalCount = json["total_count"].toInt();
     data.limit = json["limit"].toInt();
@@ -36,6 +36,6 @@ void parseGetUserReleasesResponse(const QJsonObject &json, api::GetUserReleasesR
     data.items.resize(items.count());
     for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseUserRelease(items[i].toObject(), data.items[i]);
+        parseUserRelease(items[i], data.items[i]);
     }
 }
