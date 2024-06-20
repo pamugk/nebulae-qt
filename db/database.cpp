@@ -13,9 +13,9 @@
 const auto ACHIEVEMENT_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS achievement(
     platform TEXT NOT NULL,
-    platform_release_id INTEGER NOT NULL,
+    platform_release_id TEXT NOT NULL,
     api_key TEXT NOT NULL,
-    id INTEGER NULL,
+    id TEXT NULL,
     image_unlocked_url TEXT NULL,
     image_locked_url TEXT NULL,
     visible BOOLEAN NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS achievement(
 const auto ACHIEVEMENT_LOCALIZED_DESCRIPTION_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS achievement_localized_description(
     platform TEXT NOT NULL,
-    platform_release_id INTEGER NOT NULL,
+    platform_release_id TEXT NOT NULL,
     api_key TEXT NOT NULL,
     locale_code TEXT NOT NULL,
     name TEXT NOT NULL,
@@ -40,15 +40,15 @@ CREATE TABLE IF NOT EXISTS achievement_localized_description(
 // GamesDB basic entities & value objects
 const auto DEVELOPER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS developer(
-    id INTEGER PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto GAME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game(
-    id INTEGER PRIMARY KEY NOT NULL,
-    parent_id INTEGER NULL,
+    id TEXT PRIMARY KEY NOT NULL,
+    parent_id TEXT NULL,
     first_release_date NOT NULL,
     title TEXT NOT NULL,
     title_sort TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS game(
 
 const auto GAME_ARTWORK_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_artwork(
-    game_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
     url TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     UNIQUE (game_id, url));
@@ -74,14 +74,14 @@ CREATE TABLE IF NOT EXISTS game_artwork(
 
 const auto GAME_MODE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_mode(
-    id INTEGER PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto GAME_SCREENSHOT_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_screenshot(
-    game_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
     url TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     UNIQUE (game_id, url));
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS game_screenshot(
 
 const auto GAME_VIDEO_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_video(
-    game_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
     provider TEXT NOT NULL,
     video_id TEXT NOT NULL,
     thumbnaild_id TEXT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS game_video(
 
 const auto GENRE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS genre(
-    id INTEGER PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
@@ -113,15 +113,15 @@ CREATE TABLE IF NOT EXISTS os(
 
 const auto PUBLISHER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS publisher(
-    id INTEGER PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
 
 const auto RELEASE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release(
-    id INTEGER PRIMARY KEY NOT NULL,
-    parent_id INTEGER NULL,
+    id TEXT PRIMARY KEY NOT NULL,
+    parent_id TEXT NULL,
     first_release_date NOT NULL,
     title TEXT NOT NULL,
     title_sort TEXT NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS release(
 
 const auto RELEASE_VIDEO_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release_video(
-    release_id INTEGER NOT NULL,
+    release_id TEXT NOT NULL,
     provider TEXT NOT NULL,
     video_id TEXT NOT NULL,
     thumbnaild_id TEXT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS release_video(
 
 const auto THEME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS theme(
-    id INTEGER PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT NOT NULL);
 )");
@@ -151,8 +151,8 @@ CREATE TABLE IF NOT EXISTS theme(
 // GamesDB entities' relations
 const auto GAME_DEVELOPER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_developer(
-    game_id INTEGER NOT NULL,
-    developer_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    developer_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (developer_id) REFERENCES developer (id) ON DELETE CASCADE,
     UNIQUE (game_id, developer_id));
@@ -160,16 +160,16 @@ CREATE TABLE IF NOT EXISTS game_developer(
 
 const auto GAME_DLC_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_dlc(
-    game_id INTEGER NOT NULL,
-    dlc_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    dlc_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     UNIQUE (game_id, dlc_id));
 )");
 
 const auto GAME_GAME_MODE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_game_mode(
-    game_id INTEGER NOT NULL,
-    game_mode_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    game_mode_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (game_mode_id) REFERENCES game_mode (id) ON DELETE CASCADE,
     CONSTRAINT 'UK_game_game_mode_key' UNIQUE (game_id, game_mode_id));
@@ -177,8 +177,8 @@ CREATE TABLE IF NOT EXISTS game_game_mode(
 
 const auto GAME_GENRE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_genre(
-    game_id INTEGER NOT NULL,
-    genre_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    genre_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE,
     UNIQUE (game_id, genre_id));
@@ -186,8 +186,8 @@ CREATE TABLE IF NOT EXISTS game_genre(
 
 const auto GAME_PUBLISHER_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_publisher(
-    game_id INTEGER NOT NULL,
-    publisher_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    publisher_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (publisher_id) REFERENCES publisher (id) ON DELETE CASCADE,
     UNIQUE (game_id, publisher_id));
@@ -195,8 +195,8 @@ CREATE TABLE IF NOT EXISTS game_publisher(
 
 const auto GAME_THEME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game_theme(
-    game_id INTEGER NOT NULL,
-    theme_id INTEGER NOT NULL,
+    game_id TEXT NOT NULL,
+    theme_id TEXT NOT NULL,
     FOREIGN KEY (game_id) REFERENCES game (id) ON DELETE CASCADE,
     FOREIGN KEY (theme_id) REFERENCES theme (id) ON DELETE CASCADE,
     UNIQUE (game_id, theme_id));
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS game_theme(
 
 const auto RELEASE_AVAILABLE_LANGUAGE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release_available_language(
-    release_id INTEGER NOT NULL,
+    release_id TEXT NOT NULL,
     locale_code TEXT NOT NULL,
     FOREIGN KEY (release_id) REFERENCES release (id) ON DELETE CASCADE,
     UNIQUE (release_id, locale_code));
@@ -212,16 +212,16 @@ CREATE TABLE IF NOT EXISTS release_available_language(
 
 const auto RELEASE_DLC_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release_dlc(
-    release_id INTEGER NOT NULL,
-    dlc_id INTEGER NOT NULL,
+    release_id TEXT NOT NULL,
+    dlc_id TEXT NOT NULL,
     FOREIGN KEY (release_id) REFERENCES release (id) ON DELETE CASCADE,
     UNIQUE (release_id, dlc_id));
 )");
 
 const auto RELEASE_GAME_MODE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release_game_mode(
-    release_id INTEGER NOT NULL,
-    game_mode_id INTEGER NOT NULL,
+    release_id TEXT NOT NULL,
+    game_mode_id TEXT NOT NULL,
     FOREIGN KEY (release_id) REFERENCES release (id) ON DELETE CASCADE,
     FOREIGN KEY (game_mode_id) REFERENCES game_mode (id) ON DELETE CASCADE,
     UNIQUE (release_id, game_mode_id));
@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS release_game_mode(
 
 const auto RELEASE_SUPPORTED_OS_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS release_supported_os(
-    release_id INTEGER NOT NULL,
+    release_id TEXT NOT NULL,
     os_slug TEXT NOT NULL,
     FOREIGN KEY (release_id) REFERENCES release (id) ON DELETE CASCADE,
     FOREIGN KEY (os_slug) REFERENCES os (slug) ON DELETE CASCADE,
@@ -240,17 +240,17 @@ CREATE TABLE IF NOT EXISTS release_supported_os(
 const auto PLATFORM_RELEASE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS platform_release(
     platform TEXT NOT NULL,
-    platform_release_id INTEGER NOT NULL,
-    release_id INTEGER NULL,
+    platform_release_id TEXT NOT NULL,
+    release_id TEXT NULL,
     UNIQUE (platform, platform_release_id))
 )");
 
 // User library
 const auto USER_RELEASE_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS user_release(
-    user_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
     platform TEXT NOT NULL,
-    platform_release_id INTEGER NOT NULL,
+    platform_release_id TEXT NOT NULL,
     created_at NOT NULL,
     owned_since NULL,
     owned BOOLEAN NOT NULL,
@@ -261,9 +261,9 @@ CREATE TABLE IF NOT EXISTS user_release(
 
 const auto USER_RELEASE_TAG_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS user_release_tag(
-    user_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
     platform TEXT NOT NULL,
-    platform_release_id INTEGER NOT NULL,
+    platform_release_id TEXT NOT NULL,
     tag TEXT NOT NULL,
     CONSTRAINT 'CK_user_release_tag'
         CHECK (trim([tag]) <> ''),
@@ -443,7 +443,7 @@ void db::initialize()
     }
 }
 
-void db::saveUserReleases(unsigned long long userId, const QVector<api::UserRelease> &releases)
+void db::saveUserReleases(const QString &userId, const QVector<api::UserRelease> &releases)
 {
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery insertReleaseQuery;

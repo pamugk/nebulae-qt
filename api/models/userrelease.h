@@ -10,7 +10,7 @@ namespace api
     struct UserRelease
     {
         QString platformId;
-        unsigned long long externalId;
+        QString externalId;
         QVector<QString> tags;
         std::optional<int> rating;
         std::optional<bool> hidden;

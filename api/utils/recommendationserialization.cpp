@@ -4,7 +4,7 @@
 
 void parseRecommendation(const QJsonObject &json, api::Recommendation &data)
 {
-    data.productId = json["product_id"].toInteger();
+    data.productId = QString::number(json["product_id"].toInteger());
     data.rating = json["rating"].toDouble();
 
     auto details = json["details"];

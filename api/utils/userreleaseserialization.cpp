@@ -5,7 +5,7 @@
 void parseUserRelease(const QJsonObject &json, api::UserRelease &data)
 {
     data.platformId = json["platform_id"].toString();
-    data.externalId = json["external_id"].toString().toULongLong();
+    data.externalId = json["external_id"].toString();
     auto tags = json["tags"].toArray();
     for (const QJsonValue &tag : std::as_const(tags))
     {

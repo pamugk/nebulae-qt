@@ -228,7 +228,7 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
 
 void CatalogProductPage::initialize(const QVariant &initialData)
 {
-    id = initialData.toULongLong();
+    id = initialData.toString();
     averageRatingReply = apiClient->getProductAverageRating(id);
     connect(averageRatingReply, &QNetworkReply::finished, this, [this]()
     {
@@ -875,13 +875,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                 productItem->setTitle(item.title);
 
                                 connect(this, &CatalogProductPage::ownedProductsChanged,
-                                        productItem, [productItem, productId = item.id](const QSet<unsigned long long> &ids)
+                                        productItem, [productItem, productId = item.id](const QSet<const QString> &ids)
                                 {
                                     productItem->setOwned(ids.contains(productId));
                                 });
                                 productItem->setOwned(ownedProducts.contains(item.id));
                                 connect(this, &CatalogProductPage::wishlistChanged,
-                                        productItem, [productItem, productId = item.id](const QSet<unsigned long long> &ids)
+                                        productItem, [productItem, productId = item.id](const QSet<const QString> &ids)
                                 {
                                     productItem->setWishlisted(ids.contains(productId));
                                 });
@@ -973,13 +973,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         }
 
                         connect(this, &CatalogProductPage::ownedProductsChanged,
-                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<const QString> &ids)
                         {
                             recommendationItem->setOwned(ids.contains(productId));
                         });
                         recommendationItem->setOwned(ownedProducts.contains(recommendation.productId));
                         connect(this, &CatalogProductPage::wishlistChanged,
-                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<const QString> &ids)
                         {
                             recommendationItem->setWishlisted(ids.contains(productId));
                         });
@@ -1032,13 +1032,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         }
 
                         connect(this, &CatalogProductPage::ownedProductsChanged,
-                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<const QString> &ids)
                         {
                             recommendationItem->setOwned(ids.contains(productId));
                         });
                         recommendationItem->setOwned(ownedProducts.contains(recommendation.productId));
                         connect(this, &CatalogProductPage::wishlistChanged,
-                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<unsigned long long> &ids)
+                                recommendationItem, [recommendationItem, productId = recommendation.productId](const QSet<const QString> &ids)
                         {
                             recommendationItem->setWishlisted(ids.contains(productId));
                         });
@@ -1122,7 +1122,7 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
-                    this->ownedProducts.insert(id.toULongLong());
+                    this->ownedProducts.insert(id.toString());
                 }
                 if (this->ownedProducts.contains(id))
                 {
@@ -1156,7 +1156,7 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                 {
                     if (wishlistedItems[key].toBool())
                     {
-                        wishlist.insert(key.toULongLong());
+                        wishlist.insert(key);
                     }
                 }
                 ui->wishlistButton->setChecked(wishlist.contains(id));

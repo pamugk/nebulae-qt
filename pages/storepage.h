@@ -23,9 +23,9 @@ private:
     api::GogApiClient *apiClient;
     QVector<QString> nowOnSaleSectionIds;
     QVector<bool> nowOnSaleSectionsRequested;
-    QSet<unsigned long long> ownedProducts;
+    QSet<const QString> ownedProducts;
     Ui::StorePage *ui;
-    QSet<unsigned long long> wishlist;
+    QSet<const QString> wishlist;
 
     QNetworkReply *customSectionCDPRReply;
     QNetworkReply *customSectionExclusivesReply;
@@ -53,8 +53,8 @@ private:
     void getNews();
     void getNowOnSale();
     void getRecommendedDlc();
-    Q_SIGNAL void ownedProductsChanged(const QSet<unsigned long long> &ids);
-    Q_SIGNAL void wishlistChanged(const QSet<unsigned long long> &ids);
+    Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:
     virtual void initialize(const QVariant &data) override;

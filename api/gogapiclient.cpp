@@ -11,7 +11,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
     : QObject{parent},
       client(new QNetworkAccessManager(this), this),
       refreshingToken(false),
-      userId({})
+      userId()
 {
     connect(client.networkAccessManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply *reply)
     {
@@ -32,9 +32,9 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
                     {
                         std::pair("access_token", data["access_token"]),
                         std::pair("refresh_token", data["refresh_token"]),
-                        std::pair("user_id", data["user_id"].toString().toULongLong()),
+                        std::pair("user_id", data["user_id"].toString()),
                     });
-        userId = data["user_id"].toULongLong();
+        userId = data["user_id"].toString();
         tokenStorage->setAuthData(savedData);
     });
     client.setReplyHandler(replyHandler);
@@ -45,11 +45,11 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         client.setRefreshToken(data["refresh_token"].toString());
         if (data.contains("user_id"))
         {
-            userId = data["user_id"].toULongLong();
+            userId = data["user_id"].toString();
         }
         else
         {
-            userId = {};
+            userId = QString();
         }
         emit authenticated(!client.token().isEmpty(), userId);
     });
@@ -100,10 +100,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         {
             data["access_token"] = client.token();
             data["refresh_token"] = client.token();
-            if (userId.has_value())
-            {
-                data["user_id"] = userId.value();
-            }
+            data["user_id"] = userId;
         }
         tokenStorage->setAuthData(data);
     });
@@ -116,7 +113,7 @@ bool api::GogApiClient::isAuthenticated()
 
 QNetworkReply *api::GogApiClient::getAchievements()
 {
-    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg("")));
+    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
 }
 
 QNetworkReply *api::GogApiClient::getAnything(const QString &url)
@@ -124,26 +121,26 @@ QNetworkReply *api::GogApiClient::getAnything(const QString &url)
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getCatalogProductInfo(unsigned long long id, const QString &locale)
+QNetworkReply *api::GogApiClient::getCatalogProductInfo(const QString &id, const QString &locale)
 {
     QVariantMap parameters;
     parameters["locale"] = locale;
-    return client.get(QUrl("https://api.gog.com/v2/games/" + QString::number(id)), parameters);
+    return client.get(QUrl(QString("https://api.gog.com/v2/games/%1").arg(id)), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUser()
 {
-    return getUser(userId.value());
+    return getUser(userId);
 }
 
-std::optional<unsigned long long> api::GogApiClient::getCurrentUserId() const
+QString api::GogApiClient::getCurrentUserId() const
 {
     return userId;
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
 {
-    return client.get(QString("https://galaxy-library.gog.com/users/%1/releases").arg(userId.value()));
+    return client.get(QStringLiteral("https://galaxy-library.gog.com/users/%1/releases").arg(userId));
 }
 
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
@@ -196,12 +193,12 @@ QNetworkReply *api::GogApiClient::getOwnedLicensesIds()
     return client.get(QUrl("https://menu.gog.com/v1/account/licences"));
 }
 
-QNetworkReply *api::GogApiClient::getOwnedProductInfo(unsigned long long id, const QString &locale)
+QNetworkReply *api::GogApiClient::getOwnedProductInfo(const QString &id, const QString &locale)
 {
     QVariantMap parameters;
     parameters["expand"] = "downloads,expanded_dlcs,description,screenshots,videos,related_products,changelog";
     parameters["locale"] = locale;
-    return client.get(QUrl("https://api.gog.com/products/" + QString::number(id)), parameters);
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/").arg(id)), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, unsigned short page)
@@ -220,37 +217,37 @@ QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const Q
 
 QNetworkReply *api::GogApiClient::getPlayTime()
 {
-    return client.get(QUrl(QString("https://gameplay.gog.com/users/%1/sessions").arg("")));
+    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
 }
 
-QNetworkReply *api::GogApiClient::getProductAchievements(unsigned long long productId)
+QNetworkReply *api::GogApiClient::getProductAchievements(const QString &productId)
 {
-    return client.get(QUrl(QString("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(QString::number(productId), "")));
+    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(productId, userId)));
 }
 
-QNetworkReply *api::GogApiClient::getProductAverageRating(unsigned long long productId, const QString &reviewer)
+QNetworkReply *api::GogApiClient::getProductAverageRating(const QString &productId, const QString &reviewer)
 {
     QVariantMap parameters;
     if (!reviewer.isEmpty())
     {
         parameters["reviewer"] = reviewer;
     }
-    return client.get(QUrl(QString("https://reviews.gog.com/v1/products/%1/averageRating").arg(QString::number(productId))), parameters);
+    return client.get(QUrl(QStringLiteral("https://reviews.gog.com/v1/products/%1/averageRating").arg(productId)), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getProductPrices(unsigned long long productId, const QString &countryCode)
+QNetworkReply *api::GogApiClient::getProductPrices(const QString &productId, const QString &countryCode)
 {
     QVariantMap parameters;
     parameters["countryCode"] = countryCode;
-    return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(QString::number(productId))), parameters);
+    return client.get(QUrl(QString("https://api.gog.com/products/%1/prices").arg(productId)), parameters);
 }
 
-QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(unsigned long long productId,
+QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(const QString &productId,
                                                                             const QString &countryCode,
                                                                             const QString &currency,
                                                                             unsigned char limit)
 {
-    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(QString::number(productId)));
+    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(productId));
     url.setQuery(QUrlQuery({
                                std::pair("country_code", countryCode),
                                std::pair("currency", currency),
@@ -259,12 +256,12 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(uns
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(unsigned long long productId,
+QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(const QString &productId,
                                                                   const QString &countryCode,
                                                                   const QString &currency,
                                                                   unsigned char limit)
 {
-    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(QString::number(productId)));
+    QUrl url(QString("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(productId));
     url.setQuery(QUrlQuery({
                                std::pair("country_code", countryCode),
                                std::pair("currency", currency),
@@ -273,12 +270,12 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(unsigned long
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getProductReviews(unsigned long long productId,
+QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
                                                     const ReviewFilters &filters,
                                                     const SortOrder &order,
                                                     unsigned short limit, unsigned short page)
 {
-    QUrl url(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(QString::number(productId)));
+    QUrl url(QString("https://reviews.gog.com/v1/products/%1/reviews").arg(productId));
     QUrlQuery query({
                         std::pair("limit", QString::number(limit)),
                         std::pair("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field)),
@@ -360,7 +357,7 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
 
 QNetworkReply *api::GogApiClient::getStoreCustomSection(const QString &id)
 {
-    return client.get(QUrl(QString("https://api.gog.com/custom_sections/%1").arg(id)));
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/custom_sections/%1").arg(id)));
 }
 
 QNetworkReply *api::GogApiClient::getStoreDiscoverGamesForYou()
@@ -378,9 +375,9 @@ QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
     return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
 }
 
-QNetworkReply *api::GogApiClient::getUser(unsigned long long id)
+QNetworkReply *api::GogApiClient::getUser(const QString &id)
 {
-    return client.get(QString("https://users.gog.com/users/%1").arg(id));
+    return client.get(QStringLiteral("https://users.gog.com/users/%1").arg(id));
 }
 
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
@@ -427,7 +424,7 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         query.addQueryItem("publishers", "in:" + filter.publishers.join(','));
     }
-    query.addQueryItem("order", QString("%1:%2").arg(order.ascending ? "asc" : "desc", order.field));
+    query.addQueryItem("order", QStringLiteral("%1:%2").arg(order.ascending ? "asc" : "desc", order.field));
     if (!filter.genres.isEmpty())
     {
         query.addQueryItem("genres", "in:" + filter.genres.join(','));
@@ -506,7 +503,7 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
 
 QNetworkReply *api::GogApiClient::setWishlistVisibility(int visibility)
 {
-    return client.get(QString("https://embed.gog.com/account/save_sharing_wishlist/%1").arg(visibility));
+    return client.get(QStringLiteral("https://embed.gog.com/account/save_sharing_wishlist/%1").arg(QString::number(visibility)));
 }
 
 void api::GogApiClient::grant()

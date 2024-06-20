@@ -22,7 +22,7 @@ JobManager::~JobManager()
     }
 }
 
-void JobManager::setAuthenticated(bool authenticated, std::optional<unsigned long long> userId)
+void JobManager::setAuthenticated(bool authenticated, const QString &userId)
 {
     if (libraryReply != nullptr)
     {
@@ -44,7 +44,7 @@ void JobManager::setAuthenticated(bool authenticated, std::optional<unsigned lon
                 auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
                 api::GetUserReleasesResponse data;
                 parseGetUserReleasesResponse(resultJson, data);
-                db::saveUserReleases(this->userId.value(), data.items);
+                db::saveUserReleases(this->userId, data.items);
             }
             else if (networkReply->error() != QNetworkReply::OperationCanceledError)
             {

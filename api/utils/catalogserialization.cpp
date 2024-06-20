@@ -33,7 +33,7 @@ void parseMoney(const QJsonObject &json, api::Money &data)
 
 void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, const QString &horizontalCoverFormat)
 {
-    data.id = json["id"].toString().toULongLong();
+    data.id = json["id"].toString();
     data.slug = json["slug"].toString();
     parseMetaTagArray(json["features"].toArray(), data.features);
     parseStringArray(json["screenshots"].toArray(), data.screenshots);

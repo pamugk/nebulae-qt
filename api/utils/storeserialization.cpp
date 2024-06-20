@@ -15,7 +15,7 @@ void parsePrice(const QJsonObject &json, api::StoreProductPrice &data)
 
 void parseProduct(const QJsonObject &json, api::StoreProduct &data, const QString &imageFormatter)
 {
-    data.id = json["id"].toString().toULongLong();
+    data.id = json["id"].toString();
     data.title = json["title"].toString();
     data.image = json["image"].toString();
     if (!data.image.isNull())

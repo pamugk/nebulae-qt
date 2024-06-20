@@ -147,7 +147,7 @@ void OrdersPage::fetchData()
                 for (const api::Order &item : std::as_const(data.orders))
                 {
                     auto orderGroup = new OrderGroup(item, apiClient, ui->resultsScrollContents);
-                    connect(orderGroup, &OrderGroup::navigateToProduct, this, [this](unsigned long long productId)
+                    connect(orderGroup, &OrderGroup::navigateToProduct, this, [this](const QString &productId)
                     {
                         emit navigate({ Page::CATALOG_PRODUCT, productId });
                     });

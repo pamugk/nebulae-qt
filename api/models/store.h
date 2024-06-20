@@ -40,7 +40,7 @@ namespace api
 
     struct StoreProduct
     {
-        unsigned long long id;
+        QString id;
         QString title;
         QString image;
         StoreProductPrice price;

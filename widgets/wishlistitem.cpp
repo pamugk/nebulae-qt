@@ -45,8 +45,6 @@ WishlistItem::WishlistItem(const api::Product &data,
         imageReply->deleteLater();
         imageReply = nullptr;
     });
-
-    itemId = data.id;
 }
 
 WishlistItem::~WishlistItem()
@@ -60,5 +58,5 @@ WishlistItem::~WishlistItem()
 
 void WishlistItem::mousePressEvent(QMouseEvent *event)
 {
-    emit navigateToProduct(itemId);
+    emit clicked();
 }

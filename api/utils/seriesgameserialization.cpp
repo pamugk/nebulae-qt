@@ -20,7 +20,7 @@ void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
             data.visibleInCatalog = product["isVisibleInCatalog"].toBool();
             data.preorder = product["isPreorder"].toBool();
             data.visibleInAccount = product["isVisibleInAccount"].toBool();
-            data.id = product["id"].toInteger();
+            data.id = QString::number(product["id"].toInteger());
             data.title = product["title"].toString();
             data.installable = product["isInstallable"].toBool();
             data.secret = product["isSecret"].toBool();

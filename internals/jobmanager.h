@@ -15,12 +15,12 @@ public:
 signals:
 
 public slots:
-    void setAuthenticated(bool authenticated, std::optional<unsigned long long> userId);
+    void setAuthenticated(bool authenticated, const QString &userId);
 
 private:
     api::GogApiClient *apiClient;
     QNetworkReply *libraryReply;
-    std::optional<unsigned long long> userId;
+    QString userId;
 };
 
 #endif // JOBMANAGER_H

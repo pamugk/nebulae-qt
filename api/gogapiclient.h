@@ -22,9 +22,9 @@ namespace api
 
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
-        QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getCatalogProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getCurrentUser();
-        std::optional<unsigned long long> getCurrentUserId() const;
+        QString getCurrentUserId() const;
         QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
@@ -32,23 +32,23 @@ namespace api
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
-        QNetworkReply *getOwnedProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getOwnedProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
-                                   const QString &order = "title",
-                                   unsigned short page = 1);
+                                        const QString &order = "title",
+                                        unsigned short page = 1);
         QNetworkReply *getPlayTime();
-        QNetworkReply *getProductAchievements(unsigned long long productId);
-        QNetworkReply *getProductAverageRating(unsigned long long productId, const QString &reviewer = QString());
-        QNetworkReply *getProductPrices(unsigned long long productId, const QString &countryCode);
-        QNetworkReply *getProductRecommendationsPurchasedTogether(unsigned long long productId,
+        QNetworkReply *getProductAchievements(const QString &productId);
+        QNetworkReply *getProductAverageRating(const QString &productId, const QString &reviewer = QString());
+        QNetworkReply *getProductPrices(const QString &productId, const QString &countryCode);
+        QNetworkReply *getProductRecommendationsPurchasedTogether(const QString &productId,
                                                                  const QString &countryCode,
                                                                  const QString &currency,
                                                                  unsigned char limit = 8);
-        QNetworkReply *getProductRecommendationsSimilar(unsigned long long productId,
+        QNetworkReply *getProductRecommendationsSimilar(const QString &productId,
                                                        const QString &countryCode,
                                                        const QString &currency,
                                                        unsigned char limit = 8);
-        QNetworkReply *getProductReviews(unsigned long long productId,
+        QNetworkReply *getProductReviews(const QString &productId,
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
@@ -61,7 +61,7 @@ namespace api
         QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
-        QNetworkReply *getUser(unsigned long long id);
+        QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);
@@ -80,12 +80,12 @@ namespace api
 
     signals:
         void authorize(const QUrl &authUrl);
-        void authenticated(bool authenticated, std::optional<unsigned long long> userId);
+        void authenticated(bool authenticated, QString userId);
 
     private:
         QOAuth2AuthorizationCodeFlow client;
         bool refreshingToken;
-        std::optional<unsigned long long> userId;
+        QString userId;
     };
 }
 

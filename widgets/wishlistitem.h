@@ -23,13 +23,12 @@ public:
     ~WishlistItem();
 
 signals:
-    void navigateToProduct(unsigned long long id);
+    void clicked();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    unsigned long long itemId;
     QNetworkReply *imageReply;
     Ui::WishlistItem *ui;
 };

@@ -163,13 +163,13 @@ void AllGamesPage::layoutResults()
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
             connect(this, &AllGamesPage::ownedProductsChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setOwned(ids.contains(productId));
             });
             storeItem->setOwned(ownedProducts.contains(product.id));
             connect(this, &AllGamesPage::wishlistChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setWishlisted(ids.contains(productId));
             });
@@ -191,13 +191,13 @@ void AllGamesPage::layoutResults()
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
             connect(this, &AllGamesPage::ownedProductsChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setOwned(ids.contains(productId));
             });
             storeItem->setOwned(ownedProducts.contains(product.id));
             connect(this, &AllGamesPage::wishlistChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setWishlisted(ids.contains(productId));
             });
@@ -1342,7 +1342,7 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
-                    this->ownedProducts.insert(id.toULongLong());
+                    this->ownedProducts.insert(id.toString());
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
@@ -1368,7 +1368,7 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 {
                     if (wishlistedItems[key].toBool())
                     {
-                        wishlist.insert(key.toULongLong());
+                        wishlist.insert(key);
                     }
                 }
                 emit wishlistChanged(wishlist);

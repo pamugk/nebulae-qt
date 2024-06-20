@@ -127,13 +127,13 @@ void StorePage::getCustomSectionCDPRGames()
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.product.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -187,13 +187,13 @@ void StorePage::getCustomSectionExclusiveGames()
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.product.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -248,13 +248,13 @@ void StorePage::getCustomSectionGOGGames()
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                      item.product.price.discountPercentage, item.product.price.free, "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.product.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -313,13 +313,13 @@ void StorePage::getDealOfTheDay()
                     itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
                                          item.product.price.discountPercentage, item.product.price.free, "");
                     connect(this, &StorePage::ownedProductsChanged,
-                            itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                            itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                     {
                         itemWidget->setOwned(ids.contains(productId));
                     });
                     itemWidget->setOwned(ownedProducts.contains(item.product.id));
                     connect(this, &StorePage::wishlistChanged,
-                            itemWidget, [itemWidget, productId = item.product.id](const QSet<unsigned long long> &ids)
+                            itemWidget, [itemWidget, productId = item.product.id](const QSet<const QString> &ids)
                     {
                         itemWidget->setWishlisted(ids.contains(productId));
                     });
@@ -379,13 +379,13 @@ void StorePage::getDiscoverBestsellingGames()
                                         : round(100. * (item.price.baseMoney.amount - item.price.finalMoney.amount) / item.price.baseMoney.amount),
                                      item.price.finalMoney.amount == 0, item.price.finalMoney.currency);
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -436,13 +436,13 @@ void StorePage::getDiscoverGamesForYou()
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -493,13 +493,13 @@ void StorePage::getDiscoverNewGames()
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -551,13 +551,13 @@ void StorePage::getDiscoverUpcomingGames()
                                      item.price.free, "");
                 itemWidget->setTitle(item.title);
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -695,7 +695,7 @@ void StorePage::getNowOnSale()
 
             for (const api::CatalogProduct &discountedProduct : std::as_const(data.products))
             {
-                if (discountedProduct.id == 0)
+                if (discountedProduct.id.isNull())
                 {
                     continue;
                 }
@@ -708,13 +708,13 @@ void StorePage::getNowOnSale()
                                                 discount, discountedProduct.price.baseMoney.amount == 0,
                                                 discountedProduct.price.baseMoney.currency);
                 connect(this, &StorePage::ownedProductsChanged,
-                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<unsigned long long> &ids)
+                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<const QString> &ids)
                 {
                     discountedProductItem->setOwned(ids.contains(productId));
                 });
                 discountedProductItem->setOwned(ownedProducts.contains(discountedProduct.id));
                 connect(this, &StorePage::wishlistChanged,
-                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<unsigned long long> &ids)
+                        discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<const QString> &ids)
                 {
                     discountedProductItem->setWishlisted(ids.contains(productId));
                 });
@@ -780,13 +780,13 @@ void StorePage::getRecommendedDlc()
                                      item.price.free, "");
                 itemWidget->setTitle(item.title);
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -892,7 +892,7 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
-                    this->ownedProducts.insert(id.toULongLong());
+                    this->ownedProducts.insert(id.toString());
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
@@ -918,7 +918,7 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                 {
                     if (wishlistedItems[key].toBool())
                     {
-                        wishlist.insert(key.toULongLong());
+                        wishlist.insert(key);
                     }
                 }
                 emit wishlistChanged(wishlist);
@@ -1002,13 +1002,13 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
                                      item.price.discountPercentage, item.price.free,
                                      "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });
@@ -1047,13 +1047,13 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
                                      item.price.discountPercentage, item.price.free,
                                      "");
                 connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setOwned(ids.contains(productId));
                 });
                 itemWidget->setOwned(ownedProducts.contains(item.id));
                 connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<unsigned long long> &ids)
+                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
                     itemWidget->setWishlisted(ids.contains(productId));
                 });

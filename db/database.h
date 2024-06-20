@@ -8,7 +8,7 @@
 namespace db
 {
     void initialize();
-    void saveUserReleases(unsigned long long userId, const QVector<api::UserRelease> &releases);
+    void saveUserReleases(const QString &userId, const QVector<api::UserRelease> &releases);
 }
 
 #endif

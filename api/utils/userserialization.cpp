@@ -4,7 +4,7 @@
 
 void parseUserData(const QJsonObject &json, api::User &data)
 {
-    data.id = json["id"].toString().toULongLong();
+    data.id = json["id"].toString();
     data.username = json["username"].toString();
     data.created = QDateTime::fromString(json["created_date"].toString(), Qt::ISODate);
     data.avatar.gogImageId = json["avatar"]["gog_image_id"].toString();

@@ -23,7 +23,7 @@ namespace api
 
     struct User
     {
-        unsigned long long id;
+        QString id;
         QString username;
         QDateTime created;
         Avatar avatar;

@@ -33,7 +33,7 @@ namespace api
 
     struct Recommendation
     {
-        unsigned long long productId;
+        QString productId;
         double rating;
         Details details;
         Pricing pricing;

@@ -26,6 +26,7 @@ set(PROJECT_SOURCES
         api/models/catalog.h api/models/catalogfilter.h
         api/models/catalogproductinfo.h
         api/models/filters.h
+        api/models/game.h
         api/models/metatag.h
         api/models/news.h
         api/models/order.h api/models/orderfilter.h
@@ -35,6 +36,7 @@ set(PROJECT_SOURCES
         api/models/product.h
         api/models/productshared.h
         api/models/recommendation.h
+        api/models/release.h
         api/models/review.h api/models/reviewfilters.h
         api/models/seriesgame.h
         api/models/sort.h
