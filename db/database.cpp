@@ -349,7 +349,7 @@ INSERT INTO developer(id, name, slug)
 )");
 
 const auto INSERT_GAME = QLatin1String(R"(
-INSERT INTO release(id, parent_id, first_release_date, title, title_sort, type, summary, visible, aggregated_rating, horizontal_artwork, background, vertical_cover, cover, logo, square_icon)
+INSERT INTO game(id, parent_id, first_release_date, title, title_sort, type, summary, visible, aggregated_rating, horizontal_artwork, background, vertical_cover, cover, logo, square_icon)
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE
     SET parent_id = excluded.parent_id, game_id = excluded.game_id, first_release_date = excluded.first_release_date,
