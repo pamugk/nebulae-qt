@@ -17,10 +17,19 @@ signals:
 public slots:
     void setAuthenticated(bool authenticated, const QString &userId);
 
+protected:
+    virtual void timerEvent(QTimerEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
     QNetworkReply *libraryReply;
+    QNetworkReply *libraryReleaseReply;
+    QNetworkReply *libraryReleaseAchievementsReply;
+    QNetworkReply *libraryReleaseUserAchievementsReply;
     QString userId;
+
+    std::optional<int> achievementsTimerId;
+    std::optional<int> libraryTimerId;
 };
 
 #endif // JOBMANAGER_H

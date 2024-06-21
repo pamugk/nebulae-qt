@@ -38,6 +38,7 @@ namespace api
                                         const QString &order = "title",
                                         unsigned short page = 1);
         QNetworkReply *getPlatformRelease(const QString &platformId, const QString &platformReleaseId);
+        QNetworkReply *getPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId);
         QNetworkReply *getPlayTime();
         QNetworkReply *getProductAchievements(const QString &productId);
         QNetworkReply *getProductAverageRating(const QString &productId, const QString &reviewer = QString());

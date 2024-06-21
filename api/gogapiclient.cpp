@@ -225,6 +225,11 @@ QNetworkReply *api::GogApiClient::getPlatformRelease(const QString &platformId, 
     return client.get(QStringLiteral("https://gamesdb.gog.com/platforms/%1/external_releases/%2").arg(platformId, platformReleaseId));
 }
 
+QNetworkReply *api::GogApiClient::getPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId)
+{
+    return client.get(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/achievements").arg(platformId, platformReleaseId));
+}
+
 QNetworkReply *api::GogApiClient::getPlayTime()
 {
     return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
