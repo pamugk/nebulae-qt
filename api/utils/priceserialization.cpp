@@ -15,10 +15,11 @@ void parseGetPricesResponse(const QJsonValue &json, api::GetPricesResponse &data
         prices = json["_embedded"]["prices"].toArray();
     }
 
+    data.currencies.reserve(prices.count());
     for (const QJsonValue &item : std::as_const(prices))
     {
         auto currencyCode = item["currency"]["code"].toString();
-        data.currencies.append(currencyCode);
+        data.currencies << currencyCode;
         data.prices[currencyCode] =
                 api::ProductPrice
             {

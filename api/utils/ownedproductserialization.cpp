@@ -13,10 +13,10 @@ void parseOwnedProduct(const QJsonValue &json, api::OwnedProduct &data)
 {
     data.galaxyCompatible = json["isGalaxyCompatible"].toBool();
     auto tagIds = json["tags"].toArray();
-    data.tags.resize(tagIds.count());
-    for (std::size_t i = 0; i < tagIds.count(); i++)
+    data.tags.reserve(tagIds.count());
+    for (const QJsonValue &tagId : std::as_const(tagIds))
     {
-        data.tags[i] = tagIds[i].toString();
+        data.tags << tagId.toString();
     }
     data.id = json["id"].toInteger();
     if (json["availability"].isObject())

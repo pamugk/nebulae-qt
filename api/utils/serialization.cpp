@@ -15,10 +15,10 @@ void parseProductData(const QJsonValue &json, api::Product &data)
     data.publisher = json["publisher"].toString();
 
     auto gallery = json["gallery"].toArray();
-    data.gallery.resize(gallery.count());
-    for (std::size_t i = 0; i < gallery.count(); i++)
+    data.gallery.reserve(gallery.count());
+    for (const QJsonValue &galleryItem : std::as_const(gallery))
     {
-        data.gallery[i] = gallery[i].toString();
+        data.gallery << galleryItem.toString();
     }
 
     if (json["video"].isObject())
@@ -29,17 +29,17 @@ void parseProductData(const QJsonValue &json, api::Product &data)
     }
 
     auto supportedOperatingSystems = json["supportedOperatingSystems"].toArray();
-    data.supportedOperatingSystems.resize(supportedOperatingSystems.count());
-    for (std::size_t i = 0; i < supportedOperatingSystems.count(); i++)
+    data.supportedOperatingSystems.reserve(supportedOperatingSystems.count());
+    for (const QJsonValue &supportedOs : std::as_const(supportedOperatingSystems))
     {
-        data.supportedOperatingSystems[i] = supportedOperatingSystems[i].toString();
+        data.supportedOperatingSystems << supportedOs.toString();
     }
 
     auto genres = json["genres"].toArray();
-    data.genres.resize(genres.count());
-    for (std::size_t i = 0; i < genres.count(); i++)
+    data.genres.reserve(genres.count());
+    for (const QJsonValue &genre : std::as_const(genres))
     {
-        data.genres[i] = genres[i].toString();
+        data.genres << genre.toString();
     }
 
     if (!json["globalReleaseDate"].isNull())

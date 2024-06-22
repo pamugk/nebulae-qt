@@ -25,7 +25,7 @@ void parseSupportedOS(const QJsonValue &json, api::SupportedOperatingSystem &dat
             auto requirementId = item["id"].toString();
             if (!definedRequirements.contains(requirementId))
             {
-                data.definedRequirements.append(api::Requirement{requirementId, item["name"].toString()});
+                data.definedRequirements << api::Requirement{requirementId, item["name"].toString()};
             }
             data.systemRequirements[i].requirements.insert(requirementId, item["description"].toString());
         }
@@ -36,10 +36,10 @@ void parseRating(const QJsonValue &json, api::ContentRating &data)
 {
     data.ageRating = json["ageRating"].toInt();
     auto contentDescriptors = json["contentDescriptors"].toArray();
-    data.contentDescriptors.resize(contentDescriptors.count());
+    data.contentDescriptors.reserve(contentDescriptors.count());
     for (const QJsonValue &contentDescriptor : std::as_const(contentDescriptors))
     {
-        data.contentDescriptors.append(contentDescriptor["descriptor"].toString());
+        data.contentDescriptors << contentDescriptor["descriptor"].toString();
     }
     data.category = json["category"]["name"].toString();
     data.categoryId = json["category"]["id"].toInteger();
@@ -67,7 +67,7 @@ void parseEdition(const QJsonValue &json,
         api::Bonus bonus;
         parseBonus(bonuses[i], bonus);
         data.bonuses[i] = bonus.name;
-        data.bonusSet.insert(bonus.name);
+        data.bonusSet << bonus.name;
         if (!bonusMap.contains(bonus.name))
         {
             bonusMap[bonus.name] = bonus;
@@ -82,10 +82,10 @@ void parseFormattedLink(const QJsonValue &json, api::FormattedLink &data)
     data.href = json["href"].toString();
     data.templated = json["templated"].toBool();
     auto formatters = json["formatters"].toArray();
-    data.formatters.resize(formatters.count());
+    data.formatters.reserve(formatters.count());
     for (const QJsonValue &formatter : std::as_const(formatters))
     {
-        data.formatters.append(formatter.toString());
+        data.formatters << formatter.toString();
     }
 }
 
@@ -101,7 +101,7 @@ void parseLocalizations(const QJsonArray &json, QVector<api::Localization> &data
         if (!foundLocales.contains(languageCode))
         {
             foundLocales.insert(language["code"].toString(), data.count());
-            data.append(api::Localization{{languageCode, language["name"].toString()}, false, false});
+            data << api::Localization{{languageCode, language["name"].toString()}, false, false};
         }
 
        auto localizationScope = locale["localizationScope"]["type"].toString();
@@ -158,14 +158,16 @@ void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProd
         data.galaxyBackgroundImageLink = links["galaxyBackgroundImage"]["href"].toString();
 
         const QJsonArray &requiredByGames = links["isRequiredByGames"].toArray();
+        data.requiredByGames.reserve(requiredByGames.count());
         for (const QJsonValue &item : requiredByGames)
         {
-            data.requiredByGames.append(item["href"].toString());
+            data.requiredByGames << item["href"].toString();
         }
         const QJsonArray &requiresGames = links["requiresGames"].toArray();
+        data.requiresGames.reserve(requiresGames.count());
         for (const QJsonValue &item : requiresGames)
         {
-            data.requiresGames.append(item["href"].toString());
+            data.requiresGames << item["href"].toString();
         }
     }
 
@@ -230,10 +232,10 @@ void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProd
         data.publisher = productData["publisher"]["name"].toString();
 
         auto developers = productData["developers"].toArray();
-        data.developers.resize(developers.count());
+        data.developers.reserve(developers.count());
         for (const QJsonValue &developer : std::as_const(developers))
         {
-            data.developers.append(developer["name"].toString());
+            data.developers << developer["name"].toString();
         }
 
         auto supportedOperatingSystems = productData["supportedOperatingSystems"].toArray();
@@ -333,8 +335,8 @@ void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProd
 
                 if (isCommonBonus)
                 {
-                    fullBonusSet.insert(bonusName);
-                    data.fullBonusList.append(bonusName);
+                    fullBonusSet << bonusName;
+                    data.fullBonusList << bonusName;
                 }
             }
         }
@@ -344,8 +346,8 @@ void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProd
             {
                 if (!fullBonusSet.contains(bonusName))
                 {
-                    fullBonusSet.insert(bonusName);
-                    data.fullBonusList.append(bonusName);
+                    fullBonusSet << bonusName;
+                    data.fullBonusList << bonusName;
                 }
             }
         }

@@ -8,10 +8,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
     data.id = json["id"].toString();
     data.parentId = json["parent_id"].toString();
     auto dlcsIds = json["dlcs_ids"].toArray();
-    data.dlcsIds.resize(dlcsIds.count());
+    data.dlcsIds.reserve(dlcsIds.count());
     for (const QJsonValue &dlcId : std::as_const(dlcsIds))
     {
-        data.dlcsIds.append(dlcId.toString());
+        data.dlcsIds << dlcId.toString();
     }
     data.firstReleaseDate = QDateTime::fromString(json["first_release_date"].toString(), Qt::ISODate);
     auto releases = json["releases"].toArray();
@@ -24,10 +24,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
     data.sortingTitle = json["sorting_title"].toObject().toVariantMap();
     data.type = json["type"].toString();
     auto developersIds = json["developers_ids"].toArray();
-    data.developersIds.resize(developersIds.count());
+    data.developersIds.reserve(developersIds.count());
     for (const QJsonValue &developerId : std::as_const(developersIds))
     {
-        data.developersIds.append(developerId.toString());
+        data.developersIds << developerId.toString();
     }
     auto developers = json["developers"].toArray();
     data.developers.resize(developers.count());
@@ -36,10 +36,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
         parseIdMetaTag(developers[i], data.developers[i]);
     }
     auto publishersIds = json["publishers_ids"].toArray();
-    data.publishersIds.resize(publishersIds.count());
+    data.publishersIds.reserve(publishersIds.count());
     for (const QJsonValue &publisherId : std::as_const(publishersIds))
     {
-        data.publishersIds.append(publisherId.toString());
+        data.publishersIds << publisherId.toString();
     }
     auto publishers = json["publishers"].toArray();
     data.publishers.resize(publishers.count());
@@ -48,10 +48,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
         parseIdMetaTag(publishers[i], data.publishers[i]);
     }
     auto genresIds = json["genres_ids"].toArray();
-    data.genresIds.resize(genresIds.count());
+    data.genresIds.reserve(genresIds.count());
     for (const QJsonValue &genreId : std::as_const(genresIds))
     {
-        data.genresIds.append(genreId.toString());
+        data.genresIds << genreId.toString();
     }
     auto genres = json["genres"].toArray();
     data.genres.resize(genres.count());
@@ -60,10 +60,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
         parseLocalizedMetaTag(genres[i], data.genres[i]);
     }
     auto themesIds = json["themes_ids"].toArray();
-    data.themesIds.resize(themesIds.count());
+    data.themesIds.reserve(themesIds.count());
     for (const QJsonValue &themeId : std::as_const(themesIds))
     {
-        data.themesIds.append(themeId.toString());
+        data.themesIds << themeId.toString();
     }
     auto themes = json["themes"].toArray();
     data.themes.resize(themes.count());
@@ -72,10 +72,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
         parseLocalizedMetaTag(themes[i], data.themes[i]);
     }
     auto screenshots = json["screenshots"].toArray();
-    data.screenshots.resize(screenshots.count());
+    data.screenshots.reserve(screenshots.count());
     for (const QJsonValue &screenshot : std::as_const(screenshots))
     {
-        data.screenshots.append(screenshot["url_format"].toString());
+        data.screenshots << screenshot["url_format"].toString();
     }
     auto videos = json["videos"].toArray();
     data.videos.resize(videos.count());
@@ -84,17 +84,17 @@ void parseGame(const QJsonValue &json, api::Game &data)
         parseNamedVideo(videos[i], data.videos[i]);
     }
     auto artworks = json["artworks"].toArray();
-    data.artworks.resize(artworks.count());
+    data.artworks.reserve(artworks.count());
     for (const QJsonValue &artwork : std::as_const(artworks))
     {
-        data.artworks.append(artwork["url_format"].toString());
+        data.artworks << artwork["url_format"].toString();
     }
     data.summary = json["summary"].toObject().toVariantMap();
     data.visibleInLibrary = json["visible_in_library"].toBool();
     data.aggregatedRating = json["aggregated_rating"].toDouble();
     auto gameModes = json["game_modes"].toArray();
     data.gameModes.resize(gameModes.count());
-    for (std::size_t i = 0; i < videos.count(); i++)
+    for (std::size_t i = 0; i < gameModes.count(); i++)
     {
         parseIdMetaTag(gameModes[i], data.gameModes[i]);
     }

@@ -65,7 +65,10 @@ set(PROJECT_SOURCES
         api/utils/userreleaseserialization.h api/utils/userreleaseserialization.cpp
         api/utils/userserialization.h api/utils/userserialization.cpp
 
-        db/database.h db/database.cpp
+        db/database.h
+        db/initialize.cpp
+        db/library.cpp
+        db/userlibrary.cpp
 
         internals/jobmanager.h internals/jobmanager.cpp
         internals/navigationdestination.h

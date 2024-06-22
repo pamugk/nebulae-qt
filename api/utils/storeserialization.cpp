@@ -25,10 +25,10 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
     parsePrice(json["price"], data.price);
 
     auto operatingSystems = json["supportedOperatingSystems"].toArray();
-    data.supportedOperatingSystems.resize(operatingSystems.count());
+    data.supportedOperatingSystems.reserve(operatingSystems.count());
     for (const QJsonValue &os : std::as_const(operatingSystems))
     {
-        data.supportedOperatingSystems.append(os.toString());
+        data.supportedOperatingSystems << os.toString();
     }
 
     data.comingSoon = json["isComingSoon"].toBool();

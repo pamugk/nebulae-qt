@@ -18,11 +18,12 @@ void parseMetaTagArray(const QJsonArray &json, QVector<api::MetaTag> &data)
 }
 
 void parseStringArray(const QJsonArray &json, QVector<QString> &data)
-{    data.resize(json.count());
-     for (std::size_t i = 0; i < json.count(); i++)
-     {
-         data[i] = json[i].toString();
-     }
+{
+    data.resize(json.count());
+    for (std::size_t i = 0; i < json.count(); i++)
+    {
+        data[i] = json[i].toString();
+    }
 }
 
 void parseMoney(const QJsonValue &json, api::Money &data)

@@ -79,11 +79,11 @@ void JobManager::setAuthenticated(bool authenticated, const QString &userId)
 
         if (!libraryTimerId.has_value())
         {
-            libraryTimerId = startTimer(std::chrono::minutes(1));
+            libraryTimerId = startTimer(std::chrono::seconds(30));
         }
         if (!achievementsTimerId.has_value())
         {
-            achievementsTimerId = startTimer(std::chrono::minutes(1));
+            achievementsTimerId = startTimer(std::chrono::seconds(30));
         }
     }
     else
@@ -127,9 +127,17 @@ void JobManager::timerEvent(QTimerEvent *event)
                         parseRelease(resultJson, data);
                         db::saveRelease(data);
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (networkReply->error() == QNetworkReply::ContentNotFoundError)
                     {
                         const auto &[platformId, platformReleaseId] = ids;
+                        api::Release stubData;
+                        stubData.platformId = platformId;
+                        stubData.externalId = platformReleaseId;
+                        qDebug() << "Found an unknown product, saving stub mapping: " << platformId << platformReleaseId;
+                        db::saveRelease(stubData);
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
                         qDebug() << "Failed to fetch user's release info: "
                                  << networkReply->error() << networkReply->errorString()
                                  << QString(networkReply->readAll()).toUtf8();

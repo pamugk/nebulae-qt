@@ -24,10 +24,10 @@ void parseUserFullData(const QJsonValue &json, api::UserFullData &data)
     parseUserData(json, data);
     data.email = json["email"].toString();
     auto tags = json["tags"].toArray();
-    data.tags.resize(tags.size());
+    data.tags.reserve(tags.size());
     for (const QJsonValue &tag : std::as_const(tags))
     {
-        data.tags.append(tag.toString());
+        data.tags << tag.toString();
     }
     data.status = json["status"].toInt();
     data.checksum = json["checksum"].toString();

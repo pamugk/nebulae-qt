@@ -41,7 +41,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 #ifdef Q_OS_MACOS
     popularFiltersHolder->layout()->addWidget(new QPushButton("macOS", popularFiltersHolder));
 #endif
-    uiActions.append(popularFiltersHolder);
+    uiActions << popularFiltersHolder;
 
     auto filterToolButton = new QToolButton(this);
     filterToolButton->setIcon(QIcon(":icons/filter.svg"));
@@ -67,7 +67,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     filterSubmenu->addSeparator();
     filterSubmenu->addAction("Hidden")->setCheckable(true);
     filterToolButton->setMenu(filterMenu);
-    uiActions.append(filterToolButton);
+    uiActions << filterToolButton;
 
     auto addToolButton = new QToolButton(this);
     addToolButton->setIcon(QIcon(":icons/plus.svg"));
@@ -81,7 +81,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     addMenu->addSeparator();
     addMenu->addAction("Add friends");
     addToolButton->setMenu(addMenu);
-    uiActions.append(addToolButton);
+    uiActions << addToolButton;
 
     auto searchLineEdit = new QLineEdit(this);
     searchLineEdit->setClearButtonEnabled(true);
@@ -95,7 +95,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
             updateData();
         }
     });
-    uiActions.append(searchLineEdit);
+    uiActions << searchLineEdit;
 
     auto viewSettingsToolButton = new QToolButton(this);
     viewSettingsToolButton->setIcon(QIcon(":icons/sliders.svg"));
@@ -280,7 +280,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     settingsSubmenu->addAction("Tags");
 
     viewSettingsToolButton->setMenu(viewSettingsMenu);
-    uiActions.append(viewSettingsToolButton);
+    uiActions << viewSettingsToolButton;
 
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsStack->setCurrentWidget(ui->resultsGridPage);

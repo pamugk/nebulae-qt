@@ -16,12 +16,12 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
     ui->ratingLabel->setText(QString::number(data.rating, 'g', 2) + "/5");
     ui->titleLabel->setText(data.contentTitle);
     QStringList subheader;
-    subheader.append(data.date.toString("MMMM, d yyyy"));
+    subheader << data.date.toString("MMMM, d yyyy");
     for (const QString &label : std::as_const(data.labels))
     {
         if (label == "verified_owner")
         {
-            subheader.append("Verified owner");
+            subheader << "Verified owner";
         }
     }
     ui->subheaderLabel->setText(subheader.join(" • "));

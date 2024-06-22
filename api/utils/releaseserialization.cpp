@@ -12,10 +12,10 @@ void parseRelease(const QJsonValue &json, api::Release &data)
     data.platformId = json["platform_id"].toString();
     data.externalId = json["external_id"].toString();
     auto dlcsIds = json["dlcs_ids"].toArray();
-    data.dlcsIds.resize(dlcsIds.count());
+    data.dlcsIds.reserve(dlcsIds.count());
     for (const QJsonValue &dlcId : std::as_const(dlcsIds))
     {
-        data.dlcsIds.append(dlcId.toString());
+        data.dlcsIds << dlcId.toString();
     }
     auto dlcs = json["dlcs"].toArray();
     data.dlcs.resize(dlcs.count());
@@ -33,10 +33,10 @@ void parseRelease(const QJsonValue &json, api::Release &data)
         data.supportedOperatingSystems[i].slug = os["slug"].toString();
     }
     auto availableLanguages = json["available_languages"].toArray();
-    data.availableLanguages.resize(availableLanguages.count());
+    data.availableLanguages.reserve(availableLanguages.count());
     for (const QJsonValue &language : std::as_const(availableLanguages))
     {
-        data.availableLanguages.append(language["code"].toString());
+        data.availableLanguages << language["code"].toString();
     }
     data.firstReleaseDate = QDateTime::fromString(json["first_release_date"].toString(), Qt::ISODate);
     parseGame(json["game"], data.game);
@@ -52,7 +52,7 @@ void parseRelease(const QJsonValue &json, api::Release &data)
     data.summary = json["summary"].toObject().toVariantMap();
     auto gameModes = json["game_modes"].toArray();
     data.gameModes.resize(gameModes.count());
-    for (std::size_t i = 0; i < videos.count(); i++)
+    for (std::size_t i = 0; i < gameModes.count(); i++)
     {
         parseIdMetaTag(gameModes[i], data.gameModes[i]);
     }

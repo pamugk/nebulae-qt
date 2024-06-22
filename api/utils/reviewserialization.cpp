@@ -22,10 +22,10 @@ void parseReview(const QJsonValue &json, api::Review &data)
     data.creationDate = QDateTime::fromString(json["creationDate"].toString(),Qt::ISODate);
 
     auto labels = json["labels"].toArray();
-    data.labels.resize(labels.count());
-    for (std::size_t i = 0; i < labels.count(); i++)
+    data.labels.reserve(labels.count());
+    for (const QJsonValue &label : std::as_const(labels))
     {
-        data.labels[i] = labels[i].toString();
+        data.labels << label.toString();
     }
 
     data.reviewer.id = json["reviewer"]["id"].toString();

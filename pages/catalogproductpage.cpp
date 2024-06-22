@@ -404,7 +404,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             openGalleryOnItem(mediaIndex);
                         });
                         ui->mediaScrollAreaContentsLayout->addWidget(videoHolder);
-                        videos.append(video);
+                        videos << video;
                         mediaIndex++;
                     }
                 }
@@ -417,7 +417,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         openGalleryOnItem(mediaIndex);
                     });
                     ui->mediaScrollAreaContentsLayout->addWidget(screenshotHolder);
-                    screenshots.append(screenshotLink);
+                    screenshots << screenshotLink;
                     mediaIndex++;
                 }
             }

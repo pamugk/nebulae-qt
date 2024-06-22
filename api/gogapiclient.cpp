@@ -308,15 +308,16 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
         {
             if (!filters.languages.contains(language))
             {
-                selectedLanguages.append(language);
+                selectedLanguages << language;
             }
         }
     }
     else
     {
+        selectedLanguages.reserve(filters.languages.count());
         for (const QString &language : std::as_const(filters.languages))
         {
-            selectedLanguages.append(language);
+            selectedLanguages << language;
         }
     }
     if (!selectedLanguages.isEmpty())

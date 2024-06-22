@@ -67,12 +67,12 @@ void parseDownloads(const QJsonValue &json, api::Downloads &data)
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
-                installers[download.name]->files.append(downloadFile);
+                installers[download.name]->files << downloadFile;
             }
         }
         else
         {
-            data.installers.append(download);
+            data.installers << download;
             installers[download.name] = &data.installers.last();
         }
     }
@@ -88,12 +88,12 @@ void parseDownloads(const QJsonValue &json, api::Downloads &data)
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
-                installers[download.name]->files.append(downloadFile);
+                installers[download.name]->files << downloadFile;
             }
         }
         else
         {
-            data.patches.append(download);
+            data.patches << download;
             installers[download.name] = &data.patches.last();
         }
     }
@@ -109,12 +109,12 @@ void parseDownloads(const QJsonValue &json, api::Downloads &data)
         {
             for (const api::DownloadFile &downloadFile : std::as_const(download.files))
             {
-                installers[download.name]->files.append(downloadFile);
+                installers[download.name]->files << downloadFile;
             }
         }
         else
         {
-            data.languagePacks.append(download);
+            data.languagePacks << download;
             installers[download.name] = &data.languagePacks.last();
         }
     }

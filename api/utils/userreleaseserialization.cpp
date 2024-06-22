@@ -7,9 +7,10 @@ void parseUserRelease(const QJsonValue &json, api::UserRelease &data)
     data.platformId = json["platform_id"].toString();
     data.externalId = json["external_id"].toString();
     auto tags = json["tags"].toArray();
+    data.tags.reserve(tags.count());
     for (const QJsonValue &tag : std::as_const(tags))
     {
-        data.tags.append(tag["name"].toString());
+        data.tags << tag["name"].toString();
     }
     if (!json["my_rating"].isNull())
     {
