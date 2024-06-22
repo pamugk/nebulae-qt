@@ -1,9 +1,11 @@
 #include "database.h"
 
 #include <QDebug>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 
 const auto INSERT_USER_RELEASE = QLatin1String(R"(
 INSERT INTO user_release(user_id, platform, platform_release_id, created_at, owned_since, owned, hidden, rating)
@@ -40,6 +42,22 @@ WHERE user_id = ? AND NOT EXISTS (
         AND user_release.platform_release_id = platform_release_last_achievements_update.platform_release_id
 )
 LIMIT 1;
+)");
+
+const auto SELECT_USER_RELEASES = QLatin1String(R"(
+SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id,
+    "release".title, "release".game_id,
+    game.vertical_cover, game.cover
+FROM user_release
+    JOIN platform_release ON user_release.platform = platform_release.platform
+        AND user_release.platform_release_id = platform_release.platform_release_id
+    JOIN "release" ON platform_release.release_id = "release".id
+    JOIN game ON "release".game_id = game.id
+WHERE user_release.user_id = :userId
+    AND user_release.hidden = :hidden
+    AND "release"."type" = 'game'
+    AND game.visible
+ORDER BY lower("release".title_sort);
 )");
 
 std::tuple<QString, QString> db::getUserReleaseToMap(const QString &userId)
@@ -130,4 +148,48 @@ void db::saveUserReleases(const QString &userId, const QVector<api::UserRelease>
             }
         }
     }
+}
+
+QVector<api::Release> db::searchUserReleases(const QString &userId)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.transaction())
+    {
+        qDebug() << "Failed to start DB transaction";
+        return QVector<api::Release>();
+    }
+
+    QSqlQuery selectUserReleasesQuery;
+    QSqlRecord userReleaseRecord = selectUserReleasesQuery.record();
+    if (!selectUserReleasesQuery.prepare(SELECT_USER_RELEASES))
+    {
+        db.commit();
+        qDebug() << "Failed to prepare query to select user releases";
+        return QVector<api::Release>();
+    }
+    selectUserReleasesQuery.bindValue(":userId", userId);
+    selectUserReleasesQuery.bindValue(":hidden", false);
+    if (!selectUserReleasesQuery.exec())
+    {
+        db.commit();
+        qDebug() << "Failed to select user releases";
+        return QVector<api::Release>();
+    }
+
+    QVector<api::Release> releases(selectUserReleasesQuery.size());
+    std::size_t i = 0;
+    while (selectUserReleasesQuery.next())
+    {
+        auto &release = releases[i];
+        release.platformId = userReleaseRecord.value(0).toString();
+        release.externalId = userReleaseRecord.value(1).toString();
+        release.title["*"] = userReleaseRecord.value(2).toString();
+        release.gameId = userReleaseRecord.value(3).toString();
+        release.game.verticalCover = userReleaseRecord.value(4).toString();
+        release.game.cover = userReleaseRecord.value(5).toString();
+        i++;
+    }
+
+    db.commit();
+    return QVector<api::Release>();
 }

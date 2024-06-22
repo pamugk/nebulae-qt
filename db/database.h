@@ -17,6 +17,7 @@ namespace db
                                          const QVector<api::PlatformAchievement> &achievements);
     void saveRelease(const api::Release &release);
     void saveUserReleases(const QString &userId, const QVector<api::UserRelease> &releases);
+    QVector<api::Release> searchUserReleases(const QString &userId);
 }
 
 #endif
