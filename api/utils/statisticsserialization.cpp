@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseAchievement(const QJsonValue &json, api::Achievement &data)
+void parseAchievement(const QJsonValue &json, api::UserAchievement &data)
 {
     data.achievementId = json["achievement_id"].toString();
     data.achievementKey = json["achievement_key"].toString();
@@ -20,7 +20,7 @@ void parseAchievement(const QJsonValue &json, api::Achievement &data)
     data.rarityLevelSlug = json["rarity_level_slug"].toString();
 }
 
-void parseGetAchievementsResponse(const QJsonValue &json, api::GetAchievementsResponse &data)
+void parseGetAchievementsResponse(const QJsonValue &json, api::GetUserAchievementsResponse &data)
 {
     data.totalCount = json["total_count"].toInt();
     data.limit = json["limit"].toInt();

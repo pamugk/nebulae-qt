@@ -5,6 +5,7 @@
 #include <QNetworkReply>
 #include <QTimerEvent>
 
+#include "../api/utils/platformachievementserialization.h"
 #include "../api/utils/releaseserialization.h"
 #include "../api/utils/userreleaseserialization.h"
 #include "../db/database.h"
@@ -125,6 +126,7 @@ void JobManager::timerEvent(QTimerEvent *event)
                         auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
                         api::Release data;
                         parseRelease(resultJson, data);
+                        qDebug() << "Saving release data" << data.id;
                         db::saveRelease(data);
                     }
                     else if (networkReply->error() == QNetworkReply::ContentNotFoundError)
@@ -155,7 +157,8 @@ void JobManager::timerEvent(QTimerEvent *event)
             const auto &[platformId, platformReleaseId] = db::getUserReleaseToUpdateAchievements(userId);
             if (!platformReleaseId.isNull())
             {
-                libraryReleaseAchievementsReply = apiClient->getPlatformReleaseAchievements(platformId, platformReleaseId);
+                libraryReleaseAchievementsReply = apiClient->getPlatformReleaseAchievements(platformId, platformReleaseId,
+                                                                                            "en-US");
                 connect(libraryReleaseAchievementsReply, &QNetworkReply::finished,
                         this, [this, ids = std::make_tuple(platformId, platformReleaseId)]()
                 {
@@ -163,8 +166,13 @@ void JobManager::timerEvent(QTimerEvent *event)
                     libraryReleaseAchievementsReply = nullptr;
                     if (networkReply->error() == QNetworkReply::NoError)
                     {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetPlatformReleaseAchievementsResponse data;
+                        parseGetPlatformReleaseAchievementsResponse(resultJson, data);
                         const auto &[platformId, platformReleaseId] = ids;
-                        qDebug() << "Received achievements" << platformId << platformReleaseId;
+                        // TODO: handle pagination for games with lots of achievements... somehow.
+                        db::savePlatformReleaseAchievements(platformId, platformReleaseId, data.items);
+                        qDebug() << "Received achievements for" << platformId << platformReleaseId;
                     }
                     else if (networkReply->error() != QNetworkReply::OperationCanceledError)
                     {

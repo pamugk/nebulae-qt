@@ -49,7 +49,7 @@ const auto GAME_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS game(
     id TEXT PRIMARY KEY NOT NULL,
     parent_id TEXT NULL,
-    first_release_date NOT NULL,
+    first_release_date NULL,
     title TEXT NOT NULL,
     title_sort TEXT NOT NULL,
     type TEXT NOT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS release(
     id TEXT PRIMARY KEY NOT NULL,
     parent_id TEXT NULL,
     game_id TEXT NOT NULL,
-    first_release_date NOT NULL,
+    first_release_date NULL,
     title TEXT NOT NULL,
     title_sort TEXT NOT NULL,
     type TEXT NOT NULL,

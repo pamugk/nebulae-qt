@@ -448,7 +448,7 @@ void db::saveRelease(const api::Release &release)
     insertPlatformReleaseQuery.addBindValue(release.platformId);
     insertPlatformReleaseQuery.addBindValue(release.externalId);
     insertPlatformReleaseQuery.addBindValue(release.id);
-    insertPlatformReleaseQuery.addBindValue(QDateTime::currentDateTime());
+    insertPlatformReleaseQuery.addBindValue(QDateTime::currentDateTimeUtc());
 
     if (!db.transaction())
     {
@@ -468,7 +468,7 @@ void db::saveRelease(const api::Release &release)
         return;
     }
 
-    if (release.type != "game" && release.type != "dlc")
+    if (release.type != "game" && release.type != "dlc" && release.type != "spam")
     {
         db.rollback();
         qDebug() << "Unknown release kind, aborting for data consistence. Kind: " << release.type << "Release: " << release.id;
@@ -490,7 +490,9 @@ void db::saveRelease(const api::Release &release)
     insertGameQuery.addBindValue(release.game.type);
     insertGameQuery.addBindValue(release.game.summary["*"]);
     insertGameQuery.addBindValue(release.game.visibleInLibrary);
-    insertGameQuery.addBindValue(release.game.aggregatedRating);
+    insertGameQuery.addBindValue(release.game.aggregatedRating.has_value()
+                                 ? release.game.aggregatedRating.value()
+                                 : QVariant());
     insertGameQuery.addBindValue(release.game.horizontalArtwork);
     insertGameQuery.addBindValue(release.game.background);
     insertGameQuery.addBindValue(release.game.verticalCover);

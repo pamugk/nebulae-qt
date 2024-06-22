@@ -91,7 +91,10 @@ void parseGame(const QJsonValue &json, api::Game &data)
     }
     data.summary = json["summary"].toObject().toVariantMap();
     data.visibleInLibrary = json["visible_in_library"].toBool();
-    data.aggregatedRating = json["aggregated_rating"].toDouble();
+    if (!json["aggregated_rating"].isNull())
+    {
+        data.aggregatedRating = json["aggregated_rating"].toDouble();
+    }
     auto gameModes = json["game_modes"].toArray();
     data.gameModes.resize(gameModes.count());
     for (std::size_t i = 0; i < gameModes.count(); i++)

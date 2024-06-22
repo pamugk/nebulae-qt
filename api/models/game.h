@@ -60,7 +60,7 @@ namespace api
         QVector<QString> artworks;
         QVariantMap summary;
         bool visibleInLibrary;
-        double aggregatedRating;
+        std::optional<double> aggregatedRating;
         QVector<IdMetaTag> gameModes;
         QString horizontalArtwork;
         QString background;

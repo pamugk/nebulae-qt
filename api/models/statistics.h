@@ -7,7 +7,7 @@
 
 namespace api
 {
-    struct Achievement
+    struct UserAchievement
     {
         QString achievementId;
         QString achievementKey;
@@ -23,14 +23,14 @@ namespace api
         QString rarityLevelSlug;
     };
 
-    struct GetAchievementsResponse
+    struct GetUserAchievementsResponse
     {
         unsigned int totalCount;
         unsigned int limit;
         unsigned int pageToken;
         bool hasNextPage;
         QString achievementsMode;
-        QVector<Achievement> items;
+        QVector<UserAchievement> items;
     };
 
     struct GetPlaySessionsResponse
