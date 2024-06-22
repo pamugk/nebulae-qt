@@ -45,6 +45,7 @@ set(PROJECT_SOURCES
         api/models/store.h
         api/models/tag.h
         api/models/user.h
+        api/models/userlibraryrequest.h
         api/models/userrelease.h
         api/models/wishlist.h
 

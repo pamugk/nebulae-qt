@@ -2,18 +2,16 @@
 #include "ui_ownedgamespage.h"
 
 #include <QActionGroup>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QLineEdit>
+#include <QListWidgetItem>
 #include <QMenu>
-#include <QNetworkReply>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QSlider>
 #include <QToolButton>
 #include <QWidgetAction>
 
-#include "../api/utils/ownedproductserialization.h"
+#include "../db/database.h"
 #include "../layouts/flowlayout.h"
 #include "../widgets/ownedproductgriditem.h"
 
@@ -21,9 +19,12 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     BasePage(parent),
     currentGridImageSize(1),
     gridImageSizes({ QSize(110, 155), QSize(120, 170), QSize(150, 210), QSize(185, 260), QSize(190, 265), QSize(260, 365) }),
-    ownedGamesReply(nullptr),
     ui(new Ui::OwnedGamesPage)
 {
+    // TODO: restore filters state from disk
+    request.hidden = false;
+    request.order = api::UserReleaseOrder::TITLE;
+
     ui->setupUi(this);
 
     auto popularFiltersHolder = new QWidget(this);
@@ -52,20 +53,35 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     filterMenu->addMenu("Genre");
     filterMenu->addMenu("Platform")->addAction("GOG.com")->setCheckable(true);
     auto filterSubmenu = filterMenu->addMenu("OS & consoles");
-    filterSubmenu->addAction("Windows")->setCheckable(true);
-    filterSubmenu->addAction("macOS")->setCheckable(true);
-    filterSubmenu->addAction("Linux")->setCheckable(true);
+    auto filterItem = filterSubmenu->addAction("Windows");
+    filterItem->setCheckable(true);
+    filterItem = filterSubmenu->addAction("macOS");
+    filterItem->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Linux");
+    filterItem->setCheckable(true);
     filterMenu->addSeparator();
-    filterMenu->addMenu("Rating")->addAction("No rating")->setCheckable(true);
-    filterMenu->addMenu("Tags")->addAction("No tags")->setCheckable(true);
+    filterItem = filterMenu->addMenu("Rating")->addAction("No rating");
+    filterItem->setCheckable(true);
+    filterItem = filterMenu->addMenu("Tags")->addAction("No tags");
+    filterItem->setCheckable(true);
     filterSubmenu = filterMenu->addMenu("Status");
-    filterSubmenu->addAction("Owned")->setCheckable(true);
-    filterSubmenu->addAction("Subscriptions")->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Owned");
+    filterItem->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Subscriptions");
+    filterItem->setCheckable(true);
     filterSubmenu->addSeparator();
-    filterSubmenu->addAction("Installed")->setCheckable(true);
-    filterSubmenu->addAction("Not installed")->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Installed");
+    filterItem->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Not installed");
+    filterItem->setCheckable(true);
     filterSubmenu->addSeparator();
-    filterSubmenu->addAction("Hidden")->setCheckable(true);
+    filterItem = filterSubmenu->addAction("Hidden");
+    filterItem->setCheckable(true);
+    connect(filterItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       request.hidden = toggled;
+       updateData();
+    });
     filterToolButton->setMenu(filterMenu);
     uiActions << filterToolButton;
 
@@ -89,9 +105,9 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     connect(searchLineEdit, &QLineEdit::textChanged, this, [this](const QString &newSearchText)
     {
         auto newSearchQuery = newSearchText.trimmed();
-        if (newSearchQuery != searchQuery)
+        if (newSearchQuery != request.query)
         {
-            searchQuery = newSearchQuery;
+            request.query = newSearchQuery;
             updateData();
         }
     });
@@ -255,17 +271,139 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     viewSettingsMenu->addSeparator();
 
     settingsSubmenu = viewSettingsMenu->addMenu("Sort by");
-    settingsSubmenu->addAction("Achievements %");
-    settingsSubmenu->addAction("Critics rating");
-    settingsSubmenu->addAction("Game time");
-    settingsSubmenu->addAction("Genre");
-    settingsSubmenu->addAction("Last played");
-    settingsSubmenu->addAction("Platform");
-    settingsSubmenu->addAction("Rating");
-    settingsSubmenu->addAction("Release date");
-    settingsSubmenu->addAction("Size on disk");
-    settingsSubmenu->addAction("Tags");
-    settingsSubmenu->addAction("Title");
+    auto sortOrderGroup = new QActionGroup(settingsSubmenu);
+    auto sortItem = settingsSubmenu->addAction("Achievements %");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::ACHIEVEMENTS);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::ACHIEVEMENTS;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Critics rating");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::CRITICS_RATING);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::CRITICS_RATING;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Game time");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::GAME_TIME);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::GAME_TIME;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Genre");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::GENRE);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::GENRE;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Last played");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::LAST_PLAYED);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::LAST_PLAYED;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Platform");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::PLATFORM);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::PLATFORM;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Rating");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::RATING);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::RATING;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Release date");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::RELEASE_DATE);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::RELEASE_DATE;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Size on disk");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::SIZE_ON_DISK);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::SIZE_ON_DISK;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Tags");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::TAG);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::TAG;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
+    sortItem = settingsSubmenu->addAction("Title");
+    sortItem->setCheckable(true);
+    sortItem->setChecked(request.order == api::UserReleaseOrder::TITLE);
+    connect(sortItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.order = api::UserReleaseOrder::TITLE;
+           updateData();
+       }
+    });
+    sortOrderGroup->addAction(sortItem);
 
     settingsSubmenu = viewSettingsMenu->addMenu("Group by");
     settingsSubmenu->addAction("Don't group");
@@ -284,16 +422,12 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsStack->setCurrentWidget(ui->resultsGridPage);
-    ui->resultsGridScrollAreaContents->setLayout(new FlowLayout(ui->resultsGridScrollAreaContents));
+    ui->resultsGridScrollAreaContents->setLayout(new FlowLayout(ui->resultsGridScrollAreaContents, -1, 16, 12));
 }
 
 OwnedGamesPage::~OwnedGamesPage()
 {
     uiActions.clear();
-    if (ownedGamesReply != nullptr)
-    {
-        ownedGamesReply->abort();
-    }
     delete ui;
 }
 
@@ -309,10 +443,6 @@ void OwnedGamesPage::setApiClient(api::GogApiClient *apiClient)
 
 void OwnedGamesPage::updateData()
 {
-    if (ownedGamesReply != nullptr)
-    {
-        ownedGamesReply->abort();
-    }
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
     while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
@@ -323,56 +453,43 @@ void OwnedGamesPage::updateData()
         delete item;
     }
 
-    ownedGamesReply = apiClient->getOwnedProducts(searchQuery);
-    connect(ownedGamesReply, &QNetworkReply::finished, this, [=]()
+    QVector<api::Release> releases = db::getUserReleases(apiClient->getCurrentUserId(), request);
+    if (releases.isEmpty())
     {
-        auto networkReply = ownedGamesReply;
-        ownedGamesReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+        ui->contentsStack->setCurrentWidget(ui->emptyPage);
+    }
+    else
+    {
+        for (const api::Release &item : std::as_const(releases))
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetOwnedProductsResponse data;
-            parseOwnedProductsResponse(resultJson, data);
-            if (data.products.isEmpty())
+            auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
+            gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
+            gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
+            connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
+                    gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
+            connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
+                    gridItem, &OwnedProductGridItem::setAdditionalDataDisplayed);
+            connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
+                    gridItem, &OwnedProductGridItem::setImageSize);
+            connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
+                    gridItem, &OwnedProductGridItem::setStatusVisibility);
+            connect(this, &OwnedGamesPage::gridItemRatingVisibilityChanged,
+                    gridItem, &OwnedProductGridItem::setRatingVisibility);
+            connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
+                    gridItem, &OwnedProductGridItem::setTitleVisibility);
+            connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.externalId]()
             {
-                ui->contentsStack->setCurrentWidget(ui->emptyPage);
-            }
-            else
-            {
-                for (const api::OwnedProduct &item : std::as_const(data.products))
-                {
-                    auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
-                    gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
-                    gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
-                    connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
-                            gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
-                    connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
-                            gridItem, &OwnedProductGridItem::setAdditionalDataDisplayed);
-                    connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
-                            gridItem, &OwnedProductGridItem::setImageSize);
-                    connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
-                            gridItem, &OwnedProductGridItem::setStatusVisibility);
-                    connect(this, &OwnedGamesPage::gridItemRatingVisibilityChanged,
-                            gridItem, &OwnedProductGridItem::setRatingVisibility);
-                    connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
-                            gridItem, &OwnedProductGridItem::setTitleVisibility);
-                    connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.id]()
-                    {
-                        emit navigate({Page::OWNED_PRODUCT, productId});
-                    });
-                    ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
-                }
-                ui->contentsStack->setCurrentWidget(ui->resultsPage);
-            }
+                emit navigate({Page::OWNED_PRODUCT, productId});
+            });
+            ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
-        }
+        ui->contentsStack->setCurrentWidget(ui->resultsPage);
+    }
+}
 
-        networkReply->deleteLater();
-    });
+void OwnedGamesPage::updateFilters()
+{
+
 }
 
 void OwnedGamesPage::initialize(const QVariant &data)

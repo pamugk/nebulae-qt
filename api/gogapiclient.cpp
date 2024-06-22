@@ -203,7 +203,7 @@ QNetworkReply *api::GogApiClient::getOwnedProductInfo(const QString &id, const Q
     QVariantMap parameters;
     parameters["expand"] = "downloads,expanded_dlcs,description,screenshots,videos,related_products,changelog";
     parameters["locale"] = locale;
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/").arg(id)), parameters);
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/%1").arg(id)), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, unsigned short page)

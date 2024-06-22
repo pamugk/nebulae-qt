@@ -8,25 +8,27 @@ void setElidedText(QLabel *label, const QString &text)
     label->setText(elidedText);
 }
 
-OwnedProductGridItem::OwnedProductGridItem(const api::OwnedProduct &data,
+OwnedProductGridItem::OwnedProductGridItem(const api::Release &data,
                                            api::GogApiClient *apiClient,
                                            QWidget *parent) :
     QWidget(parent),
     company(""),
     genres(""),
-    title(data.title),
+    title(data.title["*"].toString()),
     ui(new Ui::OwnedProductGridItem)
 {
     ui->setupUi(this);
 
     setElidedText(ui->titleLabel, title);
 
+    ui->coverLabel->setToolTip(title);
     ui->titleLabel->setVisible(false);
+    ui->titleLabel->setToolTip(title);
     ui->statusActionButton->setVisible(false);
     ui->ratingLabel->setVisible(false);
     ui->additionalInfoLabel->setVisible(false);
 
-    imageReply = apiClient->getAnything(QString("https:%1_glx_logo_2x.webp").arg(data.image));
+    imageReply = apiClient->getAnything(QString(data.game.verticalCover).replace("{formatter}", "_product_tile_80x114_2x").replace("{ext}", "webp"));
     connect(imageReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = imageReply;

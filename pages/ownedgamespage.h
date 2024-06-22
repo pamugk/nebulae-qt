@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "./basepage.h"
+#include "../api/models/userlibraryrequest.h"
 
 namespace Ui {
 class OwnedGamesPage;
@@ -24,11 +25,9 @@ private:
     api::GogApiClient *apiClient;
     int currentGridImageSize;
     const std::array<const QSize, 6> gridImageSizes;
-    QString searchQuery;
+    api::SearchUserReleasesRequest request;
     Ui::OwnedGamesPage *ui;
     QVector<QWidget *> uiActions;
-
-    QNetworkReply *ownedGamesReply;
 
     Q_SIGNAL void gridItemAdditionalDataVisibilityChanged(bool visible);
     Q_SIGNAL void gridItemAdditionalDataDisplayed(int kind);
@@ -37,6 +36,7 @@ private:
     Q_SIGNAL void gridItemStatusVisibilityChanged(bool visible);
     Q_SIGNAL void gridItemTitleVisibilityChanged(bool visible);
     void updateData();
+    void updateFilters();
 
 public slots:
     virtual void initialize(const QVariant &data) override;
