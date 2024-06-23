@@ -7,6 +7,7 @@
 
 #include "../api/utils/platformachievementserialization.h"
 #include "../api/utils/releaseserialization.h"
+#include "../api/utils/statisticsserialization.h"
 #include "../api/utils/userreleaseserialization.h"
 #include "../db/database.h"
 
@@ -14,21 +15,18 @@ JobManager::JobManager(api::GogApiClient *apiClient, QObject *parent)
     : QObject{parent},
     achievementsTimerId(),
     apiClient(apiClient),
-    libraryReply(nullptr),
     libraryReleaseReply(nullptr),
     libraryReleaseAchievementsReply(nullptr),
     libraryReleaseUserAchievementsReply(nullptr),
-    libraryTimerId()
+    libraryTimerId(),
+    userGameplayReply(nullptr),
+    userLibraryReply(nullptr)
 {
 
 }
 
 JobManager::~JobManager()
 {
-    if (libraryReply != nullptr)
-    {
-        libraryReply->abort();
-    }
     if (libraryReleaseReply != nullptr)
     {
         libraryReleaseReply->abort();
@@ -41,31 +39,66 @@ JobManager::~JobManager()
     {
         libraryReleaseUserAchievementsReply->abort();
     }
+    if (userGameplayReply != nullptr)
+    {
+        userGameplayReply->abort();
+    }
+    if (userLibraryReply != nullptr)
+    {
+        userLibraryReply->abort();
+    }
 }
 
-void JobManager::setAuthenticated(bool authenticated, const QString &userId)
+void JobManager::setAuthenticated(bool authenticated)
 {
-    if (libraryReply != nullptr)
+    if (userGameplayReply != nullptr)
     {
-        libraryReply->abort();
+        userGameplayReply->abort();
     }
-    this->userId = userId;
+    if (userLibraryReply != nullptr)
+    {
+        userLibraryReply->abort();
+    }
 
     if (authenticated)
     {
-        libraryReply = apiClient->getCurrentUserReleases();
-        connect(libraryReply, &QNetworkReply::finished,
+        userGameplayReply = apiClient->getCurrentUserGameTimeStatistics();
+        connect(userGameplayReply, &QNetworkReply::finished,
                 this, [this]()
         {
-            auto networkReply = libraryReply;
-            libraryReply = nullptr;
+            auto networkReply = userGameplayReply;
+            userGameplayReply = nullptr;
+
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                api::GetUserGameTimeStatisticsResponse data;
+                parseGetUserGameTimeStatisticsResponse(resultJson, data);
+                db::saveUserGameTimeStatistics(this->apiClient->currentUserId(), data.items);
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << "Failed to load user's game time statistics: "
+                         << networkReply->error() << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+
+            networkReply->deleteLater();
+        });
+        userLibraryReply = apiClient->getCurrentUserReleases();
+        connect(userLibraryReply, &QNetworkReply::finished,
+                this, [this]()
+        {
+            auto networkReply = userLibraryReply;
+            userLibraryReply = nullptr;
 
             if (networkReply->error() == QNetworkReply::NoError)
             {
                 auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
                 api::GetUserReleasesResponse data;
                 parseGetUserReleasesResponse(resultJson, data);
-                db::saveUserReleases(this->userId, data.items);
+                db::saveUserReleases(this->apiClient->currentUserId(), data.items);
             }
             else if (networkReply->error() != QNetworkReply::OperationCanceledError)
             {
@@ -102,6 +135,7 @@ void JobManager::setAuthenticated(bool authenticated, const QString &userId)
 
 void JobManager::timerEvent(QTimerEvent *event)
 {
+    const QString userId = this->apiClient->currentUserId();
     if (userId.isNull())
     {
         return;

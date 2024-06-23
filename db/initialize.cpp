@@ -272,6 +272,17 @@ CREATE TABLE IF NOT EXISTS user_release(
     PRIMARY KEY (user_id, platform, platform_release_id));
 )");
 
+const auto USER_RELEASE_GAME_TIME_STATS_DDL = QLatin1String(R"(
+CREATE TABLE IF NOT EXISTS user_release_game_time_stats(
+    user_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    platform_release_id TEXT NOT NULL,
+    time_sum INTEGER NOT NULL,
+    last_session_at NOT NULL,
+    FOREIGN KEY (user_id, platform, platform_release_id) REFERENCES user_release (user_id, platform, platform_release_id) ON DELETE CASCADE,
+    UNIQUE (user_id, platform, platform_release_id));
+)");
+
 const auto USER_RELEASE_TAG_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS user_release_tag(
     user_id TEXT NOT NULL,
@@ -301,6 +312,11 @@ void db::initialize()
     if (!initializationQuery.exec(USER_RELEASE_DDL))
     {
         qDebug() << "Could not create user release table: " << initializationQuery.lastError();
+        exit(-1);
+    }
+    if (!initializationQuery.exec(USER_RELEASE_GAME_TIME_STATS_DDL))
+    {
+        qDebug() << "Could not create user release game time statistics table: " << initializationQuery.lastError();
         exit(-1);
     }
     if (!initializationQuery.exec(USER_RELEASE_TAG_DDL))

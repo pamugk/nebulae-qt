@@ -51,7 +51,8 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         {
             userId = QString();
         }
-        emit authenticated(!client.token().isEmpty(), userId);
+        qDebug() << client.token();
+        emit authenticated(!client.token().isEmpty());
     });
     tokenStorage->getAuthData();
     client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
@@ -84,7 +85,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         refreshingToken = false;
         if (status == QAbstractOAuth::Status::Granted)
         {
-            emit authenticated(true, userId);
+            emit authenticated(true);
         }
         else if (status == QAbstractOAuth::Status::NotAuthenticated)
         {
@@ -104,6 +105,11 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         }
         tokenStorage->setAuthData(data);
     });
+}
+
+QString api::GogApiClient::currentUserId() const
+{
+    return userId;
 }
 
 bool api::GogApiClient::isAuthenticated()
@@ -133,9 +139,9 @@ QNetworkReply *api::GogApiClient::getCurrentUser()
     return getUser(userId);
 }
 
-QString api::GogApiClient::getCurrentUserId() const
+QNetworkReply *api::GogApiClient::getCurrentUserGameTimeStatistics()
 {
-    return userId;
+    return client.get(QStringLiteral("https://gameplay.gog.com/users/%1/external_game_time_stats").arg(userId));
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
@@ -233,11 +239,6 @@ QNetworkReply *api::GogApiClient::getPlatformReleaseAchievements(const QString &
                                std::pair("locale", locale)
                            }));
     return client.get(url);
-}
-
-QNetworkReply *api::GogApiClient::getPlayTime()
-{
-    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
 }
 
 QNetworkReply *api::GogApiClient::getProductAchievements(const QString &productId)
@@ -542,5 +543,5 @@ void api::GogApiClient::logout()
     client.setToken(QString());
     client.setRefreshToken(QString());
     userId = {};
-    emit authenticated(false, userId);
+    emit authenticated(false);
 }

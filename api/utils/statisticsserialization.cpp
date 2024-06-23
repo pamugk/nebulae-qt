@@ -34,13 +34,18 @@ void parseGetAchievementsResponse(const QJsonValue &json, api::GetUserAchievemen
         parseAchievement(items[i], data.items[i]);
     }
 }
-
-void parseGetSessionsResponse(const QJsonValue &json, api::GetPlaySessionsResponse &data)
+void parseGetUserGameTimeStatisticsResponse(const QJsonValue &json, api::GetUserGameTimeStatisticsResponse &data)
 {
-    data.totalSum = json["total_sum"].toInt();
-    auto gameTime = json["game_time"].toArray();
-    for (const QJsonValue &item : std::as_const(gameTime))
+    data.limit = json["limit"].toInt();
+    data.pageToken = json["page_token"].toString();
+    auto items = json["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        data.gameTime[item["game_id"].toInteger()] = item["time_sum"].toInt();
+        const QJsonValue &itemJson = items[i];
+        auto &item = data.items[i];
+        item.releasePerPlatformId = itemJson["release_per_platform_id"].toString();
+        item.timeSum = itemJson["game_time"]["time_sum"].toInt();
+        item.lastSessionDate = QDateTime::fromSecsSinceEpoch(itemJson["game_time"]["last_session_date"].toInteger());
     }
 }

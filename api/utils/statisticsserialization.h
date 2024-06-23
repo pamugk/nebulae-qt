@@ -6,6 +6,6 @@
 #include "../models/statistics.h"
 
 void parseGetAchievementsResponse(const QJsonValue &json, api::GetUserAchievementsResponse &data);
-void parseGetSessionsResponse(const QJsonValue &json, api::GetPlaySessionsResponse &data);
+void parseGetUserGameTimeStatisticsResponse(const QJsonValue &json, api::GetUserGameTimeStatisticsResponse &data);
 
 #endif // STATISTICSSERIALIZATION_H

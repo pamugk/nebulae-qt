@@ -28,6 +28,13 @@ INSERT INTO platform_release_last_achievements_update(platform, platform_release
     SET last_updated_at = excluded.last_updated_at;
 )");
 
+const auto INSERT_USER_RELEASE_GAME_TIME_STAT = QLatin1String(R"(
+INSERT INTO user_release_game_time_stats(user_id, platform, platform_release_id, time_sum, last_session_at)
+    VALUES(?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, platform, platform_release_id) DO UPDATE
+    SET time_sum = excluded.time_sum, last_session_at = excluded.last_session_at;
+)");
+
 void db::savePlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
                                      const QVector<api::PlatformAchievement> &achievements)
 {
@@ -132,4 +139,49 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     }
 
     db.commit();
+}
+void db::saveUserGameTimeStatistics(const QString &userId, const QVector<api::PlatformReleaseTimeStatistics> &statistics)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery insertUserGameStatsQuery;
+    if (!insertUserGameStatsQuery.prepare(INSERT_USER_RELEASE_GAME_TIME_STAT))
+    {
+        qDebug() << "Failed to prepare query to save user's gameplay statistics" << insertUserGameStatsQuery.lastError();
+        return;
+    }
+
+    QVariantList userIds(statistics.count(), userId);
+    QVariantList platformIds(statistics.count());
+    QVariantList platformReleaseIds(statistics.count());
+    QVariantList timeSum(statistics.count());
+    QVariantList lastPlayedAt(statistics.count());
+    for (std::size_t i = 0; i < statistics.count(); i++)
+    {
+        const auto &releaseStatistic = statistics[i];
+        const auto releaseKeySeparatorIdx = releaseStatistic.releasePerPlatformId.indexOf('_');
+        if (releaseKeySeparatorIdx == -1)
+        {
+            qDebug() << "Platform release key with an unknown separator: " << releaseStatistic.releasePerPlatformId;
+            platformIds[i] = "";
+            platformReleaseIds[i] = "";
+        }
+        else
+        {
+            platformIds[i] = releaseStatistic.releasePerPlatformId.first(releaseKeySeparatorIdx);
+            platformReleaseIds[i] = releaseStatistic.releasePerPlatformId.last(releaseStatistic.releasePerPlatformId.length() -  releaseKeySeparatorIdx - 1);
+        }
+
+        timeSum[i] = releaseStatistic.timeSum;
+        lastPlayedAt[i] = releaseStatistic.lastSessionDate;
+    }
+
+    insertUserGameStatsQuery.addBindValue(userIds);
+    insertUserGameStatsQuery.addBindValue(platformIds);
+    insertUserGameStatsQuery.addBindValue(platformReleaseIds);
+    insertUserGameStatsQuery.addBindValue(timeSum);
+    insertUserGameStatsQuery.addBindValue(lastPlayedAt);
+    if (!insertUserGameStatsQuery.execBatch())
+    {
+        qDebug() << "Failed to save user's gameplay statistics" << insertUserGameStatsQuery.lastError();
+    }
 }

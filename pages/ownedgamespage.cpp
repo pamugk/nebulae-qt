@@ -451,7 +451,7 @@ void OwnedGamesPage::updateData()
         delete item;
     }
 
-    QVector<api::Release> releases = db::getUserReleases(apiClient->getCurrentUserId(), request);
+    QVector<api::Release> releases = db::getUserReleases(apiClient->currentUserId(), request);
     if (releases.isEmpty())
     {
         ui->contentsStack->setCurrentWidget(ui->emptyPage);
@@ -488,7 +488,7 @@ void OwnedGamesPage::updateData()
 
 void OwnedGamesPage::updateFilters()
 {
-    api::UserLibraryFilters filters = db::getUserReleasesFilters(apiClient->getCurrentUserId());
+    api::UserLibraryFilters filters = db::getUserReleasesFilters(apiClient->currentUserId());
 
     auto filterToolButton = static_cast<QToolButton *>(uiActions[1]);
     auto genresSubmenu = filterToolButton->menu()->actions()[0];

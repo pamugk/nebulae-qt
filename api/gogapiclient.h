@@ -20,11 +20,12 @@ namespace api
         explicit GogApiClient(AuthDataStorage *tokenStorage, QObject *parent = nullptr);
         bool isAuthenticated();
 
+        QString currentUserId() const;
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getCurrentUser();
-        QString getCurrentUserId() const;
+        QNetworkReply *getCurrentUserGameTimeStatistics();
         QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
@@ -40,7 +41,6 @@ namespace api
         QNetworkReply *getPlatformRelease(const QString &platformId, const QString &platformReleaseId);
         QNetworkReply *getPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
                                                       const QString &locale);
-        QNetworkReply *getPlayTime();
         QNetworkReply *getProductAchievements(const QString &productId);
         QNetworkReply *getProductAverageRating(const QString &productId, const QString &reviewer = QString());
         QNetworkReply *getProductPrices(const QString &productId, const QString &countryCode);
@@ -85,7 +85,7 @@ namespace api
 
     signals:
         void authorize(const QUrl &authUrl);
-        void authenticated(bool authenticated, QString userId);
+        void authenticated(bool authenticated);
 
     private:
         QOAuth2AuthorizationCodeFlow client;

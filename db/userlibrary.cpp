@@ -110,8 +110,13 @@ ORDER BY tag;
 const auto SELECT_USER_RELEASES_TEMPLATE = QLatin1String(R"(
 SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id,
     "release".title, "release".game_id,
-    game.vertical_cover, game.cover
+    game.vertical_cover, game.cover,
+    user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at
 FROM user_release
+    LEFT JOIN user_release_game_time_stats ON
+        user_release.user_id = user_release_game_time_stats.user_id
+        AND user_release.platform = user_release_game_time_stats.platform
+        AND user_release.platform_release_id = user_release_game_time_stats.platform_release_id
     JOIN platform_release ON user_release.platform = platform_release.platform
         AND user_release.platform_release_id = platform_release.platform_release_id
     JOIN "release" ON platform_release.release_id = "release".id
@@ -261,31 +266,34 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     switch (request.order)
     {
     case api::ACHIEVEMENTS:
-        // TODO: load gameplay statistics to implement this sort
+        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
+        break;
     case api::CRITICS_RATING:
-        dbQueryText += " ORDER BY game.aggregated_rating DESC, lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY game.aggregated_rating DESC, LOWER(\"release\".title_sort)";
         break;
     case api::GAME_TIME:
-        // TODO: load gameplay statistics to implement this sort
+        dbQueryText += " ORDER BY user_release_game_time_stats.time_sum DESC, LOWER(\"release\".title_sort)";
+        break;
     case api::GENRE:
+        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
+        break;
     case api::LAST_PLAYED:
-        // TODO: load gameplay statistics to implement this sortd
-        dbQueryText += " ORDER BY lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY user_release_game_time_stats.last_played_at DESC, LOWER(\"release\".title_sort)";
         break;
     case api::PLATFORM:
-        dbQueryText += " ORDER BY user_release.platform, lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY user_release.platform, LOWER(\"release\".title_sort)";
         break;
     case api::RATING:
-        dbQueryText += " ORDER BY user_release.rating DESC, lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY user_release.rating DESC, LOWER(\"release\".title_sort)";
         break;
     case api::RELEASE_DATE:
-        dbQueryText += " ORDER BY \"release\".first_release_date DESC, lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY \"release\".first_release_date DESC, LOWER(\"release\".title_sort)";
         break;
     case api::SIZE_ON_DISK:
         // TODO: implement this sort order after installation
     case api::TAG:
     case api::TITLE:
-        dbQueryText += " ORDER BY lower(\"release\".title_sort)";
+        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
         break;
     }
     dbQueryText += ';';

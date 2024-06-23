@@ -33,10 +33,18 @@ namespace api
         QVector<UserAchievement> items;
     };
 
-    struct GetPlaySessionsResponse
+    struct PlatformReleaseTimeStatistics
     {
-        unsigned int totalSum;
-        QMap<quint64, quint32> gameTime;
+        QString releasePerPlatformId;
+        unsigned int timeSum;
+        QDateTime lastSessionDate;
+    };
+
+    struct GetUserGameTimeStatisticsResponse
+    {
+        unsigned int limit;
+        QString pageToken;
+        QVector<PlatformReleaseTimeStatistics> items;
     };
 }
 

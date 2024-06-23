@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     JobManager jobManager(&apiClient, &a);
     QObject::connect(&apiClient, &api::GogApiClient::authenticated, &jobManager, &JobManager::setAuthenticated);
-    jobManager.setAuthenticated(apiClient.isAuthenticated(), apiClient.getCurrentUserId());
+    jobManager.setAuthenticated(apiClient.isAuthenticated());
 
     MainWindow w(&apiClient, &settingsManager);
     w.show();

@@ -15,18 +15,18 @@ public:
 signals:
 
 public slots:
-    void setAuthenticated(bool authenticated, const QString &userId);
+    void setAuthenticated(bool authenticated);
 
 protected:
     virtual void timerEvent(QTimerEvent *event) override;
 
 private:
     api::GogApiClient *apiClient;
-    QNetworkReply *libraryReply;
     QNetworkReply *libraryReleaseReply;
     QNetworkReply *libraryReleaseAchievementsReply;
     QNetworkReply *libraryReleaseUserAchievementsReply;
-    QString userId;
+    QNetworkReply *userGameplayReply;
+    QNetworkReply *userLibraryReply;
 
     std::optional<int> achievementsTimerId;
     std::optional<int> libraryTimerId;
