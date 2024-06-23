@@ -409,39 +409,113 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     auto groupingAction = settingsSubmenu->addAction("Don't group");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::NO_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::NO_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     settingsSubmenu->addSeparator();
     groupingAction = settingsSubmenu->addAction("Critics rating");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::CRITICS_RATING_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::CRITICS_RATING_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Genre");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::GENRE_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::GENRE_GROUP;
+           updateData();
+       }
+    });
+    groupingAction->setVisible(false);
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Installed");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::INSTALLED_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::INSTALLED_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Platform");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::PLATFORM_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::PLATFORM_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Rating");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::RATING_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::RATING_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Release date");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::RELEASE_DATE_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::RELEASE_DATE_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Subscription");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::SUBSCRIPTION_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::SUBSCRIPTION_GROUP;
+           updateData();
+       }
+    });
     groupingGroup->addAction(groupingAction);
     groupingAction = settingsSubmenu->addAction("Tags");
     groupingAction->setCheckable(true);
     groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::TAG_GROUP);
+    connect(groupingAction, &QAction::toggled, this, [this](bool toggled)
+    {
+       if (toggled)
+       {
+           request.grouping = api::UserReleaseGrouping::TAG_GROUP;
+           updateData();
+       }
+    });
+    groupingAction->setVisible(false);
     groupingGroup->addAction(groupingAction);
 
     viewSettingsToolButton->setMenu(viewSettingsMenu);
@@ -449,7 +523,6 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsStack->setCurrentWidget(ui->resultsGridPage);
-    ui->resultsGridScrollAreaContents->setLayout(new FlowLayout(ui->resultsGridScrollAreaContents, -1, 16, 12));
 }
 
 OwnedGamesPage::~OwnedGamesPage()
@@ -472,47 +545,124 @@ void OwnedGamesPage::updateData()
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
-    while (!ui->resultsGridScrollAreaContents->layout()->isEmpty())
+    while (!ui->resultsGridScrollAreaContentsLayout->isEmpty())
     {
-        auto item = ui->resultsGridScrollAreaContents->layout()->itemAt(0);
-        ui->resultsGridScrollAreaContents->layout()->removeItem(item);
+        auto item = ui->resultsGridScrollAreaContentsLayout->itemAt(0);
+        ui->resultsGridScrollAreaContentsLayout->removeItem(item);
         item->widget()->deleteLater();
         delete item;
     }
 
-    QVector<db::UserReleaseShortDetails> releases = db::getUserReleases(apiClient->currentUserId(), request);
-    if (releases.isEmpty())
+    QVector<db::UserReleaseGroup> releaseGroups = db::getUserReleases(apiClient->currentUserId(), request);
+    if (releaseGroups.isEmpty() || releaseGroups[0].items.isEmpty())
     {
         ui->contentsStack->setCurrentWidget(ui->emptyPage);
     }
     else
     {
-        for (const auto &item : std::as_const(releases))
+        int currentYear = QDate::currentDate().year();
+        QFont groupTitleFont;
+        groupTitleFont.setBold(true);
+        for (const auto &group : std::as_const(releaseGroups))
         {
-            auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
-            gridItem->setCursor(Qt::PointingHandCursor);
-            gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
-            gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
-            connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
-                    gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
-            connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
-                    gridItem, [gridItem](int kind)
+            QWidget *groupWidget = new QWidget(ui->resultsGridScrollAreaContents);
+            QLayout *groupLayout = new FlowLayout(groupWidget, -1, 16, 12);
+            groupWidget->setLayout(groupLayout);
+
+            QString groupTitle;
+            switch (request.grouping)
             {
-                gridItem->setAdditionalDataDisplayed((OwnedProductGridItem::AdditionalInfo) kind);
-            });
-            connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
-                    gridItem, &OwnedProductGridItem::setImageSize);
-            connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
-                    gridItem, &OwnedProductGridItem::setStatusVisibility);
-            connect(this, &OwnedGamesPage::gridItemRatingVisibilityChanged,
-                    gridItem, &OwnedProductGridItem::setRatingVisibility);
-            connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
-                    gridItem, &OwnedProductGridItem::setTitleVisibility);
-            connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.externalId]()
+            case api::NO_GROUP:
+                break;
+            case api::CRITICS_RATING_GROUP:
+                if (group.discriminator.isNull())
+                {
+                    groupTitle = "NO RATING";
+                }
+                else
+                {
+                    QVariantMap interval = group.discriminator.toMap();
+                    groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
+                }
+                break;
+            case api::GENRE_GROUP:
+                break;
+            case api::INSTALLED_GROUP:
+                groupTitle = group.discriminator.toBool() ? "INSTALLED" : "NOT INSTALLED";
+                break;
+            case api::PLATFORM_GROUP:
+                groupTitle = group.discriminator.toString() == "gog" ? "GOG.COM" : "UNKNOWN PLATFORM";
+                break;
+            case api::RATING_GROUP:
+                if (group.discriminator.isNull())
+                {
+                    groupTitle = "NO RATING";
+                }
+                else
+                {
+                    int rating = group.discriminator.toInt();
+                    groupTitle = QString(rating, u'★') + QString(5 - rating, u'☆');
+                }
+                break;
+            case api::RELEASE_DATE_GROUP:
+                if (group.discriminator.isNull())
+                {
+                    groupTitle = "UNKNOWN RELEASE DATE";
+                }
+                else
+                {
+                    QVariantMap interval = group.discriminator.toMap();
+                    if (interval.isEmpty())
+                    {
+                        int groupYear = group.discriminator.toInt();
+                        groupTitle = groupYear == currentYear ? "THIS YEAR" : group.discriminator.toString();
+                    }
+                    else
+                    {
+                        groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
+                    }
+                }
+                break;
+            case api::SUBSCRIPTION_GROUP:
+                groupTitle = group.discriminator.toBool() ? "IN SUBSCRIPTIONS" : "NOT IN SUBSCRIPTIONS";
+            case api::TAG_GROUP:
+                break;
+            }
+            if (!groupTitle.isNull())
             {
-                emit navigate({Page::OWNED_PRODUCT, productId});
-            });
-            ui->resultsGridScrollAreaContents->layout()->addWidget(gridItem);
+                QLabel *groupTitleLabel = new QLabel(groupTitle, ui->resultsGridScrollAreaContents);
+                groupTitleLabel->setFont(groupTitleFont);
+                ui->resultsGridScrollAreaContentsLayout->addWidget(groupTitleLabel);
+            }
+
+            for (const auto &item : std::as_const(group.items))
+            {
+                auto gridItem = new OwnedProductGridItem(item, apiClient, groupWidget);
+                gridItem->setCursor(Qt::PointingHandCursor);
+                gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
+                gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
+                connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
+                        gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
+                connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
+                        gridItem, [gridItem](int kind)
+                {
+                    gridItem->setAdditionalDataDisplayed((OwnedProductGridItem::AdditionalInfo) kind);
+                });
+                connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
+                        gridItem, &OwnedProductGridItem::setImageSize);
+                connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
+                        gridItem, &OwnedProductGridItem::setStatusVisibility);
+                connect(this, &OwnedGamesPage::gridItemRatingVisibilityChanged,
+                        gridItem, &OwnedProductGridItem::setRatingVisibility);
+                connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
+                        gridItem, &OwnedProductGridItem::setTitleVisibility);
+                connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.externalId]()
+                {
+                    emit navigate({Page::OWNED_PRODUCT, productId});
+                });
+                groupLayout->addWidget(gridItem);
+            }
+            ui->resultsGridScrollAreaContentsLayout->addWidget(groupWidget);
         }
         ui->contentsStack->setCurrentWidget(ui->resultsPage);
     }

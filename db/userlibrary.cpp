@@ -108,10 +108,10 @@ ORDER BY tag;
 )");
 
 const auto SELECT_USER_RELEASES_TEMPLATE = QLatin1String(R"(
-SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id,
-    "release".title, "release".game_id,
+SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id, "release".game_id,
+    "release".title, "release".first_release_date, game.aggregated_rating,
     game.vertical_cover, game.square_icon,
-    user_release.rating, user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at,
+    user_release.owned, user_release.rating, user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at,
     (
         SELECT count(*)
         FROM achievement JOIN platform_release_last_achievements_update
@@ -161,13 +161,13 @@ FROM user_release
 WHERE user_release.user_id = ? AND user_release.hidden = ? AND "release"."type" = 'game' AND game.visible
 )");
 
-QVector<db::UserReleaseShortDetails> db::getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &request)
+QVector<db::UserReleaseGroup> db::getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &request)
 {
     QSqlDatabase db = QSqlDatabase::database();
     if (!db.transaction())
     {
         qDebug() << "Failed to start DB transaction" << db.lastError();
-        return QVector<UserReleaseShortDetails>();
+        return QVector<UserReleaseGroup>();
     }
 
     QVariantList parameters;
@@ -300,49 +300,87 @@ QVector<db::UserReleaseShortDetails> db::getUserReleases(const QString &userId, 
         dbQueryText += " AND LOWER(\"release\".title) GLOB ?";
         parameters << "*" + request.query.toLower() + "*";
     }
+
+    dbQueryText += " ORDER BY";
+    switch (request.grouping)
+    {
+    case api::NO_GROUP:
+        break;
+    case api::CRITICS_RATING_GROUP:
+        if (request.order != api::CRITICS_RATING)
+        {
+            dbQueryText += " ROUND(game.aggregated_rating) DESC,";
+        }
+        break;
+    case api::GENRE_GROUP:
+        break;
+    case api::INSTALLED_GROUP:
+        break;
+    case api::PLATFORM_GROUP:
+        if (request.order != api::PLATFORM)
+        {
+            dbQueryText += " user_release.platform,";
+        }
+        break;
+    case api::RATING_GROUP:
+        if (request.order != api::RATING)
+        {
+            dbQueryText += " user_release.rating DESC,";
+        }
+        break;
+    case api::RELEASE_DATE_GROUP:
+        if (request.order != api::RELEASE_DATE)
+        {
+            dbQueryText += " strftime('%Y', \"release\".first_release_date) DESC,";
+        }
+        break;
+    case api::SUBSCRIPTION_GROUP:
+        dbQueryText += " user_release.owned DESC NULLS LAST,";
+        break;
+    case api::TAG_GROUP:
+        break;
+    }
     switch (request.order)
     {
     case api::ACHIEVEMENTS:
-        dbQueryText += " ORDER BY (unlocked_achievement_count / total_achievement_count) DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " (unlocked_achievement_count / total_achievement_count) DESC,";
         break;
     case api::CRITICS_RATING:
-        dbQueryText += " ORDER BY game.aggregated_rating DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " game.aggregated_rating DESC,";
         break;
     case api::GAME_TIME:
-        dbQueryText += " ORDER BY user_release_game_time_stats.time_sum DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " user_release_game_time_stats.time_sum DESC,";
         break;
     case api::GENRE:
-        dbQueryText += " ORDER BY genres NULLS LAST, LOWER(\"release\".title_sort)";
+        dbQueryText += " genres NULLS LAST,";
         break;
     case api::LAST_PLAYED:
-        dbQueryText += " ORDER BY user_release_game_time_stats.last_played_at DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " user_release_game_time_stats.last_played_at DESC,";
         break;
     case api::PLATFORM:
-        dbQueryText += " ORDER BY user_release.platform, LOWER(\"release\".title_sort)";
+        dbQueryText += " user_release.platform,";
         break;
     case api::RATING:
-        dbQueryText += " ORDER BY user_release.rating DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " user_release.rating DESC,";
         break;
     case api::RELEASE_DATE:
-        dbQueryText += " ORDER BY \"release\".first_release_date DESC, LOWER(\"release\".title_sort)";
+        dbQueryText += " \"release\".first_release_date DESC,";
         break;
     case api::SIZE_ON_DISK:
-        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
         break;
     case api::TAG:
-        dbQueryText += " ORDER BY tags NULLS LAST, LOWER(\"release\".title_sort)";
+        dbQueryText += " tags NULLS LAST,";
         break;
     case api::TITLE:
-        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
         break;
     }
-    dbQueryText += ';';
+    dbQueryText += " LOWER(\"release\".title_sort);";
     QSqlQuery selectUserReleasesQuery;
     if (!selectUserReleasesQuery.prepare(dbQueryText))
     {
         db.rollback();
         qDebug() << "Failed to prepare query to select user releases" << selectUserReleasesQuery.lastError();
-        return QVector<UserReleaseShortDetails>();
+        return QVector<UserReleaseGroup>();
     }
     for (const QVariant &parameter : std::as_const(parameters))
     {
@@ -352,38 +390,128 @@ QVector<db::UserReleaseShortDetails> db::getUserReleases(const QString &userId, 
     {
         db.rollback();
         qDebug() << "Failed to select user releases";
-        return QVector<UserReleaseShortDetails>();
+        return QVector<UserReleaseGroup>();
     }
 
-    QVector<UserReleaseShortDetails> releases;
+    QVector<UserReleaseGroup> releaseGroups;
+    UserReleaseGroup currentGroup;
+    bool initializedGroupDiscriminator = false;
+    int startOfLastDecade = (QDate::currentDate().year() / 10) * 10 - 10;
     while (selectUserReleasesQuery.next())
     {
         UserReleaseShortDetails release;
         release.platformId = selectUserReleasesQuery.value(0).toString();
         release.externalId = selectUserReleasesQuery.value(1).toString();
         release.id = selectUserReleasesQuery.value(2).toString();
-        release.title = selectUserReleasesQuery.value(3).toString();
-        release.gameId = selectUserReleasesQuery.value(4).toString();
-        release.verticalCover = selectUserReleasesQuery.value(5).toString();
-        release.icon = selectUserReleasesQuery.value(6).toString();
-        if (!selectUserReleasesQuery.value(7).isNull())
+        release.gameId = selectUserReleasesQuery.value(3).toString();
+        release.title = selectUserReleasesQuery.value(4).toString();
+        release.releaseDate = selectUserReleasesQuery.value(5).toDate();
+        if (!selectUserReleasesQuery.value(6).isNull())
         {
-            release.rating = selectUserReleasesQuery.value(7).toInt();
+            release.aggregatedRating = selectUserReleasesQuery.value(6).toDouble();
         }
-        release.totalPlaytime = selectUserReleasesQuery.value(8).toUInt();
-        release.lastPlayedAt = selectUserReleasesQuery.value(9).toDateTime();
-        release.totalAchievementCount = selectUserReleasesQuery.value(10).toUInt();
-        release.unlockedAchievementCount = selectUserReleasesQuery.value(11).toUInt();
-        release.developers = selectUserReleasesQuery.value(12).toString();
-        release.publishers = selectUserReleasesQuery.value(13).toString();
-        release.genres = selectUserReleasesQuery.value(14).toString();
-        release.tags = selectUserReleasesQuery.value(15).toString();
-        releases << release;
+        release.verticalCover = selectUserReleasesQuery.value(7).toString();
+        release.icon = selectUserReleasesQuery.value(8).toString();
+        release.owned = selectUserReleasesQuery.value(9).toBool();
+        if (!selectUserReleasesQuery.value(10).isNull())
+        {
+            release.rating = selectUserReleasesQuery.value(10).toInt();
+        }
+        release.totalPlaytime = selectUserReleasesQuery.value(11).toUInt();
+        release.lastPlayedAt = selectUserReleasesQuery.value(12).toDateTime();
+        release.totalAchievementCount = selectUserReleasesQuery.value(13).toUInt();
+        release.unlockedAchievementCount = selectUserReleasesQuery.value(14).toUInt();
+        release.developers = selectUserReleasesQuery.value(15).toString();
+        release.publishers = selectUserReleasesQuery.value(16).toString();
+        release.genres = selectUserReleasesQuery.value(17).toString();
+        release.tags = selectUserReleasesQuery.value(18).toString();
+
+        QVariant itemGroupDiscriminator;
+        switch (request.grouping)
+        {
+        case api::NO_GROUP:
+            break;
+        case api::CRITICS_RATING_GROUP:
+            if (release.aggregatedRating.has_value())
+            {
+                int intervalStart, intervalEnd;
+                int aggregatedRating = std::round(release.aggregatedRating.value());
+                if (aggregatedRating > 50)
+                {
+                    int remainder = aggregatedRating % 10;
+                    if (remainder > 5)
+                    {
+                        intervalEnd = aggregatedRating + (10 - remainder);
+                        intervalStart = intervalEnd - 5;
+                    }
+                    else
+                    {
+                        intervalStart = aggregatedRating - remainder;
+                        intervalEnd = intervalStart + 5;
+                    }
+                }
+                else
+                {
+                    intervalStart = 0, intervalEnd = 50;
+                }
+                itemGroupDiscriminator = QVariantMap({ std::make_pair("start", intervalStart), std::make_pair("end", intervalEnd) });
+            }
+            break;
+        case api::GENRE_GROUP:
+            break;
+        case api::INSTALLED_GROUP:
+            itemGroupDiscriminator = false;
+            break;
+        case api::PLATFORM_GROUP:
+            itemGroupDiscriminator = release.platformId;
+            break;
+        case api::RATING_GROUP:
+            if (release.rating.has_value())
+            {
+                itemGroupDiscriminator = release.rating.value();
+            }
+            break;
+        case api::RELEASE_DATE_GROUP:
+            if (!release.releaseDate.isNull())
+            {
+                if (startOfLastDecade <= release.releaseDate.year())
+                {
+                    itemGroupDiscriminator = release.releaseDate.year();
+                }
+                else
+                {
+                    int releaseDecade = (release.releaseDate.year() / 10) * 10;
+                    itemGroupDiscriminator = QVariantMap({ std::make_pair("start", releaseDecade), std::make_pair("end", releaseDecade + 9) });
+                }
+            }
+            break;
+        case api::SUBSCRIPTION_GROUP:
+            itemGroupDiscriminator = !release.owned;
+            break;
+        case api::TAG_GROUP:
+            break;
+        }
+
+        if (initializedGroupDiscriminator && currentGroup.discriminator != itemGroupDiscriminator)
+        {
+            releaseGroups << currentGroup;
+            currentGroup = { itemGroupDiscriminator, QVector<UserReleaseShortDetails>() };
+        }
+        else
+        {
+            currentGroup.discriminator = itemGroupDiscriminator;
+        }
+        currentGroup.items << release;
+        initializedGroupDiscriminator = true;
+    }
+    if (!currentGroup.items.isEmpty())
+    {
+        releaseGroups << currentGroup;
     }
 
     db.commit();
 
-    return releases;
+    return releaseGroups;
 }
 
 api::UserLibraryFilters db::getUserReleasesFilters(const QString &userId)

@@ -15,7 +15,7 @@ namespace db
 {
     void initialize();
 
-    QVector<UserReleaseShortDetails> getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &data);
+    QVector<UserReleaseGroup> getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &data);
     api::UserLibraryFilters getUserReleasesFilters(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToMap(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToUpdateAchievements(const QString &userId);

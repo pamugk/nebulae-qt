@@ -1,8 +1,11 @@
 #ifndef USERRELEASEDETAILS_H
 #define USERRELEASEDETAILS_H
 
+#include <QDate>
 #include <QDateTime>
 #include <QString>
+#include <QVariant>
+#include <QVector>
 
 namespace db
 {
@@ -13,8 +16,11 @@ namespace db
         QString platformId;
         QString externalId;
         QString title;
+        QDate releaseDate;
         QString verticalCover;
         QString icon;
+        std::optional<double> aggregatedRating;
+        bool owned;
         std::optional<int> rating;
         unsigned int totalPlaytime;
         QDateTime lastPlayedAt;
@@ -24,6 +30,12 @@ namespace db
         QString publishers;
         QString genres;
         QString tags;
+    };
+
+    struct UserReleaseGroup
+    {
+        QVariant discriminator;
+        QVector<UserReleaseShortDetails> items;
     };
 }
 
