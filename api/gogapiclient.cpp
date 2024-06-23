@@ -51,7 +51,6 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         {
             userId = QString();
         }
-        qDebug() << client.token();
         emit authenticated(!client.token().isEmpty());
     });
     tokenStorage->getAuthData();
@@ -142,6 +141,18 @@ QNetworkReply *api::GogApiClient::getCurrentUser()
 QNetworkReply *api::GogApiClient::getCurrentUserGameTimeStatistics()
 {
     return client.get(QStringLiteral("https://gameplay.gog.com/users/%1/external_game_time_stats").arg(userId));
+}
+
+QNetworkReply *api::GogApiClient::getCurrentUserPlatformAchievements(const QString &platform, const QString &pageToken)
+{
+    QUrlQuery query({ std::make_pair<QString>("platform", platform) });
+    if (!pageToken.isEmpty())
+    {
+        query.addQueryItem("page_token", pageToken);
+    }
+    QUrl url(QStringLiteral("https://gameplay.gog.com/users/%1/external_achievements").arg(userId));
+    url.setQuery(query);
+    return client.get(url);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()

@@ -21,6 +21,7 @@ namespace db
     void savePlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
                                          const QVector<api::PlatformAchievement> &achievements);
     void saveRelease(const api::Release &release);
+    void saveUserPlatformAchievements(const QString &userId, const QVector<api::PlatformUserAchievement> &achievements);
     void saveUserGameTimeStatistics(const QString &userId, const QVector<api::PlatformReleaseTimeStatistics> &statistics);
     void saveUserReleases(const QString &userId, const QVector<api::UserRelease> &releases);
 }

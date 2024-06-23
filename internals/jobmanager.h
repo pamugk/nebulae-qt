@@ -25,11 +25,14 @@ private:
     QNetworkReply *libraryReleaseReply;
     QNetworkReply *libraryReleaseAchievementsReply;
     QNetworkReply *libraryReleaseUserAchievementsReply;
+    QMap<QString, QNetworkReply *> userAchievementsByPlatformsReplies;
     QNetworkReply *userGameplayReply;
     QNetworkReply *userLibraryReply;
 
     std::optional<int> achievementsTimerId;
     std::optional<int> libraryTimerId;
+
+    void getUserPlatformAchievements(const QString &platform, const QString &pageToken = "");
 };
 
 #endif // JOBMANAGER_H

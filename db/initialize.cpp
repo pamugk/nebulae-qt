@@ -272,6 +272,18 @@ CREATE TABLE IF NOT EXISTS user_release(
     PRIMARY KEY (user_id, platform, platform_release_id));
 )");
 
+const auto USER_RELEASE_ACHIEVEMENT_DDL = QLatin1String(R"(
+CREATE TABLE IF NOT EXISTS user_release_achievement(
+    user_id TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    platform_release_id TEXT NOT NULL,
+    api_key TEXT NOT NULL,
+    unlocked_at NOT NULL,
+    PRIMARY KEY (user_id, platform, platform_release_id, api_key),
+    FOREIGN KEY (user_id, platform, platform_release_id) REFERENCES user_release (user_id, platform, platform_release_id) ON DELETE CASCADE,
+    FOREIGN KEY (platform, platform_release_id, api_key) REFERENCES achievement (platform, platform_release_id, api_key) ON DELETE CASCADE);
+)");
+
 const auto USER_RELEASE_GAME_TIME_STATS_DDL = QLatin1String(R"(
 CREATE TABLE IF NOT EXISTS user_release_game_time_stats(
     user_id TEXT NOT NULL,
@@ -312,6 +324,11 @@ void db::initialize()
     if (!initializationQuery.exec(USER_RELEASE_DDL))
     {
         qDebug() << "Could not create user release table: " << initializationQuery.lastError();
+        exit(-1);
+    }
+    if (!initializationQuery.exec(USER_RELEASE_ACHIEVEMENT_DDL))
+    {
+        qDebug() << "Could not create user release achievement table: " << initializationQuery.lastError();
         exit(-1);
     }
     if (!initializationQuery.exec(USER_RELEASE_GAME_TIME_STATS_DDL))

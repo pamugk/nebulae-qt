@@ -26,6 +26,7 @@ namespace api
         QNetworkReply *getCatalogProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getCurrentUser();
         QNetworkReply *getCurrentUserGameTimeStatistics();
+        QNetworkReply *getCurrentUserPlatformAchievements(const QString &platform, const QString &pageToken);
         QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,

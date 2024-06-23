@@ -26,6 +26,7 @@ namespace api
     {
         unsigned int limit;
         QString pageToken;
+        QString nextPageToken;
         QVector<PlatformAchievement> items;
     };
 }

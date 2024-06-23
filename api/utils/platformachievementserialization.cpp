@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parsePlatfomAchievement(const QJsonValue &json, api::PlatformAchievement &data)
+void parsePlatformAchievement(const QJsonValue &json, api::PlatformAchievement &data)
 {
     data.id = json["id"].toString();
     data.platformReleaseId = json["release_per_platform_id"].toString();
@@ -26,6 +26,6 @@ void parseGetPlatformReleaseAchievementsResponse(const QJsonValue &json, api::Ge
     data.items.resize(items.count());
     for (std::size_t i = 0; i < items.count(); i++)
     {
-        parsePlatfomAchievement(items[i], data.items[i]);
+        parsePlatformAchievement(items[i], data.items[i]);
     }
 }

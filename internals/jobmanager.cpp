@@ -39,6 +39,14 @@ JobManager::~JobManager()
     {
         libraryReleaseUserAchievementsReply->abort();
     }
+    for (auto item : std::as_const(userAchievementsByPlatformsReplies))
+    {
+        if (item != nullptr)
+        {
+            item->abort();
+        }
+    }
+    userAchievementsByPlatformsReplies.clear();
     if (userGameplayReply != nullptr)
     {
         userGameplayReply->abort();
@@ -49,8 +57,50 @@ JobManager::~JobManager()
     }
 }
 
+void JobManager::getUserPlatformAchievements(const QString &platform, const QString &pageToken)
+{
+    userAchievementsByPlatformsReplies[platform] = apiClient->getCurrentUserPlatformAchievements(platform, pageToken);
+    connect(userAchievementsByPlatformsReplies[platform], &QNetworkReply::finished, this, [this, platform, pageToken]()
+    {
+       auto networkReply = userAchievementsByPlatformsReplies[platform];
+       userAchievementsByPlatformsReplies[platform] = nullptr;
+       if (networkReply->error() == QNetworkReply::NoError)
+       {
+           auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+           api::GetUserPlatformAchievementsResponse data;
+           parseGetUserPlatformAchievementsResponse(resultJson, data);
+           qDebug() << "Received user achievements on platform " << platform;
+           db::saveUserPlatformAchievements(apiClient->currentUserId(), data.items);
+           if (!data.nextPageToken.isNull())
+           {
+               getUserPlatformAchievements(platform, data.nextPageToken);
+           }
+       }
+       else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+       {
+           qDebug() << "Failed to get user's achievements on a platform, retrying: "
+                    << networkReply->error() << networkReply->errorString()
+                    << QString(networkReply->readAll()).toUtf8();
+           getUserPlatformAchievements(platform, pageToken);
+       }
+
+       networkReply->deleteLater();
+    });
+}
+
 void JobManager::setAuthenticated(bool authenticated)
 {
+    if (!userAchievementsByPlatformsReplies.empty())
+    {
+        for (auto item : std::as_const(userAchievementsByPlatformsReplies))
+        {
+            if (item != nullptr)
+            {
+                item->abort();
+            }
+        }
+        userAchievementsByPlatformsReplies.clear();
+    }
     if (userGameplayReply != nullptr)
     {
         userGameplayReply->abort();
@@ -99,6 +149,20 @@ void JobManager::setAuthenticated(bool authenticated)
                 api::GetUserReleasesResponse data;
                 parseGetUserReleasesResponse(resultJson, data);
                 db::saveUserReleases(this->apiClient->currentUserId(), data.items);
+
+                QSet<QString> platforms;
+                for (const api::UserRelease &userRelease : std::as_const(data.items))
+                {
+                    platforms << userRelease.platformId;
+                }
+
+                for (const QString &platform: std::as_const(platforms))
+                {
+                    if (!platform.isNull())
+                    {
+                        getUserPlatformAchievements(platform);
+                    }
+                }
             }
             else if (networkReply->error() != QNetworkReply::OperationCanceledError)
             {
