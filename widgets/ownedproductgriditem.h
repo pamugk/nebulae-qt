@@ -5,7 +5,7 @@
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
-#include "../api/models/release.h"
+#include "../db/userreleasedetails.h"
 
 namespace Ui {
 class OwnedProductGridItem;
@@ -16,7 +16,7 @@ class OwnedProductGridItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit OwnedProductGridItem(const api::Release &data,
+    explicit OwnedProductGridItem(const db::UserReleaseShortDetails &data,
                                   api::GogApiClient *apiClient,
                                   QWidget *parent = nullptr);
     ~OwnedProductGridItem();
@@ -32,7 +32,7 @@ public:
 
 public slots:
     void setAdditionalDataVisibility(bool visible);
-    void setAdditionalDataDisplayed(int kind);
+    void setAdditionalDataDisplayed(AdditionalInfo kind);
     void setImageSize(const QSize &imageSize);
     void setRatingVisibility(bool visible);
     void setStatusVisibility(bool visible);
@@ -45,11 +45,10 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QString company;
-    QString genres;
-    std::optional<double> rating;
-    QString tags;
-    QString title;
+    const QMap<AdditionalInfo, QString> additionalData;
+    AdditionalInfo displayedAdditionalData;
+    const std::optional<double> rating;
+    const QString title;
     QNetworkReply *imageReply;
     Ui::OwnedProductGridItem *ui;
 };

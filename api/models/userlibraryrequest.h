@@ -22,6 +22,19 @@ namespace api
         TITLE
     };
 
+    enum UserReleaseGrouping
+    {
+        NO_GROUP,
+        CRITICS_RATING_GROUP,
+        GENRE_GROUP,
+        INSTALLED_GROUP,
+        PLATFORM_GROUP,
+        RATING_GROUP,
+        RELEASE_DATE_GROUP,
+        SUBSCRIPTION_GROUP,
+        TAG_GROUP
+    };
+
     struct SearchUserReleasesRequest
     {
         // Filters
@@ -37,6 +50,7 @@ namespace api
 
         // Order & group clause
         UserReleaseOrder order;
+        UserReleaseGrouping grouping;
     };
 }
 

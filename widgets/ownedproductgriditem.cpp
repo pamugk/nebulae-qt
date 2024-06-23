@@ -8,13 +8,45 @@ void setElidedText(QLabel *label, const QString &text)
     label->setText(elidedText);
 }
 
-OwnedProductGridItem::OwnedProductGridItem(const api::Release &data,
+QString describeGameplayStats(const db::UserReleaseShortDetails &data)
+{
+    auto systemLocale = QLocale::system();
+    QString gameplayStats;
+    if (data.totalAchievementCount > 0)
+    {
+        gameplayStats += systemLocale.toString(data.unlockedAchievementCount / data.totalAchievementCount);
+        gameplayStats += systemLocale.percent();
+    }
+    if (data.totalPlaytime > 0)
+    {
+        if (!gameplayStats.isEmpty())
+        {
+            gameplayStats += ' ';
+        }
+        gameplayStats += "🕒 ";
+        if (data.totalPlaytime > 60)
+        {
+            gameplayStats += systemLocale.toString(data.totalPlaytime / 60);
+            gameplayStats += " h. ";
+        }
+        gameplayStats += systemLocale.toString(data.totalPlaytime % 60);
+        gameplayStats += " min.";
+    }
+    return gameplayStats;
+}
+
+OwnedProductGridItem::OwnedProductGridItem(const db::UserReleaseShortDetails &data,
                                            api::GogApiClient *apiClient,
                                            QWidget *parent) :
     QWidget(parent),
-    company(""),
-    genres(""),
-    title(data.title["*"].toString()),
+    additionalData({
+                   std::make_pair(AdditionalInfo::COMPANY, data.developers),
+                   std::make_pair(AdditionalInfo::GENRES, data.genres),
+                   std::make_pair(AdditionalInfo::STATS, describeGameplayStats(data)),
+                   std::make_pair(AdditionalInfo::TAGS, data.tags),
+                   std::make_pair(AdditionalInfo::PLATFORM, data.platformId == "gog" ? "GOG" : "Unknown platform"),
+                   }),
+    title(data.title),
     ui(new Ui::OwnedProductGridItem)
 {
     ui->setupUi(this);
@@ -26,9 +58,10 @@ OwnedProductGridItem::OwnedProductGridItem(const api::Release &data,
     ui->titleLabel->setToolTip(title);
     ui->statusActionButton->setVisible(false);
     ui->ratingLabel->setVisible(false);
+    ui->ratingLabel->setText(data.rating.has_value() ? (QString(data.rating.value(), u'★') + QString(5 - data.rating.value(), u'☆')) : "No rating");
     ui->additionalInfoLabel->setVisible(false);
 
-    imageReply = apiClient->getAnything(QString(data.game.verticalCover).replace("{formatter}", "_product_tile_80x114_2x").replace("{ext}", "webp"));
+    imageReply = apiClient->getAnything(QString(data.verticalCover).replace("{formatter}", "_glx_vertical_cover").replace("{ext}", "webp"));
     connect(imageReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = imageReply;
@@ -57,32 +90,20 @@ void OwnedProductGridItem::setAdditionalDataVisibility(bool visible)
     ui->additionalInfoLabel->setVisible(visible);
 }
 
-void OwnedProductGridItem::setAdditionalDataDisplayed(int kind)
+void OwnedProductGridItem::setAdditionalDataDisplayed(AdditionalInfo kind)
 {
-    switch (kind)
-    {
-    case COMPANY:
-        ui->additionalInfoLabel->setText(company);
-        break;
-    case GENRES:
-        ui->additionalInfoLabel->setText(genres);
-        break;
-    case STATS:
-        ui->additionalInfoLabel->setText("");
-        break;
-    case TAGS:
-        ui->additionalInfoLabel->setText("");
-        break;
-    case PLATFORM:
-        ui->additionalInfoLabel->setText("GOG");
-        break;
-    }
+    QString displayedAdditionalData = additionalData[kind];
+    setElidedText(ui->additionalInfoLabel, displayedAdditionalData);
+    ui->additionalInfoLabel->setToolTip(displayedAdditionalData);
+    this->displayedAdditionalData = kind;
 }
 
 void OwnedProductGridItem::setImageSize(const QSize &imageSize)
 {
     this->setFixedWidth(imageSize.width());
     ui->coverLabel->setFixedSize(imageSize);
+    setElidedText(ui->titleLabel, title);
+    setElidedText(ui->additionalInfoLabel, additionalData[displayedAdditionalData]);
 }
 
 void OwnedProductGridItem::setRatingVisibility(bool visible)

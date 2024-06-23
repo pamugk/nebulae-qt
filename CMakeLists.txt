@@ -73,6 +73,7 @@ set(PROJECT_SOURCES
         db/initialize.cpp
         db/library.cpp
         db/userlibrary.cpp
+        db/userreleasedetails.h
 
         internals/jobmanager.h internals/jobmanager.cpp
         internals/navigationdestination.h

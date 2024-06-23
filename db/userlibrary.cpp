@@ -110,8 +110,8 @@ ORDER BY tag;
 const auto SELECT_USER_RELEASES_TEMPLATE = QLatin1String(R"(
 SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id,
     "release".title, "release".game_id,
-    game.vertical_cover, game.cover,
-    user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at,
+    game.vertical_cover, game.square_icon,
+    user_release.rating, user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at,
     (
         SELECT count(*)
         FROM achievement JOIN platform_release_last_achievements_update
@@ -126,7 +126,29 @@ SELECT platform_release.platform, platform_release.platform_release_id, platform
         WHERE user_release.user_id = user_release_achievement.user_id
             AND user_release.platform = user_release_achievement.platform
             AND user_release.platform_release_id = user_release_achievement.platform_release_id
-    ) AS unlocked_achievement_count
+    ) AS unlocked_achievement_count,
+    NULLIF((
+        SELECT group_concat(developer.name, ', ')
+        FROM game_developer JOIN developer ON game_developer.developer_id = developer.id
+        WHERE game_developer.game_id = game.id
+    ), '') AS developers,
+    NULLIF((
+        SELECT group_concat(publisher.name, ', ')
+        FROM game_publisher JOIN publisher ON game_publisher.publisher_id = publisher.id
+        WHERE game_publisher.game_id = game.id
+    ), '') AS publishers,
+    NULLIF((
+        SELECT group_concat(genre.name, ', ')
+        FROM game_genre JOIN genre ON game_genre.genre_id = genre.id
+        WHERE game_genre.game_id = game.id
+    ), '') AS genres,
+    NULLIF((
+        SELECT group_concat(user_release_tag.tag, ', ')
+        FROM user_release_tag
+        WHERE user_release.user_id = user_release_tag.user_id
+            AND user_release.platform = user_release_tag.platform
+            AND user_release.platform_release_id = user_release_tag.platform_release_id
+    ), '') AS tags
 FROM user_release
     LEFT JOIN user_release_game_time_stats ON
         user_release.user_id = user_release_game_time_stats.user_id
@@ -139,13 +161,13 @@ FROM user_release
 WHERE user_release.user_id = ? AND user_release.hidden = ? AND "release"."type" = 'game' AND game.visible
 )");
 
-QVector<api::Release> db::getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &request)
+QVector<db::UserReleaseShortDetails> db::getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &request)
 {
     QSqlDatabase db = QSqlDatabase::database();
     if (!db.transaction())
     {
         qDebug() << "Failed to start DB transaction" << db.lastError();
-        return QVector<api::Release>();
+        return QVector<UserReleaseShortDetails>();
     }
 
     QVariantList parameters;
@@ -290,12 +312,7 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
         dbQueryText += " ORDER BY user_release_game_time_stats.time_sum DESC, LOWER(\"release\".title_sort)";
         break;
     case api::GENRE:
-        dbQueryText += R"( ORDER BY NULLIF((
-    SELECT group_concat(genre.name)
-    FROM game_genre JOIN genre ON game_genre.genre_id = genre.id
-    WHERE game_genre.game_id = game.id
-), '') NULLS LAST, LOWER("release".title_sort)
-)";
+        dbQueryText += " ORDER BY genres NULLS LAST, LOWER(\"release\".title_sort)";
         break;
     case api::LAST_PLAYED:
         dbQueryText += " ORDER BY user_release_game_time_stats.last_played_at DESC, LOWER(\"release\".title_sort)";
@@ -313,14 +330,7 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
         dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
         break;
     case api::TAG:
-        dbQueryText += R"( ORDER BY NULLIF((
-    SELECT group_concat(user_release_tag.tag)
-    FROM user_release_tag
-    WHERE user_release.user_id = user_release_tag.user_id
-        AND user_release.platform = user_release_tag.platform
-        AND user_release.platform_release_id = user_release_tag.platform_release_id
-), '') NULLS LAST, LOWER("release".title_sort)
-)";
+        dbQueryText += " ORDER BY tags NULLS LAST, LOWER(\"release\".title_sort)";
         break;
     case api::TITLE:
         dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
@@ -332,7 +342,7 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     {
         db.rollback();
         qDebug() << "Failed to prepare query to select user releases" << selectUserReleasesQuery.lastError();
-        return QVector<api::Release>();
+        return QVector<UserReleaseShortDetails>();
     }
     for (const QVariant &parameter : std::as_const(parameters))
     {
@@ -342,20 +352,32 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     {
         db.rollback();
         qDebug() << "Failed to select user releases";
-        return QVector<api::Release>();
+        return QVector<UserReleaseShortDetails>();
     }
 
-    QVector<api::Release> releases;
+    QVector<UserReleaseShortDetails> releases;
     while (selectUserReleasesQuery.next())
     {
-        api::Release release;
+        UserReleaseShortDetails release;
         release.platformId = selectUserReleasesQuery.value(0).toString();
         release.externalId = selectUserReleasesQuery.value(1).toString();
         release.id = selectUserReleasesQuery.value(2).toString();
-        release.title["*"] = selectUserReleasesQuery.value(3).toString();
+        release.title = selectUserReleasesQuery.value(3).toString();
         release.gameId = selectUserReleasesQuery.value(4).toString();
-        release.game.verticalCover = selectUserReleasesQuery.value(5).toString();
-        release.game.cover = selectUserReleasesQuery.value(6).toString();
+        release.verticalCover = selectUserReleasesQuery.value(5).toString();
+        release.icon = selectUserReleasesQuery.value(6).toString();
+        if (!selectUserReleasesQuery.value(7).isNull())
+        {
+            release.rating = selectUserReleasesQuery.value(7).toInt();
+        }
+        release.totalPlaytime = selectUserReleasesQuery.value(8).toUInt();
+        release.lastPlayedAt = selectUserReleasesQuery.value(9).toDateTime();
+        release.totalAchievementCount = selectUserReleasesQuery.value(10).toUInt();
+        release.unlockedAchievementCount = selectUserReleasesQuery.value(11).toUInt();
+        release.developers = selectUserReleasesQuery.value(12).toString();
+        release.publishers = selectUserReleasesQuery.value(13).toString();
+        release.genres = selectUserReleasesQuery.value(14).toString();
+        release.tags = selectUserReleasesQuery.value(15).toString();
         releases << release;
     }
 

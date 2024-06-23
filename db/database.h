@@ -3,6 +3,7 @@
 
 #include <QVector>
 
+#include "userreleasedetails.h"
 #include "../api/models/platformachievement.h"
 #include "../api/models/release.h"
 #include "../api/models/statistics.h"
@@ -14,7 +15,7 @@ namespace db
 {
     void initialize();
 
-    QVector<api::Release> getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &data);
+    QVector<UserReleaseShortDetails> getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &data);
     api::UserLibraryFilters getUserReleasesFilters(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToMap(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToUpdateAchievements(const QString &userId);

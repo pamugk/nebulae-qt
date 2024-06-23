@@ -25,6 +25,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     request.hidden = false;
     request.owned = true;
     request.order = api::UserReleaseOrder::TITLE;
+    request.grouping = api::UserReleaseGrouping::NO_GROUP;
 
     ui->setupUi(this);
 
@@ -404,16 +405,44 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     sortOrderGroup->addAction(sortItem);
 
     settingsSubmenu = viewSettingsMenu->addMenu("Group by");
-    settingsSubmenu->addAction("Don't group");
+    auto groupingGroup = new QActionGroup(settingsSubmenu);
+    auto groupingAction = settingsSubmenu->addAction("Don't group");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::NO_GROUP);
+    groupingGroup->addAction(groupingAction);
     settingsSubmenu->addSeparator();
-    settingsSubmenu->addAction("Critics rating");
-    settingsSubmenu->addAction("Genre");
-    settingsSubmenu->addAction("Installed");
-    settingsSubmenu->addAction("Platform");
-    settingsSubmenu->addAction("Rating");
-    settingsSubmenu->addAction("Release date");
-    settingsSubmenu->addAction("Subscription");
-    settingsSubmenu->addAction("Tags");
+    groupingAction = settingsSubmenu->addAction("Critics rating");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::CRITICS_RATING_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Genre");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::GENRE_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Installed");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::INSTALLED_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Platform");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::PLATFORM_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Rating");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::RATING_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Release date");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::RELEASE_DATE_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Subscription");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::SUBSCRIPTION_GROUP);
+    groupingGroup->addAction(groupingAction);
+    groupingAction = settingsSubmenu->addAction("Tags");
+    groupingAction->setCheckable(true);
+    groupingAction->setChecked(request.grouping == api::UserReleaseGrouping::TAG_GROUP);
+    groupingGroup->addAction(groupingAction);
 
     viewSettingsToolButton->setMenu(viewSettingsMenu);
     uiActions << viewSettingsToolButton;
@@ -451,14 +480,14 @@ void OwnedGamesPage::updateData()
         delete item;
     }
 
-    QVector<api::Release> releases = db::getUserReleases(apiClient->currentUserId(), request);
+    QVector<db::UserReleaseShortDetails> releases = db::getUserReleases(apiClient->currentUserId(), request);
     if (releases.isEmpty())
     {
         ui->contentsStack->setCurrentWidget(ui->emptyPage);
     }
     else
     {
-        for (const api::Release &item : std::as_const(releases))
+        for (const auto &item : std::as_const(releases))
         {
             auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
             gridItem->setCursor(Qt::PointingHandCursor);
@@ -467,7 +496,10 @@ void OwnedGamesPage::updateData()
             connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
                     gridItem, &OwnedProductGridItem::setAdditionalDataVisibility);
             connect(this, &OwnedGamesPage::gridItemAdditionalDataDisplayed,
-                    gridItem, &OwnedProductGridItem::setAdditionalDataDisplayed);
+                    gridItem, [gridItem](int kind)
+            {
+                gridItem->setAdditionalDataDisplayed((OwnedProductGridItem::AdditionalInfo) kind);
+            });
             connect(this, &OwnedGamesPage::gridItemImageSizeChanged,
                     gridItem, &OwnedProductGridItem::setImageSize);
             connect(this, &OwnedGamesPage::gridItemStatusVisibilityChanged,
@@ -564,7 +596,7 @@ void OwnedGamesPage::updateFilters()
     ratingsSubmenu->menu()->clear();
     for (const auto &rating : std::as_const(filters.ratings))
     {
-        auto ratingItem = ratingsSubmenu->menu()->addAction(QString::number(rating));
+        auto ratingItem = ratingsSubmenu->menu()->addAction((QString(rating, u'★') + QString(5 - rating, u'☆')));
         ratingItem->setCheckable(true);
         ratingItem->setChecked(request.ratings.contains(rating));
         connect(ratingItem, &QAction::toggled, this, [this, rating](bool toggled)
