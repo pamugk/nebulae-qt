@@ -111,7 +111,22 @@ const auto SELECT_USER_RELEASES_TEMPLATE = QLatin1String(R"(
 SELECT platform_release.platform, platform_release.platform_release_id, platform_release.release_id,
     "release".title, "release".game_id,
     game.vertical_cover, game.cover,
-    user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at
+    user_release_game_time_stats.time_sum, user_release_game_time_stats.last_session_at,
+    (
+        SELECT count(*)
+        FROM achievement JOIN platform_release_last_achievements_update
+            ON achievement.platform = platform_release_last_achievements_update.platform
+            AND achievement.platform_release_id = platform_release_last_achievements_update.platform_release_id
+        WHERE user_release.platform = achievement.platform
+            AND user_release.platform_release_id = achievement.platform_release_id
+    ) AS total_achievement_count,
+    (
+        SELECT count(*)
+        FROM user_release_achievement
+        WHERE user_release.user_id = user_release_achievement.user_id
+            AND user_release.platform = user_release_achievement.platform
+            AND user_release.platform_release_id = user_release_achievement.platform_release_id
+    ) AS unlocked_achievement_count
 FROM user_release
     LEFT JOIN user_release_game_time_stats ON
         user_release.user_id = user_release_game_time_stats.user_id
@@ -266,7 +281,7 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     switch (request.order)
     {
     case api::ACHIEVEMENTS:
-        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
+        dbQueryText += " ORDER BY (unlocked_achievement_count / total_achievement_count) DESC, LOWER(\"release\".title_sort)";
         break;
     case api::CRITICS_RATING:
         dbQueryText += " ORDER BY game.aggregated_rating DESC, LOWER(\"release\".title_sort)";
@@ -275,7 +290,12 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
         dbQueryText += " ORDER BY user_release_game_time_stats.time_sum DESC, LOWER(\"release\".title_sort)";
         break;
     case api::GENRE:
-        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
+        dbQueryText += R"( ORDER BY NULLIF((
+    SELECT group_concat(genre.name)
+    FROM game_genre JOIN genre ON game_genre.genre_id = genre.id
+    WHERE game_genre.game_id = game.id
+), '') NULLS LAST, LOWER("release".title_sort)
+)";
         break;
     case api::LAST_PLAYED:
         dbQueryText += " ORDER BY user_release_game_time_stats.last_played_at DESC, LOWER(\"release\".title_sort)";
@@ -290,8 +310,18 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
         dbQueryText += " ORDER BY \"release\".first_release_date DESC, LOWER(\"release\".title_sort)";
         break;
     case api::SIZE_ON_DISK:
-        // TODO: implement this sort order after installation
+        dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
+        break;
     case api::TAG:
+        dbQueryText += R"( ORDER BY NULLIF((
+    SELECT group_concat(user_release_tag.tag)
+    FROM user_release_tag
+    WHERE user_release.user_id = user_release_tag.user_id
+        AND user_release.platform = user_release_tag.platform
+        AND user_release.platform_release_id = user_release_tag.platform_release_id
+), '') NULLS LAST, LOWER("release".title_sort)
+)";
+        break;
     case api::TITLE:
         dbQueryText += " ORDER BY LOWER(\"release\".title_sort)";
         break;
