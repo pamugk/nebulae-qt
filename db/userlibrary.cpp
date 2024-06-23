@@ -45,35 +45,66 @@ LIMIT 1;
 )");
 
 const auto SELECT_USER_RELEASES_GENRES = QLatin1String(R"(
-SELECT genre.id, genre.name, genre.slug
-FROM (
+SELECT id, name, slug
+FROM genre
+WHERE id IN (
     SELECT DISTINCT genre_id
-    FROM game_genre
-    WHERE game_id IN (
-        SELECT game_id
-        FROM user_release
-            JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
-            JOIN "release" ON platform_release.release_id = "release".id
-            JOIN game ON "release".game_id = game.id
-        WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
-    )
-) tmp JOIN genre ON tmp.genre_id = genre.id;
+    FROM user_release
+        JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
+        JOIN "release" ON platform_release.release_id = "release".id
+        JOIN game ON "release".game_id = game.id
+        JOIN game_genre ON game.id = game_genre.game_id
+    WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
+)
+ORDER BY name;
 )");
 
 const auto SELECT_USER_RELEASES_OS = QLatin1String(R"(
-SELECT os.slug, os.name
-FROM (
+SELECT slug, name
+FROM os
+WHERE slug IN (
     SELECT DISTINCT os_slug
-    FROM release_supported_os
-    WHERE release_id IN (
-        SELECT release_id
-        FROM user_release
-            JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
-            JOIN "release" ON platform_release.release_id = "release".id
-            JOIN game ON "release".game_id = game.id
-        WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
-    )
-) tmp JOIN os ON tmp.os_slug = os.slug;
+    FROM user_release
+        JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
+        JOIN "release" ON platform_release.release_id = "release".id
+        JOIN game ON "release".game_id = game.id
+        JOIN release_supported_os ON "release".id = release_supported_os.release_id
+    WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
+)
+ORDER BY LOWER(name) DESC;
+)");
+
+const auto SELECT_USER_RELEASES_PLATFORMS = QLatin1String(R"(
+SELECT DISTINCT user_release.platform
+FROM user_release
+    JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
+    JOIN "release" ON platform_release.release_id = "release".id
+    JOIN game ON "release".game_id = game.id
+    JOIN game_genre ON game.id = game_genre.game_id
+WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
+ORDER BY user_release.platform;
+)");
+
+const auto SELECT_USER_RELEASES_RATINGS = QLatin1String(R"(
+SELECT DISTINCT user_release.rating
+FROM user_release
+    JOIN platform_release ON user_release.platform = platform_release.platform AND user_release.platform_release_id = platform_release.platform_release_id
+    JOIN "release" ON platform_release.release_id = "release".id
+    JOIN game ON "release".game_id = game.id
+    JOIN game_genre ON game.id = game_genre.game_id
+WHERE user_release.user_id = ? AND "release"."type" = 'game' AND game.visible
+ORDER BY rating DESC;
+)");
+
+const auto SELECT_USER_RELEASES_TAGS = QLatin1String(R"(
+SELECT DISTINCT tag
+FROM user_release_tag
+    JOIN platform_release ON user_release_tag.platform = platform_release.platform AND user_release_tag.platform_release_id = platform_release.platform_release_id
+    JOIN "release" ON platform_release.release_id = "release".id
+    JOIN game ON "release".game_id = game.id
+    JOIN game_genre ON game.id = game_genre.game_id
+WHERE user_release_tag.user_id = ? AND "release"."type" = 'game' AND game.visible
+ORDER BY tag;
 )");
 
 const auto SELECT_USER_RELEASES_TEMPLATE = QLatin1String(R"(
@@ -100,6 +131,128 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     QVariantList parameters;
     parameters << userId << request.hidden;
     QString dbQueryText(SELECT_USER_RELEASES_TEMPLATE);
+    if (!request.genres.isEmpty())
+    {
+        dbQueryText += R"( AND EXISTS (
+    SELECT * FROM game_genre
+    WHERE game_genre.game_id = game.id
+        AND game_genre.genre_id IN ()";
+        bool firstParam = true;
+        for (const auto &genre : std::as_const(request.genres))
+        {
+            if (firstParam)
+            {
+                dbQueryText += '?';
+            }
+            else
+            {
+                dbQueryText += ", ?";
+            }
+            firstParam = false;
+            parameters << genre;
+        }
+        dbQueryText += "))";
+    }
+    if (!request.platforms.isEmpty())
+    {
+        dbQueryText += " AND user_release.platform IN (";
+        bool firstParam = true;
+        for (const auto &platform : std::as_const(request.platforms))
+        {
+            if (firstParam)
+            {
+                dbQueryText += '?';
+            }
+            else
+            {
+                dbQueryText += ", ?";
+            }
+            firstParam = false;
+            parameters << platform;
+        }
+        dbQueryText += ')';
+    }
+    if (!request.supportedOs.isEmpty())
+    {
+        dbQueryText += R"( AND EXISTS (
+    SELECT * FROM release_supported_os
+    WHERE release_supported_os.release_id = "release".id
+        AND release_supported_os.os_slug IN ()";
+        bool firstParam = true;
+        for (const auto &os : std::as_const(request.supportedOs))
+        {
+            if (firstParam)
+            {
+                dbQueryText += '?';
+            }
+            else
+            {
+                dbQueryText += ", ?";
+            }
+            firstParam = false;
+            parameters << os;
+        }
+        dbQueryText += "))";
+    }
+    if (!request.ratings.isEmpty() || request.noRating)
+    {
+        if (request.ratings.isEmpty())
+        {
+            dbQueryText += " AND user_release.rating IS NULL";
+        }
+        else
+        {
+            dbQueryText += " AND (user_release.rating IN (";
+            bool firstParam = true;
+            for (const auto &rating : std::as_const(request.ratings))
+            {
+                if (firstParam)
+                {
+                    dbQueryText += '?';
+                }
+                else
+                {
+                    dbQueryText += ", ?";
+                }
+                firstParam = false;
+                parameters << rating;
+            }
+            dbQueryText += ')';
+            if (request.noRating)
+            {
+                dbQueryText += " OR user_release.rating IS NULL";
+            }
+            dbQueryText += ')';
+        }
+    }
+    if (!request.tags.isEmpty())
+    {
+        dbQueryText += R"( AND EXISTS (
+    SELECT * FROM user_release_tag
+    WHERE user_release_tag.user_id = user_release.user_id
+        AND user_release_tag.platform = user_release.platform
+        AND user_release_tag.platform_release_id = user_release.platform_release_id
+        AND user_release_tag.tag IN ()";
+        bool firstParam = true;
+        for (const auto &tag : std::as_const(request.tags))
+        {
+            if (firstParam)
+            {
+                dbQueryText += '?';
+            }
+            else
+            {
+                dbQueryText += ", ?";
+            }
+            firstParam = false;
+            parameters << tag;
+        }
+        dbQueryText += "))";
+    }
+    if (request.owned)
+    {
+        dbQueryText += " AND user_release.owned";
+    }
     if (!request.query.isEmpty())
     {
         dbQueryText += " AND LOWER(\"release\".title) GLOB ?";
@@ -155,20 +308,17 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     }
 
     QVector<api::Release> releases;
-    if (selectUserReleasesQuery.first())
+    while (selectUserReleasesQuery.next())
     {
-        while (selectUserReleasesQuery.next())
-        {
-            api::Release release;
-            release.platformId = selectUserReleasesQuery.value(0).toString();
-            release.externalId = selectUserReleasesQuery.value(1).toString();
-            release.id = selectUserReleasesQuery.value(2).toString();
-            release.title["*"] = selectUserReleasesQuery.value(3).toString();
-            release.gameId = selectUserReleasesQuery.value(4).toString();
-            release.game.verticalCover = selectUserReleasesQuery.value(5).toString();
-            release.game.cover = selectUserReleasesQuery.value(6).toString();
-            releases << release;
-        }
+        api::Release release;
+        release.platformId = selectUserReleasesQuery.value(0).toString();
+        release.externalId = selectUserReleasesQuery.value(1).toString();
+        release.id = selectUserReleasesQuery.value(2).toString();
+        release.title["*"] = selectUserReleasesQuery.value(3).toString();
+        release.gameId = selectUserReleasesQuery.value(4).toString();
+        release.game.verticalCover = selectUserReleasesQuery.value(5).toString();
+        release.game.cover = selectUserReleasesQuery.value(6).toString();
+        releases << release;
     }
 
     db.commit();
@@ -176,64 +326,151 @@ QVector<api::Release> db::getUserReleases(const QString &userId, const api::Sear
     return releases;
 }
 
-QVector<api::LocalizedMetaTag> db::getUserReleasesGenres(const QString &userId)
+api::UserLibraryFilters db::getUserReleasesFilters(const QString &userId)
 {
     QSqlDatabase db = QSqlDatabase::database();
+
+    if (!db.transaction())
+    {
+        qDebug() << "Failed to start DB transaction" << db.lastError();
+        return {};
+    }
+
+    api::UserLibraryFilters filters;
+
     QSqlQuery selectUserReleasesGenresQuery;
-    if (!selectUserReleasesGenresQuery.prepare(SELECT_USER_RELEASES_GENRES))
+    if (selectUserReleasesGenresQuery.prepare(SELECT_USER_RELEASES_GENRES))
     {
-        qDebug() << "Failed to prepare query to select genres of user releases";
-        return {};
-    }
-    selectUserReleasesGenresQuery.bindValue(0, userId);
-    if (!selectUserReleasesGenresQuery.exec())
-    {
-        qDebug() << "Failed to select genres of user releases";
-        return {};
-    }
-    QVector<api::LocalizedMetaTag> genres;
-    if (selectUserReleasesGenresQuery.first())
-    {
-        while (selectUserReleasesGenresQuery.next())
+        selectUserReleasesGenresQuery.bindValue(0, userId);
+        if (selectUserReleasesGenresQuery.exec())
         {
-            api::LocalizedMetaTag genre;
-            genre.id = selectUserReleasesGenresQuery.value(0).toString();
-            genre.name["*"] = selectUserReleasesGenresQuery.value(1).toString();
-            genre.slug = selectUserReleasesGenresQuery.value(2).toString();
-            genres << genre;
+            while (selectUserReleasesGenresQuery.next())
+            {
+                api::LocalizedMetaTag genre;
+                genre.id = selectUserReleasesGenresQuery.value(0).toString();
+                genre.name["*"] = selectUserReleasesGenresQuery.value(1).toString();
+                genre.slug = selectUserReleasesGenresQuery.value(2).toString();
+                filters.genres << genre;
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to select genres of user releases"
+                     << selectUserReleasesGenresQuery.lastError();
         }
     }
-    return genres;
-}
+    else
+    {
+        qDebug() << "Failed to prepare query to select genres of user releases"
+                 << selectUserReleasesGenresQuery.lastError();
+    }
 
-QVector<api::MetaTag> db::getUserReeleasesOs(const QString &userId)
-{
-    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery selectUserReleasesPlatformsQuery;
+    if (selectUserReleasesPlatformsQuery.prepare(SELECT_USER_RELEASES_PLATFORMS))
+    {
+        selectUserReleasesPlatformsQuery.bindValue(0, userId);
+        if (selectUserReleasesPlatformsQuery.exec())
+        {
+            while (selectUserReleasesPlatformsQuery.next())
+            {
+                filters.platforms << selectUserReleasesPlatformsQuery.value(0).toString();
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to select user releases platforms"
+                     << selectUserReleasesPlatformsQuery.lastError();
+        }
+    }
+    else
+    {
+        qDebug() << "Failed to prepare query to select user releases platforms"
+                 << selectUserReleasesPlatformsQuery.lastError();
+    }
+
     QSqlQuery selectUserReleasesOsQuery;
-    if (!selectUserReleasesOsQuery.prepare(SELECT_USER_RELEASES_OS))
+    if (selectUserReleasesOsQuery.prepare(SELECT_USER_RELEASES_OS))
     {
-        qDebug() << "Failed to prepare query to select supported OS of user releases";
-        return {};
-    }
-    selectUserReleasesOsQuery.bindValue(0, userId);
-    if (!selectUserReleasesOsQuery.exec())
-    {
-        qDebug() << "Failed to select supported OS of user releases";
-        return {};
-    }
-
-    QVector<api::MetaTag> supportedOs;
-    if (selectUserReleasesOsQuery.first())
-    {
-        while (selectUserReleasesOsQuery.next())
+        selectUserReleasesOsQuery.bindValue(0, userId);
+        if (selectUserReleasesOsQuery.exec())
         {
-            api::MetaTag os;
-            os.slug = selectUserReleasesOsQuery.value(0).toString();
-            os.name = selectUserReleasesOsQuery.value(1).toString();
-            supportedOs << os;
+            while (selectUserReleasesOsQuery.next())
+            {
+                api::MetaTag os;
+                os.slug = selectUserReleasesOsQuery.value(0).toString();
+                os.name = selectUserReleasesOsQuery.value(1).toString();
+                filters.operatingSystems << os;
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to select supported OS of user releases"
+                     << selectUserReleasesOsQuery.lastError();
         }
     }
-    return supportedOs;
+    else
+    {
+        qDebug() << "Failed to prepare query to select supported OS of user releases"
+                 << selectUserReleasesOsQuery.lastError();
+    }
+
+    QSqlQuery selectUserReleasesRatingsQuery;
+    if (selectUserReleasesRatingsQuery.prepare(SELECT_USER_RELEASES_RATINGS))
+    {
+        selectUserReleasesRatingsQuery.bindValue(0, userId);
+        if (selectUserReleasesRatingsQuery.exec())
+        {
+            while (selectUserReleasesRatingsQuery.next())
+            {
+                auto rating = selectUserReleasesRatingsQuery.value(0);
+                if (rating.isNull())
+                {
+                    filters.noRating = true;
+                }
+                else
+                {
+                    filters.ratings << rating.toInt();
+                }
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to select user releases ratings"
+                     << selectUserReleasesRatingsQuery.lastError();
+        }
+    }
+    else
+    {
+        qDebug() << "Failed to prepare query to select user releases ratings"
+                 << selectUserReleasesRatingsQuery.lastError();
+    }
+
+    QSqlQuery selectUserReleasesTagsQuery;
+    if (selectUserReleasesTagsQuery.prepare(SELECT_USER_RELEASES_TAGS))
+    {
+        selectUserReleasesTagsQuery.bindValue(0, userId);
+        if (selectUserReleasesTagsQuery.exec())
+        {
+            while (selectUserReleasesTagsQuery.next())
+            {
+                filters.tags << selectUserReleasesTagsQuery.value(0).toString();
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to select user releases tags"
+                     << selectUserReleasesTagsQuery.lastError();
+        }
+    }
+    else
+    {
+        qDebug() << "Failed to prepare query to select user releases tags"
+                 << selectUserReleasesTagsQuery.lastError();
+    }
+
+    db.commit();
+
+    return filters;
 }
 
 std::tuple<QString, QString> db::getUserReleaseToMap(const QString &userId)
@@ -314,7 +551,7 @@ void db::saveUserReleases(const QString &userId, const QVector<api::UserRelease>
 
         for (const QString &tag : release.tags)
         {
-            insertReleaseTagQuery.bindValue(0, 0);
+            insertReleaseTagQuery.bindValue(0, userId);
             insertReleaseTagQuery.bindValue(1, release.platformId);
             insertReleaseTagQuery.bindValue(2, release.externalId);
             insertReleaseTagQuery.bindValue(3, tag);

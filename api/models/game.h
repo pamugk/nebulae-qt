@@ -5,22 +5,10 @@
 #include <QString>
 #include <QVector>
 
+#include "gamemetadata.h"
+
 namespace api
 {
-    struct IdMetaTag
-    {
-        QString id;
-        QString slug;
-        QString name;
-    };
-
-    struct LocalizedMetaTag
-    {
-        QString id;
-        QVariantMap name;
-        QString slug;
-    };
-
     struct NamedVideo
     {
         QString provider;

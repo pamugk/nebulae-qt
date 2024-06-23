@@ -26,7 +26,7 @@ set(PROJECT_SOURCES
         api/models/catalog.h api/models/catalogfilter.h
         api/models/catalogproductinfo.h
         api/models/filters.h
-        api/models/game.h
+        api/models/game.h api/models/gamemetadata.h
         api/models/metatag.h
         api/models/news.h
         api/models/order.h api/models/orderfilter.h
@@ -45,7 +45,7 @@ set(PROJECT_SOURCES
         api/models/store.h
         api/models/tag.h
         api/models/user.h
-        api/models/userlibraryrequest.h
+        api/models/userlibraryfilters.h api/models/userlibraryrequest.h
         api/models/userrelease.h
         api/models/wishlist.h
 

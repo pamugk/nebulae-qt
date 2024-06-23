@@ -23,6 +23,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 {
     // TODO: restore filters state from disk
     request.hidden = false;
+    request.owned = true;
     request.order = api::UserReleaseOrder::TITLE;
 
     ui->setupUi(this);
@@ -51,22 +52,19 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     filterToolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     auto filterMenu = new QMenu(filterToolButton);
     filterMenu->addMenu("Genre");
-    filterMenu->addMenu("Platform")->addAction("GOG.com")->setCheckable(true);
-    auto filterSubmenu = filterMenu->addMenu("OS & consoles");
-    auto filterItem = filterSubmenu->addAction("Windows");
+    filterMenu->addMenu("Platform");
+    filterMenu->addMenu("OS && consoles");
+    filterMenu->addMenu("Rating");
+    filterMenu->addMenu("Tags");
+    auto filterSubmenu = filterMenu->addMenu("Status");
+    auto filterItem = filterSubmenu->addAction("Owned");
     filterItem->setCheckable(true);
-    filterItem = filterSubmenu->addAction("macOS");
-    filterItem->setCheckable(true);
-    filterItem = filterSubmenu->addAction("Linux");
-    filterItem->setCheckable(true);
-    filterMenu->addSeparator();
-    filterItem = filterMenu->addMenu("Rating")->addAction("No rating");
-    filterItem->setCheckable(true);
-    filterItem = filterMenu->addMenu("Tags")->addAction("No tags");
-    filterItem->setCheckable(true);
-    filterSubmenu = filterMenu->addMenu("Status");
-    filterItem = filterSubmenu->addAction("Owned");
-    filterItem->setCheckable(true);
+    filterItem->setChecked(request.owned);
+    connect(filterItem, &QAction::toggled, this, [this](bool toggled)
+    {
+       request.owned = toggled;
+       updateData();
+    });
     filterItem = filterSubmenu->addAction("Subscriptions");
     filterItem->setCheckable(true);
     filterSubmenu->addSeparator();
@@ -463,6 +461,7 @@ void OwnedGamesPage::updateData()
         for (const api::Release &item : std::as_const(releases))
         {
             auto gridItem = new OwnedProductGridItem(item, apiClient, ui->resultsGridPage);
+            gridItem->setCursor(Qt::PointingHandCursor);
             gridItem->setImageSize(gridImageSizes[currentGridImageSize]);
             gridItem->setAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
             connect(this, &OwnedGamesPage::gridItemAdditionalDataVisibilityChanged,
@@ -489,11 +488,136 @@ void OwnedGamesPage::updateData()
 
 void OwnedGamesPage::updateFilters()
 {
+    api::UserLibraryFilters filters = db::getUserReleasesFilters(apiClient->getCurrentUserId());
 
+    auto filterToolButton = static_cast<QToolButton *>(uiActions[1]);
+    auto genresSubmenu = filterToolButton->menu()->actions()[0];
+    genresSubmenu->setVisible(!filters.genres.empty());
+    genresSubmenu->menu()->clear();
+    for (const auto &genre : std::as_const(filters.genres))
+    {
+        auto genreItem = genresSubmenu->menu()->addAction(genre.name["*"].toString());
+        genreItem->setCheckable(true);
+        genreItem->setChecked(request.genres.contains(genre.id));
+        connect(genreItem, &QAction::toggled, this, [this, genreId = genre.id](bool toggled)
+        {
+            if (toggled)
+            {
+                request.genres.insert(genreId);
+            }
+            else
+            {
+                request.genres.remove(genreId);
+            }
+            updateData();
+        });
+    }
+
+    auto platformsSubmenu = filterToolButton->menu()->actions()[1];
+    platformsSubmenu->setVisible(!filters.platforms.empty());
+    platformsSubmenu->menu()->clear();
+    for (const auto &platform : std::as_const(filters.platforms))
+    {
+        // TODO: map platform codes to names somehow
+        QString platformName = platform == "gog" ? "GOG.com" : "Unknown platform";
+        auto platformItem = platformsSubmenu->menu()->addAction(platformName);
+        platformItem->setCheckable(true);
+        platformItem->setChecked(request.platforms.contains(platform));
+        connect(platformItem, &QAction::toggled, this, [this, platform](bool toggled)
+        {
+            if (toggled)
+            {
+                request.platforms.insert(platform);
+            }
+            else
+            {
+                request.platforms.remove(platform);
+            }
+            updateData();
+        });
+    }
+
+    auto osSubmenu = filterToolButton->menu()->actions()[2];
+    osSubmenu->setVisible(!filters.operatingSystems.empty());
+    osSubmenu->menu()->clear();
+    for (const auto &os : std::as_const(filters.operatingSystems))
+    {
+        auto osItem = osSubmenu->menu()->addAction(os.name);
+        osItem->setCheckable(true);
+        osItem->setChecked(request.supportedOs.contains(os.slug));
+        connect(osItem, &QAction::toggled, this, [this, osSlug = os.slug](bool toggled)
+        {
+            if (toggled)
+            {
+                request.supportedOs.insert(osSlug);
+            }
+            else
+            {
+                request.supportedOs.remove(osSlug);
+            }
+            updateData();
+        });
+    }
+
+    auto ratingsSubmenu = filterToolButton->menu()->actions()[3];
+    ratingsSubmenu->setVisible(!filters.ratings.isEmpty());
+    ratingsSubmenu->menu()->clear();
+    for (const auto &rating : std::as_const(filters.ratings))
+    {
+        auto ratingItem = ratingsSubmenu->menu()->addAction(QString::number(rating));
+        ratingItem->setCheckable(true);
+        ratingItem->setChecked(request.ratings.contains(rating));
+        connect(ratingItem, &QAction::toggled, this, [this, rating](bool toggled)
+        {
+            if (toggled)
+            {
+                request.ratings.insert(rating);
+            }
+            else
+            {
+                request.ratings.remove(rating);
+            }
+            updateData();
+        });
+    }
+    if (filters.noRating)
+    {
+        auto ratingItem = ratingsSubmenu->menu()->addAction("No rating");
+        ratingItem->setCheckable(true);
+        ratingItem->setChecked(request.noRating);
+        connect(ratingItem, &QAction::toggled, this, [this](bool toggled)
+        {
+            request.noRating = toggled;
+            updateData();
+        });
+    }
+
+    auto tagsSubmenu = filterToolButton->menu()->actions()[4];
+    tagsSubmenu->setVisible(!filters.tags.isEmpty());
+    tagsSubmenu->menu()->clear();
+    for (const auto &tag : std::as_const(filters.tags))
+    {
+        auto tagItem = tagsSubmenu->menu()->addAction(tag);
+        tagItem->setCheckable(true);
+        tagItem->setChecked(request.tags.contains(tag));
+        connect(tagItem, &QAction::toggled, this, [this, tag](bool toggled)
+        {
+            if (toggled)
+            {
+                request.tags.insert(tag);
+            }
+            else
+            {
+                request.tags.remove(tag);
+            }
+            updateData();
+        });
+    }
 }
 
 void OwnedGamesPage::initialize(const QVariant &data)
 {
+    updateFilters();
     updateData();
 }
 

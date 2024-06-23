@@ -1,8 +1,9 @@
 #ifndef USERLIBRARYREQUEST_H
 #define USERLIBRARYREQUEST_H
 
+#include <QSet>
 #include <QString>
-#include <QVector>
+#include <QVariant>
 
 namespace api
 {
@@ -24,10 +25,15 @@ namespace api
     struct SearchUserReleasesRequest
     {
         // Filters
-        QVector<QString> genres;
+        QSet<QString> genres;
         bool hidden;
         QString query;
-        QVector<QString> supportedOs;
+        bool noRating;
+        bool owned;
+        QSet<QString> platforms;
+        QSet<int> ratings;
+        QSet<QString> supportedOs;
+        QSet<QString> tags;
 
         // Order & group clause
         UserReleaseOrder order;

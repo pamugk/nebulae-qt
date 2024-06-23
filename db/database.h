@@ -5,6 +5,7 @@
 
 #include "../api/models/platformachievement.h"
 #include "../api/models/release.h"
+#include "../api/models/userlibraryfilters.h"
 #include "../api/models/userlibraryrequest.h"
 #include "../api/models/userrelease.h"
 
@@ -13,8 +14,7 @@ namespace db
     void initialize();
 
     QVector<api::Release> getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &data);
-    QVector<api::LocalizedMetaTag> getUserReleasesGenres(const QString &userId);
-    QVector<api::MetaTag> getUserReeleasesOs(const QString &userId);
+    api::UserLibraryFilters getUserReleasesFilters(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToMap(const QString &userId);
     std::tuple<QString, QString> getUserReleaseToUpdateAchievements(const QString &userId);
     void savePlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
