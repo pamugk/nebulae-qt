@@ -309,7 +309,7 @@ QVector<db::UserReleaseGroup> db::getUserReleases(const QString &userId, const a
     case api::CRITICS_RATING_GROUP:
         if (request.order != api::CRITICS_RATING)
         {
-            dbQueryText += " ROUND(game.aggregated_rating) DESC,";
+            dbQueryText += " FLOOR(ROUND(game.aggregated_rating) / 5) DESC,";
         }
         break;
     case api::GENRE_GROUP:
@@ -436,19 +436,21 @@ QVector<db::UserReleaseGroup> db::getUserReleases(const QString &userId, const a
             {
                 int intervalStart, intervalEnd;
                 int aggregatedRating = std::round(release.aggregatedRating.value());
-                if (aggregatedRating > 50)
+                if (aggregatedRating >= 95)
                 {
-                    int remainder = aggregatedRating % 10;
-                    if (remainder > 5)
-                    {
-                        intervalEnd = aggregatedRating + (10 - remainder);
-                        intervalStart = intervalEnd - 5;
-                    }
-                    else
-                    {
-                        intervalStart = aggregatedRating - remainder;
-                        intervalEnd = intervalStart + 5;
-                    }
+                    intervalStart = 95, intervalEnd = 100;
+                }
+                else if (aggregatedRating >= 90)
+                {
+                    intervalStart = 90, intervalEnd = 95;
+                }
+                else if (aggregatedRating >= 70)
+                {
+                    intervalStart = aggregatedRating - (aggregatedRating % 10);
+                    intervalEnd = intervalStart + 10;
+                } else if (aggregatedRating >= 50)
+                {
+                    intervalStart = 50, intervalEnd = 70;
                 }
                 else
                 {

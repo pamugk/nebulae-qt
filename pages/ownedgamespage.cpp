@@ -18,7 +18,10 @@
 OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
     BasePage(parent),
     currentGridImageSize(1),
+    currentListIconSize(0),
     gridImageSizes({ QSize(110, 155), QSize(120, 170), QSize(150, 210), QSize(185, 260), QSize(190, 265), QSize(260, 365) }),
+    gridLayout(true),
+    listIconSizes({ QSize(16, 16), QSize(32, 32), QSize(48, 48) }),
     ui(new Ui::OwnedGamesPage)
 {
     // TODO: restore filters state from disk
@@ -118,12 +121,32 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
     auto viewSettingsMenu = new QMenu(viewSettingsToolButton);
 
+    auto resultsLayoutGroup = new QActionGroup(viewSettingsMenu);
     auto gridModeItem = viewSettingsMenu->addAction("Grid");
     gridModeItem->setCheckable(true);
-    gridModeItem->setChecked(true);
+    gridModeItem->setChecked(gridLayout);
+    connect(gridModeItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        if (toggled)
+        {
+            gridLayout = true;
+            layoutData();
+        }
+    });
+    resultsLayoutGroup->addAction(gridModeItem);
     auto listModeItem = viewSettingsMenu->addAction("List");
     listModeItem->setCheckable(true);
-
+    listModeItem->setChecked(!gridLayout);
+    viewSettingsMenu->addAction(listModeItem);
+    connect(listModeItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        if (toggled)
+        {
+            gridLayout = false;
+            layoutData();
+        }
+    });
+    resultsLayoutGroup->addAction(listModeItem);
     viewSettingsMenu->addSeparator();
 
     auto gridImageScaleSlider = new QSlider(Qt::Horizontal);
@@ -218,58 +241,122 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
            emit gridItemAdditionalDataDisplayed(OwnedProductGridItem::AdditionalInfo::PLATFORM);
        }
     });
+    gridSettingsSubmenu->menuAction()->setVisible(gridModeItem->isChecked());
+    connect(gridModeItem, &QAction::toggled, gridSettingsSubmenu->menuAction(), &QAction::setVisible);
 
-    connect(gridModeItem, &QAction::toggled, this, [this, gridSettingsSubmenu, listModeItem](bool toggled)
+    auto listIconScaleSlider = new QSlider(Qt::Horizontal);
+    listIconScaleSlider->setMinimum(0);
+    listIconScaleSlider->setMaximum(2);
+    listIconScaleSlider->setValue(currentListIconSize);
+    connect(listIconScaleSlider, &QSlider::valueChanged, this, [this](int newValue)
     {
-        if (toggled)
-        {
-        }
-        listModeItem->setChecked(!toggled);
-        gridSettingsSubmenu->menuAction()->setVisible(toggled);
+        currentListIconSize = newValue;
+        ui->resultsTree->setIconSize(listIconSizes[currentListIconSize]);
     });
+    ui->resultsTree->setIconSize(listIconSizes[currentListIconSize]);
 
-    auto settingsSubmenu = viewSettingsMenu->addMenu("Customize list view");
-    auto listCustomizationItem = settingsSubmenu->addAction("Achievements %");
+    auto listSettingsSubmenu = viewSettingsMenu->addMenu("Customize list view");
+    auto listIconScaleAction = new QWidgetAction(listSettingsSubmenu);
+    listIconScaleAction->setDefaultWidget(listIconScaleSlider);
+    listSettingsSubmenu->addAction(listIconScaleAction);
+    listSettingsSubmenu->addSeparator();
+    auto listCustomizationItem = listSettingsSubmenu->addAction("Achievements %");
     listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Critics rating");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Game icon");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Game time");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Genres");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Last played");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Platform icon");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Platform name");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Rating");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Release date");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Size on disk");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Status");
-    listCustomizationItem->setCheckable(true);
-    listCustomizationItem = settingsSubmenu->addAction("Tags");
-    listCustomizationItem->setCheckable(true);
-    settingsSubmenu->menuAction()->setVisible(false);
-
-    connect(listModeItem, &QAction::toggled, this, [this, settingsSubmenu, gridModeItem](bool toggled)
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
     {
-        if (toggled)
-        {
-
-        }
-        gridModeItem->setChecked(!toggled);
-        settingsSubmenu->menuAction()->setVisible(toggled);
+        ui->resultsTree->setColumnHidden(10, !toggled);
     });
+    listCustomizationItem = listSettingsSubmenu->addAction("Critics rating");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(8, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Game icon");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this, listIconScaleSlider](bool toggled)
+    {
+        ui->resultsTree->setIconSize(toggled ? listIconSizes[currentListIconSize] : QSize(0, 0));
+        listIconScaleSlider->setEnabled(toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Game time");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(7, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Genres");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(9, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Last played");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(6, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Platform icon");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setVisible(false);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Platform name");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(2, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Rating");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(1, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Release date");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(4, !toggled);
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Size on disk");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(false);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(5, !toggled);
+    });
+    ui->resultsTree->setColumnHidden(5, true);
+    listCustomizationItem = listSettingsSubmenu->addAction("Status");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setVisible(false);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+    });
+    listCustomizationItem = listSettingsSubmenu->addAction("Tags");
+    listCustomizationItem->setCheckable(true);
+    listCustomizationItem->setChecked(true);
+    connect(listCustomizationItem, &QAction::toggled, this, [this](bool toggled)
+    {
+        ui->resultsTree->setColumnHidden(3, !toggled);
+    });
+    listSettingsSubmenu->menuAction()->setVisible(listModeItem->isChecked());
+    connect(listModeItem, &QAction::toggled, listSettingsSubmenu->menuAction(), &QAction::setVisible);
 
     viewSettingsMenu->addSeparator();
 
-    settingsSubmenu = viewSettingsMenu->addMenu("Sort by");
+    auto settingsSubmenu = viewSettingsMenu->addMenu("Sort by");
     auto sortOrderGroup = new QActionGroup(settingsSubmenu);
     auto sortItem = settingsSubmenu->addAction("Achievements %");
     sortItem->setCheckable(true);
@@ -523,10 +610,51 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
 
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsStack->setCurrentWidget(ui->resultsGridPage);
+    connect(ui->resultsTree, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem *item)
+    {
+        int clickedReleaseIndex;
+        int groupIndex;
+        if (request.grouping == api::UserReleaseGrouping::NO_GROUP)
+        {
+            clickedReleaseIndex = item->treeWidget()->indexOfTopLevelItem(item);
+            groupIndex = 0;
+        }
+        else if (item->parent() == nullptr)
+        {
+            return;
+        }
+        else
+        {
+            auto groupItem = item->parent();
+            clickedReleaseIndex = groupItem->indexOfChild(item);
+            groupIndex = item->treeWidget()->indexOfTopLevelItem(groupItem);
+        }
+
+        if (clickedReleaseIndex == -1)
+        {
+            qDebug() << "Unknown release item (?)";
+        }
+        else if (groupIndex == -1)
+        {
+            qDebug() << "Unknown group item (?)";
+        }
+        else
+        {
+            emit navigate({ OWNED_PRODUCT, data[groupIndex].items[clickedReleaseIndex].externalId });
+        }
+    });
 }
 
 OwnedGamesPage::~OwnedGamesPage()
 {
+    for (auto iconReply : std::as_const(listIconReplies))
+    {
+        if (iconReply != nullptr)
+        {
+            iconReply->abort();
+        }
+    }
+    listIconReplies.clear();
     uiActions.clear();
     delete ui;
 }
@@ -541,93 +669,133 @@ void OwnedGamesPage::setApiClient(api::GogApiClient *apiClient)
     this->apiClient = apiClient;
 }
 
-void OwnedGamesPage::updateData()
+QString buildGroupTitle(const db::UserReleaseGroup &group,
+                        api::UserReleaseGrouping grouping,
+                        int currentYear)
 {
-    ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
-    while (!ui->resultsGridScrollAreaContentsLayout->isEmpty())
+    QString groupTitle;
+    switch (grouping)
     {
-        auto item = ui->resultsGridScrollAreaContentsLayout->itemAt(0);
-        ui->resultsGridScrollAreaContentsLayout->removeItem(item);
-        item->widget()->deleteLater();
-        delete item;
+    case api::NO_GROUP:
+        break;
+    case api::CRITICS_RATING_GROUP:
+        if (group.discriminator.isNull())
+        {
+            groupTitle = "NO RATING";
+        }
+        else
+        {
+            QVariantMap interval = group.discriminator.toMap();
+            groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
+        }
+        break;
+    case api::GENRE_GROUP:
+        break;
+    case api::INSTALLED_GROUP:
+        groupTitle = group.discriminator.toBool() ? "INSTALLED" : "NOT INSTALLED";
+        break;
+    case api::PLATFORM_GROUP:
+        groupTitle = group.discriminator.toString() == "gog" ? "GOG" : "UNKNOWN PLATFORM";
+        break;
+    case api::RATING_GROUP:
+        if (group.discriminator.isNull())
+        {
+            groupTitle = "NO RATING";
+        }
+        else
+        {
+            int rating = group.discriminator.toInt();
+            groupTitle = QString(rating, u'★') + QString(5 - rating, u'☆');
+        }
+        break;
+    case api::RELEASE_DATE_GROUP:
+        if (group.discriminator.isNull())
+        {
+            groupTitle = "UNKNOWN RELEASE DATE";
+        }
+        else
+        {
+            QVariantMap interval = group.discriminator.toMap();
+            if (interval.isEmpty())
+            {
+                int groupYear = group.discriminator.toInt();
+                groupTitle = groupYear == currentYear ? "THIS YEAR" : group.discriminator.toString();
+            }
+            else
+            {
+                groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
+            }
+        }
+        break;
+    case api::SUBSCRIPTION_GROUP:
+        groupTitle = group.discriminator.toBool() ? "IN SUBSCRIPTIONS" : "NOT IN SUBSCRIPTIONS";
+    case api::TAG_GROUP:
+        break;
     }
+    return groupTitle;
+}
 
-    QVector<db::UserReleaseGroup> releaseGroups = db::getUserReleases(apiClient->currentUserId(), request);
-    if (releaseGroups.isEmpty() || releaseGroups[0].items.isEmpty())
+void initializeUserReleaseRow(QTreeWidgetItem *rowItem, const db::UserReleaseShortDetails &data)
+{
+    auto systemLocale = QLocale::system();
+
+    rowItem->setText(0, data.title);
+    if (data.rating.has_value())
     {
-        ui->contentsStack->setCurrentWidget(ui->emptyPage);
+        rowItem->setText(1, (QString(data.rating.value(), u'★') + QString(5 - data.rating.value(), u'☆')));
     }
-    else
+    rowItem->setText(2, data.platformId == "gog" ? "GOG" : "Unknown");
+    rowItem->setText(3, data.tags);
+    rowItem->setText(4, data.releaseDate.isNull() ? "-" : systemLocale.toString(data.releaseDate, QLocale::ShortFormat));
+    rowItem->setText(5, "");
+    if (!data.lastPlayedAt.isNull())
     {
-        int currentYear = QDate::currentDate().year();
+        rowItem->setText(6, systemLocale.toString(data.lastPlayedAt, QLocale::ShortFormat));
+    }
+    if (data.totalPlaytime > 0)
+    {
+        QString gameplayStats;
+        if (data.totalPlaytime > 60)
+        {
+            gameplayStats += systemLocale.toString(data.totalPlaytime / 60);
+            gameplayStats += " h. ";
+        }
+        gameplayStats += systemLocale.toString(data.totalPlaytime % 60);
+        gameplayStats += " min.";
+        rowItem->setText(7, gameplayStats);
+    }
+    rowItem->setText(8, data.aggregatedRating.has_value()
+                        ? systemLocale.toString(std::round(data.aggregatedRating.value()))
+                        : "-");
+    rowItem->setTextAlignment(8, Qt::AlignRight);
+    rowItem->setText(9, data.genres);
+    if (data.totalAchievementCount > 0)
+    {
+        rowItem->setText(10, systemLocale.toString(std::round(100. * data.unlockedAchievementCount / data.totalAchievementCount)) + systemLocale.percent());
+    }
+}
+
+void OwnedGamesPage::layoutData()
+{
+    int currentYear = QDate::currentDate().year();
+    if (gridLayout)
+    {
         QFont groupTitleFont;
         groupTitleFont.setBold(true);
-        for (const auto &group : std::as_const(releaseGroups))
+        for (auto iconReply : std::as_const(listIconReplies))
+        {
+            iconReply->abort();
+        }
+        listIconReplies.clear();
+        ui->resultsStack->setCurrentWidget(ui->resultsGridPage);
+        ui->resultsTree->clear();
+        for (const db::UserReleaseGroup &group : std::as_const(data))
         {
             QWidget *groupWidget = new QWidget(ui->resultsGridScrollAreaContents);
             QLayout *groupLayout = new FlowLayout(groupWidget, -1, 16, 12);
             groupWidget->setLayout(groupLayout);
 
-            QString groupTitle;
-            switch (request.grouping)
-            {
-            case api::NO_GROUP:
-                break;
-            case api::CRITICS_RATING_GROUP:
-                if (group.discriminator.isNull())
-                {
-                    groupTitle = "NO RATING";
-                }
-                else
-                {
-                    QVariantMap interval = group.discriminator.toMap();
-                    groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
-                }
-                break;
-            case api::GENRE_GROUP:
-                break;
-            case api::INSTALLED_GROUP:
-                groupTitle = group.discriminator.toBool() ? "INSTALLED" : "NOT INSTALLED";
-                break;
-            case api::PLATFORM_GROUP:
-                groupTitle = group.discriminator.toString() == "gog" ? "GOG.COM" : "UNKNOWN PLATFORM";
-                break;
-            case api::RATING_GROUP:
-                if (group.discriminator.isNull())
-                {
-                    groupTitle = "NO RATING";
-                }
-                else
-                {
-                    int rating = group.discriminator.toInt();
-                    groupTitle = QString(rating, u'★') + QString(5 - rating, u'☆');
-                }
-                break;
-            case api::RELEASE_DATE_GROUP:
-                if (group.discriminator.isNull())
-                {
-                    groupTitle = "UNKNOWN RELEASE DATE";
-                }
-                else
-                {
-                    QVariantMap interval = group.discriminator.toMap();
-                    if (interval.isEmpty())
-                    {
-                        int groupYear = group.discriminator.toInt();
-                        groupTitle = groupYear == currentYear ? "THIS YEAR" : group.discriminator.toString();
-                    }
-                    else
-                    {
-                        groupTitle = QString("%1 - %2").arg(interval["start"].toString(), interval["end"].toString());
-                    }
-                }
-                break;
-            case api::SUBSCRIPTION_GROUP:
-                groupTitle = group.discriminator.toBool() ? "IN SUBSCRIPTIONS" : "NOT IN SUBSCRIPTIONS";
-            case api::TAG_GROUP:
-                break;
-            }
+            QString groupTitle = buildGroupTitle(group, request.grouping, currentYear);
             if (!groupTitle.isNull())
             {
                 QLabel *groupTitleLabel = new QLabel(groupTitle, ui->resultsGridScrollAreaContents);
@@ -635,7 +803,7 @@ void OwnedGamesPage::updateData()
                 ui->resultsGridScrollAreaContentsLayout->addWidget(groupTitleLabel);
             }
 
-            for (const auto &item : std::as_const(group.items))
+            for (const db::UserReleaseShortDetails &item : std::as_const(group.items))
             {
                 auto gridItem = new OwnedProductGridItem(item, apiClient, groupWidget);
                 gridItem->setCursor(Qt::PointingHandCursor);
@@ -664,6 +832,118 @@ void OwnedGamesPage::updateData()
             }
             ui->resultsGridScrollAreaContentsLayout->addWidget(groupWidget);
         }
+    }
+    else
+    {
+        ui->resultsStack->setCurrentWidget(ui->resultsListPage);
+        while (!ui->resultsGridScrollAreaContentsLayout->isEmpty())
+        {
+            auto item = ui->resultsGridScrollAreaContentsLayout->itemAt(0);
+            ui->resultsGridScrollAreaContentsLayout->removeItem(item);
+            item->widget()->deleteLater();
+            delete item;
+        }
+
+        for (const db::UserReleaseGroup &group : std::as_const(data))
+        {
+            QString groupTitle = buildGroupTitle(group, request.grouping, currentYear);
+            if (groupTitle.isNull())
+            {
+                for (const db::UserReleaseShortDetails &item : std::as_const(group.items))
+                {
+                    auto releaseItem = new QTreeWidgetItem(ui->resultsTree);
+                    initializeUserReleaseRow(releaseItem, item);
+                    if (!item.icon.isNull())
+                    {
+                        listIconReplies[item.id] = apiClient->getAnything(QString(item.icon).replace("{formatter}", "_glx_square_icon_v2").replace("{ext}", "webp"));
+                        connect(listIconReplies[item.id], &QNetworkReply::finished, this, [this, id = item.id]()
+                        {
+                            auto networkReply = listIconReplies[id];
+                            listIconReplies[id] = nullptr;
+                            if (networkReply->error() == QNetworkReply::NoError)
+                            {
+                                QPixmap icon;
+                                icon.loadFromData(networkReply->readAll());
+                                emit listItemReceivedIcon(id, icon);
+                            }
+                            networkReply->deleteLater();
+                        });
+                        connect(this, &OwnedGamesPage::listItemReceivedIcon, listIconReplies[item.id], [releaseItem, id = item.id](const QString &releaseId, const QPixmap &icon)
+                        {
+                            if (id == releaseId)
+                            {
+                                releaseItem->setIcon(0, icon);
+                            }
+                        });
+                    }
+                }
+            }
+            else
+            {
+                auto groupItem = new QTreeWidgetItem(ui->resultsTree);
+                groupItem->setExpanded(true);
+                groupItem->setText(0, groupTitle);
+                for (const db::UserReleaseShortDetails &item : std::as_const(group.items))
+                {
+                    auto releaseItem = new QTreeWidgetItem(groupItem);
+                    initializeUserReleaseRow(releaseItem, item);
+                    if (!item.icon.isNull())
+                    {
+                        listIconReplies[item.id] = apiClient->getAnything(QString(item.icon).replace("{formatter}", "_glx_square_icon_v2").replace("{ext}", "webp"));
+                        connect(listIconReplies[item.id], &QNetworkReply::finished, this, [this, id = item.id]()
+                        {
+                            auto networkReply = listIconReplies[id];
+                            listIconReplies[id] = nullptr;
+                            if (networkReply->error() == QNetworkReply::NoError)
+                            {
+                                QPixmap icon;
+                                icon.loadFromData(networkReply->readAll());
+                                emit listItemReceivedIcon(id, icon);
+                            }
+                            networkReply->deleteLater();
+                        });
+                        connect(this, &OwnedGamesPage::listItemReceivedIcon, listIconReplies[item.id], [releaseItem, id = item.id](const QString &releaseId, const QPixmap &icon)
+                        {
+                            if (id == releaseId)
+                            {
+                                releaseItem->setIcon(0, icon);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
+
+void OwnedGamesPage::updateData()
+{
+    ui->contentsStack->setCurrentWidget(ui->loaderPage);
+    ui->resultsGridScrollArea->verticalScrollBar()->setValue(0);
+    while (!ui->resultsGridScrollAreaContentsLayout->isEmpty())
+    {
+        auto item = ui->resultsGridScrollAreaContentsLayout->itemAt(0);
+        ui->resultsGridScrollAreaContentsLayout->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+    for (auto iconReply : std::as_const(listIconReplies))
+    {
+        iconReply->abort();
+    }
+    listIconReplies.clear();
+    ui->resultsTree->verticalScrollBar()->setValue(0);
+    ui->resultsTree->clear();
+    data.clear();
+
+    data = db::getUserReleases(apiClient->currentUserId(), request);
+    if (data.isEmpty())
+    {
+        ui->contentsStack->setCurrentWidget(ui->emptyPage);
+    }
+    else
+    {
+        layoutData();
         ui->contentsStack->setCurrentWidget(ui->resultsPage);
     }
 }
@@ -701,7 +981,7 @@ void OwnedGamesPage::updateFilters()
     for (const auto &platform : std::as_const(filters.platforms))
     {
         // TODO: map platform codes to names somehow
-        QString platformName = platform == "gog" ? "GOG.com" : "Unknown platform";
+        QString platformName = platform == "gog" ? "GOG" : "Unknown platform";
         auto platformItem = platformsSubmenu->menu()->addAction(platformName);
         platformItem->setCheckable(true);
         platformItem->setChecked(request.platforms.contains(platform));
@@ -813,4 +1093,3 @@ void OwnedGamesPage::on_retryButton_clicked()
 {
     updateData();
 }
-

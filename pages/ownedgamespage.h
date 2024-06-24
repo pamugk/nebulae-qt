@@ -5,6 +5,7 @@
 
 #include "./basepage.h"
 #include "../api/models/userlibraryrequest.h"
+#include "../db/userreleasedetails.h"
 
 namespace Ui {
 class OwnedGamesPage;
@@ -24,7 +25,12 @@ public:
 private:
     api::GogApiClient *apiClient;
     int currentGridImageSize;
+    int currentListIconSize;
+    QVector<db::UserReleaseGroup> data;
     const std::array<const QSize, 6> gridImageSizes;
+    bool gridLayout;
+    QMap<QString, QNetworkReply *> listIconReplies;
+    const std::array<const QSize, 3> listIconSizes;
     api::SearchUserReleasesRequest request;
     Ui::OwnedGamesPage *ui;
     QVector<QWidget *> uiActions;
@@ -35,6 +41,9 @@ private:
     Q_SIGNAL void gridItemRatingVisibilityChanged(bool visible);
     Q_SIGNAL void gridItemStatusVisibilityChanged(bool visible);
     Q_SIGNAL void gridItemTitleVisibilityChanged(bool visible);
+    Q_SIGNAL void listItemReceivedIcon(const QString &releaseId, const QPixmap &icon);
+
+    void layoutData();
     void updateData();
     void updateFilters();
 

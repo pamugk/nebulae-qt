@@ -199,8 +199,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>800</width>
-                <height>600</height>
+                <width>100</width>
+                <height>30</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsGridScrollAreaContentsLayout"/>
@@ -209,7 +209,93 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="resultsListPage"/>
+         <widget class="QWidget" name="resultsListPage">
+          <layout class="QVBoxLayout" name="resultsListPageLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="resultsTree">
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+             </property>
+             <property name="showDropIndicator" stdset="0">
+              <bool>false</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>TITLE</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>RATING</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>PLATFORM</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>TAGS</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>RELEASE DATE</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>SIZE</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>LAST PLAYED</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>🕒</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>CRITICS</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>GENRES</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>ACHIEVEMENTS %</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>
