@@ -1,8 +1,8 @@
-#include <QJsonArray>
-
 #include "./orderserialization.h"
 
-void parseProductPrice(const QJsonObject &json, api::OrderProductPrice &data)
+#include <QJsonArray>
+
+void parseProductPrice(const QJsonValue &json, api::OrderProductPrice &data)
 {
     data.baseAmount = json["baseAmount"].toString().toDouble();
     data.amount = json["amount"].toString().toDouble();
@@ -11,7 +11,7 @@ void parseProductPrice(const QJsonObject &json, api::OrderProductPrice &data)
     data.symbol = json["symbol"].toString();
 }
 
-void parseOrderPrice(const QJsonObject &json, api::OrderPrice &data)
+void parseOrderPrice(const QJsonValue &json, api::OrderPrice &data)
 {
     data.amount = json["amount"].toString().toDouble();
     data.symbol = json["symbol"].toString();
@@ -23,16 +23,16 @@ void parseOrderPrice(const QJsonObject &json, api::OrderPrice &data)
     data.forEmail = json["for_email"].toString();
 }
 
-void parseProduct(const QJsonObject &json, api::OrderProduct &data)
+void parseProduct(const QJsonValue &json, api::OrderProduct &data)
 {
     data.status = json["status"].toString();
-    parseProductPrice(json["price"].toObject(), data.price);
+    parseProductPrice(json["price"], data.price);
     data.image = json["image"].toString();
     data.title = json["title"].toString();
     data.id = json["id"].toString();
     data.refunded = json["isRefunded"].toBool();
-    parseOrderPrice(json["cashValue"].toObject(), data.cashValue);
-    parseOrderPrice(json["walletValue"].toObject(), data.walletValue);
+    parseOrderPrice(json["cashValue"], data.cashValue);
+    parseOrderPrice(json["walletValue"], data.walletValue);
     data.preorder = json["isPreorder"].toBool();
     data.displayAutomaticRefundLink = json["displayAutomaticRefundLink"].toBool();
     if (!json["refundDate"].isNull())
@@ -41,7 +41,7 @@ void parseProduct(const QJsonObject &json, api::OrderProduct &data)
     }
 }
 
-void parseOrder(const QJsonObject &json, api::Order &data)
+void parseOrder(const QJsonValue &json, api::Order &data)
 {
     data.publicId = json["publicId"].toString();
     data.date = QDateTime::fromSecsSinceEpoch(json["date"].toInt());
@@ -54,8 +54,8 @@ void parseOrder(const QJsonObject &json, api::Order &data)
     }
     data.checkoutLink = json["checkoutLink"].toString();
     data.receiptLink = json["receiptLink"].toString();
-    parseOrderPrice(json["total"].toObject(), data.total);
-    parseOrderPrice(json["storeCreditUsed"].toObject(), data.storeCreditUsed);
+    parseOrderPrice(json["total"], data.total);
+    parseOrderPrice(json["storeCreditUsed"], data.storeCreditUsed);
     if (json["giftRecipient"].isString())
     {
         data.giftRecipient = json["giftRecipient"].toString();
@@ -66,9 +66,9 @@ void parseOrder(const QJsonObject &json, api::Order &data)
     }
     auto products = json["products"].toArray();
     data.products.resize(products.count());
-    for (int i = 0; i < products.count(); i++)
+    for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseProduct(products[i].toObject(), data.products[i]);
+        parseProduct(products[i], data.products[i]);
     }
     if (json["giftCode"].isString())
     {
@@ -78,13 +78,13 @@ void parseOrder(const QJsonObject &json, api::Order &data)
     data.statusPageUrl = json["statusPageUrl"].toString();
 }
 
-void parseGetOrdersHistoryResponse(const QJsonObject &json, api::GetOrdersHistoryResponse &data)
+void parseGetOrdersHistoryResponse(const QJsonValue &json, api::GetOrdersHistoryResponse &data)
 {
     auto orders = json["orders"].toArray();
     data.orders.resize(orders.count());
-    for (int i = 0; i < orders.count(); i++)
+    for (std::size_t i = 0; i < orders.count(); i++)
     {
-        parseOrder(orders[i].toObject(), data.orders[i]);
+        parseOrder(orders[i], data.orders[i]);
     }
     data.totalPages = json["totalPages"].toInt();
 }

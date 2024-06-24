@@ -1,15 +1,15 @@
 #ifndef STORESERIALIZATION_H
 #define STORESERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/store.h"
 
-void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCustomSectionResponse &data,
+void parseGetStoreCustomSectionResponse(const QJsonValue &json, api::GetStoreCustomSectionResponse &data,
                                         const QString &coverFormat);
-void parseGetStoreDiscoverGamesResponse(const QJsonObject &json, api::GetStoreDiscoverGamesSectionResponse &data);
-void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnSaleResponse &data);
-void parseGetStoreNowOnSaleSectionResponse(const QJsonObject &json, api::GetStoreNowOnSaleSectionResponse &data);
-void parseGetStoreRecommendedDlcsResponse(const QJsonObject &json, api::GetStoreRecommendedDlcsResponse &data);
+void parseGetStoreDiscoverGamesResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data);
+void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data);
+void parseGetStoreNowOnSaleSectionResponse(const QJsonValue &json, api::GetStoreNowOnSaleSectionResponse &data);
+void parseGetStoreRecommendedDlcsResponse(const QJsonValue &json, api::GetStoreRecommendedDlcsResponse &data);
 
 #endif // STORESERIALIZATION_H

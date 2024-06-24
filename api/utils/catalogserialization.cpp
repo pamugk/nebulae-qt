@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseMetaTag(const QJsonObject &json, api::MetaTag &data)
+void parseMetaTag(const QJsonValue &json, api::MetaTag &data)
 {
     data.name = json["name"].toString();
     data.slug = json["slug"].toString();
@@ -11,29 +11,30 @@ void parseMetaTag(const QJsonObject &json, api::MetaTag &data)
 void parseMetaTagArray(const QJsonArray &json, QVector<api::MetaTag> &data)
 {
     data.resize(json.count());
-    for (int i = 0; i < json.count(); i++)
+    for (std::size_t i = 0; i < json.count(); i++)
     {
-        parseMetaTag(json[i].toObject(), data[i]);
+        parseMetaTag(json[i], data[i]);
     }
 }
 
 void parseStringArray(const QJsonArray &json, QVector<QString> &data)
-{    data.resize(json.count());
-     for (int i = 0; i < json.count(); i++)
-     {
-         data[i] = json[i].toString();
-     }
+{
+    data.resize(json.count());
+    for (std::size_t i = 0; i < json.count(); i++)
+    {
+        data[i] = json[i].toString();
+    }
 }
 
-void parseMoney(const QJsonObject &json, api::Money &data)
+void parseMoney(const QJsonValue &json, api::Money &data)
 {
     data.amount = json["amount"].toString().toDouble();
     data.currency = json["currency"].toString();
 }
 
-void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, const QString &horizontalCoverFormat)
+void parseCatalogProduct(const QJsonValue &json, api::CatalogProduct &data, const QString &horizontalCoverFormat)
 {
-    data.id = json["id"].toString().toULongLong();
+    data.id = json["id"].toString();
     data.slug = json["slug"].toString();
     parseMetaTagArray(json["features"].toArray(), data.features);
     parseStringArray(json["screenshots"].toArray(), data.screenshots);
@@ -58,8 +59,8 @@ void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, con
         data.price.final = price["final"].toString();
         data.price.base = price["base"].toString();
         data.price.discount = price["discount"].toString();
-        parseMoney(price["finalMoney"].toObject(), data.price.finalMoney);
-        parseMoney(price["baseMoney"].toObject(), data.price.baseMoney);
+        parseMoney(price["finalMoney"], data.price.finalMoney);
+        parseMoney(price["baseMoney"], data.price.baseMoney);
     }
     data.productState = json["productState"].toString();
     parseMetaTagArray(json["genres"].toArray(), data.genres);
@@ -67,7 +68,7 @@ void parseCatalogProduct(const QJsonObject &json, api::CatalogProduct &data, con
     data.reviewsRating = json["reviewsRating"].toInt();
 }
 
-void parseFilters(const QJsonObject &json, api::StoreFilters &data)
+void parseFilters(const QJsonValue &json, api::StoreFilters &data)
 {
     if (json["releaseDateRange"].isObject())
     {
@@ -93,9 +94,9 @@ void parseFilters(const QJsonObject &json, api::StoreFilters &data)
     parseStringArray(json["types"].toArray(), data.types);
     auto fullGenresList = json["fullGenresList"].toArray();
     data.fullGenresList.resize(fullGenresList.count());
-    for (int i = 0; i < fullGenresList.count(); i++)
+    for (std::size_t i = 0; i < fullGenresList.count(); i++)
     {
-        auto genre = fullGenresList[i].toObject();
+        const QJsonValue &genre = fullGenresList[i];
         data.fullGenresList[i].name = genre["name"].toString();
         data.fullGenresList[i].slug = genre["slug"].toString();
         data.fullGenresList[i].level = genre["level"].toInt();
@@ -103,15 +104,15 @@ void parseFilters(const QJsonObject &json, api::StoreFilters &data)
     parseMetaTagArray(json["fullTagsList"].toArray(), data.fullTagsList);
 }
 
-void parseSearchCatalogResponse(const QJsonObject &json, api::SearchCatalogResponse &data)
+void parseSearchCatalogResponse(const QJsonValue &json, api::SearchCatalogResponse &data)
 {
     data.pages = json["pages"].toInt();
     data.productCount = json["productCount"].toInt();
     auto products = json["products"].toArray();
     data.products.resize(products.count());
-    for (int i = 0; i < products.count(); i++)
+    for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseCatalogProduct(products[i].toObject(), data.products[i], "_product_tile_extended_432x243.webp");
+        parseCatalogProduct(products[i], data.products[i], "_product_tile_extended_432x243.webp");
     }
-    parseFilters(json["filters"].toObject(), data.filters);
+    parseFilters(json["filters"], data.filters);
 }

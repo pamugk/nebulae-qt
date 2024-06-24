@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseNewsItem(const QJsonObject &json, api::NewsItem &data)
+void parseNewsItem(const QJsonValue &json, api::NewsItem &data)
 {
     data.id = json["id"].toInteger();
     data.title = json["title"].toString();
@@ -26,7 +26,7 @@ void parseNewsItem(const QJsonObject &json, api::NewsItem &data)
     }
 }
 
-void parseNewsResponse(const QJsonObject &json, api::GetNewsResponse &data)
+void parseNewsResponse(const QJsonValue &json, api::GetNewsResponse &data)
 {
     data.totalCount = json["total_count"].toInt();
     data.limit = json["limit"].toInt();
@@ -34,8 +34,8 @@ void parseNewsResponse(const QJsonObject &json, api::GetNewsResponse &data)
     data.nextPageToken = json["next_page_token"].toInt();
     auto items = json["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseNewsItem(items[i].toObject(), data.items[i]);
+        parseNewsItem(items[i], data.items[i]);
     }
 }

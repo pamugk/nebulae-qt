@@ -5,6 +5,7 @@
 
 #include <QCheckBox>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QScrollBar>
 
@@ -163,13 +164,13 @@ void AllGamesPage::layoutResults()
         {
             auto storeItem = new StoreGridTile(product, apiClient, ui->resultsListPage);
             connect(this, &AllGamesPage::ownedProductsChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setOwned(ids.contains(productId));
             });
             storeItem->setOwned(ownedProducts.contains(product.id));
             connect(this, &AllGamesPage::wishlistChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setWishlisted(ids.contains(productId));
             });
@@ -191,13 +192,13 @@ void AllGamesPage::layoutResults()
         {
             auto storeItem = new StoreListItem(product, apiClient, ui->resultsListPage);
             connect(this, &AllGamesPage::ownedProductsChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setOwned(ids.contains(productId));
             });
             storeItem->setOwned(ownedProducts.contains(product.id));
             connect(this, &AllGamesPage::wishlistChanged,
-                    storeItem, [storeItem, productId = product.id](const QSet<unsigned long long> &ids)
+                    storeItem, [storeItem, productId = product.id](const QSet<const QString> &ids)
             {
                 storeItem->setWishlisted(ids.contains(productId));
             });
@@ -225,27 +226,27 @@ void AllGamesPage::initialize(const QVariant &data)
     }
     if (initialFilters.contains("developer"))
     {
-        filter.developers.append(initialFilters["developer"].toString());
+        filter.developers << initialFilters["developer"].toString();
     }
     if (initialFilters.contains("publisher"))
     {
-        filter.publishers.append(initialFilters["publisher"].toString());
+        filter.publishers << initialFilters["publisher"].toString();
     }
     if (initialFilters.contains("genre"))
     {
-        filter.genres.append(initialFilters["genre"].toString());
+        filter.genres << initialFilters["genre"].toString();
     }
     if (initialFilters.contains("tag"))
     {
-        filter.tags.append(initialFilters["tag"].toString());
+        filter.tags << initialFilters["tag"].toString();
     }
     if (initialFilters.contains("feature"))
     {
-        filter.features.append(initialFilters["feature"].toString());
+        filter.features << initialFilters["feature"].toString();
     }
     if (initialFilters.contains("releaseStatus"))
     {
-        filter.releaseStatuses.append(initialFilters["releaseStatus"].toString());
+        filter.releaseStatuses << initialFilters["releaseStatus"].toString();
     }
     auto systemLocale = QLocale::system();
     lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
@@ -747,7 +748,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.releaseStatuses.append(item.slug);
+                        filter.releaseStatuses << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                     }
@@ -778,7 +779,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.excludeReleaseStatuses.append(item.slug);
+                        filter.excludeReleaseStatuses << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
                     }
@@ -862,7 +863,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.genres.append(item.slug);
+                        filter.genres << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                     }
@@ -893,7 +894,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.excludeGenres.append(item.slug);
+                        filter.excludeGenres << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
                     }
@@ -977,7 +978,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.tags.append(item.slug);
+                        filter.tags << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                     }
@@ -1008,7 +1009,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.excludeTags.append(item.slug);
+                        filter.excludeTags << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
                     }
@@ -1080,7 +1081,7 @@ void AllGamesPage::initialize(const QVariant &data)
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
-                        filter.systems.append(item.slug);
+                        filter.systems << item.slug;
                     }
                     else
                     {
@@ -1162,7 +1163,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.features.append(item.slug);
+                        filter.features << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                     }
@@ -1193,7 +1194,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.excludeFeatures.append(item.slug);
+                        filter.excludeFeatures << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearHideFilterButton);
                         clearHideFilterButton->setVisible(true);
                     }
@@ -1265,7 +1266,7 @@ void AllGamesPage::initialize(const QVariant &data)
                     {
                         activatedFilterCount++;
                         clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                        filter.languages.append(item.slug);
+                        filter.languages << item.slug;
                         ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                         clearFilterButton->setVisible(true);
                     }
@@ -1342,7 +1343,7 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
-                    this->ownedProducts.insert(id.toULongLong());
+                    this->ownedProducts.insert(id.toString());
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
@@ -1368,7 +1369,7 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 {
                     if (wishlistedItems[key].toBool())
                     {
-                        wishlist.insert(key.toULongLong());
+                        wishlist.insert(key);
                     }
                 }
                 emit wishlistChanged(wishlist);

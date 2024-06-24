@@ -39,7 +39,6 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
         emit navigate({ Page::ORDER_HISTORY });
     });
     navigationActionSet->layout()->addWidget(ordersNavigationButton);
-    actions.append(navigationActionSet);
     switch (page)
     {
     case Page::STORE:
@@ -65,7 +64,8 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
     {
         emit navigate({ Page::CART });
     });
-    actions.append(cartButton);
+
+    actions<< navigationActionSet << cartButton;
 }
 
 StoreBasePage::~StoreBasePage()

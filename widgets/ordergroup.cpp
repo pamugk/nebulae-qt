@@ -58,7 +58,7 @@ OrderGroup::OrderGroup(const api::Order &data,
         productOrderItem->setCursor(Qt::PointingHandCursor);
         connect(productOrderItem, &OrderItem::clicked, this, [this, productId = product.id]()
         {
-           emit navigateToProduct(productId.toULongLong());
+           emit navigateToProduct(productId);
         });
         ui->productsLayout->addWidget(productOrderItem);
     }

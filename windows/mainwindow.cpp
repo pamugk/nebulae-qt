@@ -4,6 +4,7 @@
 #include <QActionGroup>
 #include <QDesktopServices>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QWidgetAction>
 
@@ -208,6 +209,7 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         QLayoutItem *actionItem;
         while ((actionItem = ui->pageActionsHolderLayout->takeAt(0)))
         {
+            actionItem->widget()->deleteLater();
             delete actionItem;
         }
         for (QWidget *actionWidget : page->getHeaderControls())

@@ -7,7 +7,7 @@ namespace api
 {
     struct SeriesGame
     {
-        unsigned long long id;
+        QString id;
         QString title;
         QString releaseStatus;
         QString productType;

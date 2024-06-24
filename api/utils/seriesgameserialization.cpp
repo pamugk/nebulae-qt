@@ -2,7 +2,7 @@
 
 #include <QJsonArray>
 
-void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
+void parseSeriesGame(const QJsonValue &json, api::SeriesGame &data)
 {
     if (json["inDevelopment"].isObject())
     {
@@ -20,7 +20,7 @@ void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
             data.visibleInCatalog = product["isVisibleInCatalog"].toBool();
             data.preorder = product["isPreorder"].toBool();
             data.visibleInAccount = product["isVisibleInAccount"].toBool();
-            data.id = product["id"].toInteger();
+            data.id = QString::number(product["id"].toInteger());
             data.title = product["title"].toString();
             data.installable = product["isInstallable"].toBool();
             data.secret = product["isSecret"].toBool();
@@ -41,15 +41,15 @@ void parseSeriesGame(const QJsonObject &json, api::SeriesGame &data)
     }
 }
 
-void parseGetSeriesGamesResponse(const QJsonObject &json, api::GetSeriesGamesResponse &data)
+void parseGetSeriesGamesResponse(const QJsonValue &json, api::GetSeriesGamesResponse &data)
 {
     data.limit = json["limit"].toInt();
     data.page = json["page"].toInt();
     data.pages = json["pages"].toInt();
     auto items = json["_embedded"]["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseSeriesGame(items[i].toObject(), data.items[i]);
+        parseSeriesGame(items[i], data.items[i]);
     }
 }

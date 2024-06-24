@@ -20,37 +20,45 @@ namespace api
         explicit GogApiClient(AuthDataStorage *tokenStorage, QObject *parent = nullptr);
         bool isAuthenticated();
 
+        QString currentUserId() const;
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
-        QNetworkReply *getCatalogProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getCatalogProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getCurrentUser();
+        QNetworkReply *getCurrentUserGameTimeStatistics();
+        QNetworkReply *getCurrentUserPlatformAchievements(const QString &platform, const QString &pageToken);
+        QNetworkReply *getCurrentUserReleases();
+        QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
         QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
-        QNetworkReply *getOwnedProductInfo(unsigned long long id, const QString &locale);
+        QNetworkReply *getOwnedProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
-                                   const QString &order = "title",
-                                   unsigned short page = 1);
-        QNetworkReply *getPlayTime();
-        QNetworkReply *getProductAchievements(unsigned long long productId);
-        QNetworkReply *getProductAverageRating(unsigned long long productId, const QString &reviewer = QString());
-        QNetworkReply *getProductPrices(unsigned long long productId, const QString &countryCode);
-        QNetworkReply *getProductRecommendationsPurchasedTogether(unsigned long long productId,
+                                        const QString &order = "title",
+                                        unsigned short page = 1);
+        QNetworkReply *getPlatformRelease(const QString &platformId, const QString &platformReleaseId);
+        QNetworkReply *getPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
+                                                      const QString &locale);
+        QNetworkReply *getProductAchievements(const QString &productId);
+        QNetworkReply *getProductAverageRating(const QString &productId, const QString &reviewer = QString());
+        QNetworkReply *getProductPrices(const QString &productId, const QString &countryCode);
+        QNetworkReply *getProductRecommendationsPurchasedTogether(const QString &productId,
                                                                  const QString &countryCode,
                                                                  const QString &currency,
                                                                  unsigned char limit = 8);
-        QNetworkReply *getProductRecommendationsSimilar(unsigned long long productId,
+        QNetworkReply *getProductRecommendationsSimilar(const QString &productId,
                                                        const QString &countryCode,
                                                        const QString &currency,
                                                        unsigned char limit = 8);
-        QNetworkReply *getProductReviews(unsigned long long productId,
+        QNetworkReply *getProductReviews(const QString &productId,
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
         QNetworkReply *getRecommendedDlcs();
+        QNetworkReply *getRelease(const QString &id);
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
@@ -59,7 +67,7 @@ namespace api
         QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
-        QNetworkReply *getUser(unsigned long long id);
+        QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",
                                    unsigned short page = 1);
@@ -83,7 +91,7 @@ namespace api
     private:
         QOAuth2AuthorizationCodeFlow client;
         bool refreshingToken;
-        std::optional<unsigned long long> userId;
+        QString userId;
     };
 }
 

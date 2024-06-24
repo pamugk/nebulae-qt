@@ -57,15 +57,15 @@ private:
     QPixmap backgroundImage;
     QVector<api::GetCatalogProductInfoResponse> dependentProducts;
     unsigned char dependentProductsLeft;
-    unsigned long long id;
+    QString id;
     QVector<api::GetCatalogProductInfoResponse> requiredProducts;
     unsigned char requiredProductsLeft;
     api::ReviewFilters reviewFilters;
     QVector<api::FormattedLink> screenshots;
     QVector<api::ThumbnailedVideo> videos;
-    QSet<unsigned long long> ownedProducts;
+    QSet<const QString> ownedProducts;
     Ui::CatalogProductPage *ui;
-    QSet<unsigned long long> wishlist;
+    QSet<const QString> wishlist;
 
     QNetworkReply *averageRatingReply;
     QNetworkReply *averageOwnerRatingReply;
@@ -88,8 +88,8 @@ private:
     api::SortOrder reviewsOrder;
 
     void initializeUserReviewsFilters();
-    Q_SIGNAL void ownedProductsChanged(const QSet<unsigned long long> &ids);
-    Q_SIGNAL void wishlistChanged(const QSet<unsigned long long> &ids);
+    Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 };
 
 #endif // CATALOGPRODUCTPAGE_H

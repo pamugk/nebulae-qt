@@ -1,12 +1,12 @@
 #ifndef REVIEWSERIALIZATION_H
 #define REVIEWSERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/review.h"
 
-void parseRatingResponse(const QJsonObject &json, api::GetRatingResponse &data);
+void parseRatingResponse(const QJsonValue &json, api::GetRatingResponse &data);
 
-void parseReviewsResponse(const QJsonObject &json, api::GetReviewsResponse &data);
+void parseReviewsResponse(const QJsonValue &json, api::GetReviewsResponse &data);
 
 #endif // REVIEWSERIALIZATION_H

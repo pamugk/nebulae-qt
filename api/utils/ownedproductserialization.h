@@ -1,10 +1,10 @@
 #ifndef OWNEDPRODUCTSERIALIZATION_H
 #define OWNEDPRODUCTSERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/ownedproduct.h"
 
-void parseOwnedProductsResponse(const QJsonObject &json, api::GetOwnedProductsResponse &data);
+void parseOwnedProductsResponse(const QJsonValue &json, api::GetOwnedProductsResponse &data);
 
 #endif // OWNEDPRODUCTSERIALIZATION_H

@@ -5,7 +5,7 @@
 
 #include "catalogserialization.h"
 
-void parsePrice(const QJsonObject &json, api::StoreProductPrice &data)
+void parsePrice(const QJsonValue &json, api::StoreProductPrice &data)
 {
     data.baseAmount = json["baseAmount"].toString().toDouble();
     data.finalAmount = json["finalAmount"].toString().toDouble();
@@ -13,22 +13,22 @@ void parsePrice(const QJsonObject &json, api::StoreProductPrice &data)
     data.free = json["isFree"].toBool();
 }
 
-void parseProduct(const QJsonObject &json, api::StoreProduct &data, const QString &imageFormatter)
+void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString &imageFormatter)
 {
-    data.id = json["id"].toString().toULongLong();
+    data.id = json["id"].toString();
     data.title = json["title"].toString();
     data.image = json["image"].toString();
     if (!data.image.isNull())
     {
         data.image.prepend("https:").append(imageFormatter);
     }
-    parsePrice(json["price"].toObject(), data.price);
+    parsePrice(json["price"], data.price);
 
     auto operatingSystems = json["supportedOperatingSystems"].toArray();
-    data.supportedOperatingSystems.resize(operatingSystems.count());
+    data.supportedOperatingSystems.reserve(operatingSystems.count());
     for (const QJsonValue &os : std::as_const(operatingSystems))
     {
-        data.supportedOperatingSystems.append(os.toString());
+        data.supportedOperatingSystems << os.toString();
     }
 
     data.comingSoon = json["isComingSoon"].toBool();
@@ -40,24 +40,24 @@ void parseProduct(const QJsonObject &json, api::StoreProduct &data, const QStrin
     data.preorder = json["isPreorder"].toBool();
 }
 
-void parseCustomSectionItem(const QJsonObject &json, api::StoreCustomSectionItem &data,
+void parseCustomSectionItem(const QJsonValue &json, api::StoreCustomSectionItem &data,
                             const QString &coverFormat)
 {
     data.dealActiveFrom = QDateTime::fromString(json["dealActiveFrom"].toString(), Qt::ISODate);
     data.dealActiveTo = QDateTime::fromString(json["dealActiveTo"].toString(), Qt::ISODate);
-    parseProduct(json["product"].toObject(), data.product, coverFormat);
+    parseProduct(json["product"], data.product, coverFormat);
 }
 
-void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCustomSectionResponse &data,
+void parseGetStoreCustomSectionResponse(const QJsonValue &json, api::GetStoreCustomSectionResponse &data,
                                         const QString &coverFormat)
 {
     data.id = json["id"].toString();
 
     auto items = json["products"]["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseCustomSectionItem(items[i].toObject(), data.items[i], coverFormat);
+        parseCustomSectionItem(items[i], data.items[i], coverFormat);
     }
 
     data.visibleFrom = QDateTime::fromString(json["products"]["currentServerTime"].toString(), Qt::ISODate);
@@ -65,17 +65,17 @@ void parseGetStoreCustomSectionResponse(const QJsonObject &json, api::GetStoreCu
     data.visibleTo = QDateTime::fromString(json["visibleTo"].toString(), Qt::ISODate);
 }
 
-void parseGetStoreDiscoverGamesResponse(const QJsonObject &json, api::GetStoreDiscoverGamesSectionResponse &data)
+void parseGetStoreDiscoverGamesResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data)
 {
     auto personalizedProducts = json["personalizedProducts"].toArray();
     data.personalizedProducts.resize(personalizedProducts.count());
     for (std::size_t i = 0; i < personalizedProducts.count(); i++)
     {
-        parseProduct(personalizedProducts[i].toObject(), data.personalizedProducts[i], "_product_tile_136.webp");
+        parseProduct(personalizedProducts[i], data.personalizedProducts[i], "_product_tile_136.webp");
     }
 }
 
-void parseStoreNowOnSaleTabCard(const QJsonObject &json, api::StoreNowOnSaleTabCard &data)
+void parseStoreNowOnSaleTabCard(const QJsonValue &json, api::StoreNowOnSaleTabCard &data)
 {
     auto colorRgbArray = json["color_as_rgb_array"].toArray();
     data.background = json["background"].toString().prepend("https:");
@@ -94,14 +94,14 @@ void parseStoreNowOnSaleTabCard(const QJsonObject &json, api::StoreNowOnSaleTabC
     data.countdownDate = QDateTime::fromMSecsSinceEpoch(json["countdownDate"].toInteger());
 }
 
-void parseStoreNowOnSaleTab(const QJsonObject &json, api::StoreNowOnSaleTab &data)
+void parseStoreNowOnSaleTab(const QJsonValue &json, api::StoreNowOnSaleTab &data)
 {
     data.id = json["id"].toString();
     data.title = json["title"].toString();
-    parseStoreNowOnSaleTabCard(json["bigThingy"].toObject(), data.bigThingy);
+    parseStoreNowOnSaleTabCard(json["bigThingy"], data.bigThingy);
 }
 
-void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnSaleResponse &data)
+void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data)
 {
     auto productIds = json["allDiscounts"]["products"].toArray();
     QMap<QString, std::size_t> productOrder;
@@ -119,7 +119,7 @@ void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnS
         if (productOrder.contains(productId))
         {
             auto productIdx = productOrder[productId];
-            parseCatalogProduct(product.toObject(), data.products[productIdx], "_product_tile_256.webp");
+            parseCatalogProduct(product, data.products[productIdx], "_product_tile_256.webp");
         }
     }
 
@@ -127,29 +127,29 @@ void parseGetStoreNowOnSaleResponse(const QJsonObject &json, api::GetStoreNowOnS
     data.tabs.resize(tabs.count());
     for (std::size_t i = 0; i < tabs.count(); i++)
     {
-        parseStoreNowOnSaleTab(tabs[i].toObject(), data.tabs[i]);
+        parseStoreNowOnSaleTab(tabs[i], data.tabs[i]);
     }
 }
 
-void parseGetStoreNowOnSaleSectionResponse(const QJsonObject &json, api::GetStoreNowOnSaleSectionResponse &data)
+void parseGetStoreNowOnSaleSectionResponse(const QJsonValue &json, api::GetStoreNowOnSaleSectionResponse &data)
 {
     data.id = json["id"].toString();
     auto personalizedProducts = json["personalizedProducts"].toArray();
     data.personalizedProducts.resize(personalizedProducts.count());
     for (std::size_t i = 0; i < personalizedProducts.count(); i++)
     {
-        parseProduct(personalizedProducts[i].toObject(), data.personalizedProducts[i], "_product_tile_256.webp");
+        parseProduct(personalizedProducts[i], data.personalizedProducts[i], "_product_tile_256.webp");
     }
-    parseStoreNowOnSaleTabCard(json["bigThingy"].toObject(), data.bigThingy);
+    parseStoreNowOnSaleTabCard(json["bigThingy"], data.bigThingy);
 }
 
-void parseGetStoreRecommendedDlcsResponse(const QJsonObject &json, api::GetStoreRecommendedDlcsResponse &data)
+void parseGetStoreRecommendedDlcsResponse(const QJsonValue &json, api::GetStoreRecommendedDlcsResponse &data)
 {
     data.hasRecommendations = json["hasRecommendations"].toBool();
     auto recommendations = json["recommendations"].toArray();
     data.recommendations.resize(recommendations.count());
     for (std::size_t i = 0; i < recommendations.count(); i++)
     {
-        parseProduct(recommendations[i].toObject(), data.recommendations[i], "_product_tile_256.webp");
+        parseProduct(recommendations[i], data.recommendations[i], "_product_tile_256.webp");
     }
 }

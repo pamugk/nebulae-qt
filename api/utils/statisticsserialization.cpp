@@ -2,45 +2,41 @@
 
 #include <QJsonArray>
 
-void parseAchievement(const QJsonObject &json, api::Achievement &data)
+#include "platformachievementserialization.h"
+
+void parsePlatformUserAchievement(const QJsonValue &json, api::PlatformUserAchievement &data)
 {
-    data.achievementId = json["achievement_id"].toString();
-    data.achievementKey = json["achievement_key"].toString();
-    data.clientId = json["client_id"].toString();
-    data.name = json["name"].toString();
-    data.description = json["description"].toString();
-    data.imageUrlUnlocked = json["image_url_unlocked"].toString();
-    data.imageUrlLocked = json["image_url_locked"].toString();
-    if (json["date_unlocked"].isString())
+    parsePlatformAchievement(json, data);
+    if (!json["date_unlocked"].isNull())
     {
-        data.dateUnlocked = QDateTime::fromString(json["date_unlocked"].toString(), Qt::ISODate);
+        data.dateUnlocked = QDateTime::fromSecsSinceEpoch(json["date_unlocked"].toInteger());
     }
-    data.rarity = json["rarity"].toDouble();
-    data.rarityLevelDescription = json["rarity_level_description"].toString();
-    data.rarityLevelSlug = json["rarity_level_slug"].toString();
 }
 
-void parseGetAchievementsResponse(const QJsonObject &json, api::GetAchievementsResponse &data)
+void parseGetUserPlatformAchievementsResponse(const QJsonValue &json, api::GetUserPlatformAchievementsResponse &data)
 {
-    data.totalCount = json["total_count"].toInt();
     data.limit = json["limit"].toInt();
-    data.pageToken = json["page_token"].toString("0").toInt();
-    data.hasNextPage = json["next_page_token"].isString();
-    data.achievementsMode = json["achievements_mode"].toString();
+    data.pageToken = json["page_token"].toString();
+    data.nextPageToken = json["next_page_token"].toString();
     auto items = json["items"].toArray();
     data.items.resize(items.count());
-    for (int i = 0; i < items.count(); i++)
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseAchievement(items[i].toObject(), data.items[i]);
+        parsePlatformUserAchievement(items[i], data.items[i]);
     }
 }
-
-void parseGetSessionsResponse(const QJsonObject &json, api::GetPlaySessionsResponse &data)
+void parseGetUserGameTimeStatisticsResponse(const QJsonValue &json, api::GetUserGameTimeStatisticsResponse &data)
 {
-    data.totalSum = json["total_sum"].toInt();
-    auto gameTime = json["game_time"].toArray();
-    for (const QJsonValue &item : std::as_const(gameTime))
+    data.limit = json["limit"].toInt();
+    data.pageToken = json["page_token"].toString();
+    auto items = json["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        data.gameTime[item["game_id"].toInteger()] = item["time_sum"].toInt();
+        const QJsonValue &itemJson = items[i];
+        auto &item = data.items[i];
+        item.releasePerPlatformId = itemJson["release_per_platform_id"].toString();
+        item.timeSum = itemJson["game_time"]["time_sum"].toInt();
+        item.lastSessionDate = QDateTime::fromSecsSinceEpoch(itemJson["game_time"]["last_session_date"].toInteger());
     }
 }

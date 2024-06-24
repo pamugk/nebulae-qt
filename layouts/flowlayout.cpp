@@ -23,7 +23,7 @@ FlowLayout::~FlowLayout()
 
 void FlowLayout::addItem(QLayoutItem *item)
 {
-    itemList.append(item);
+    itemList << item;
 }
 
 int FlowLayout::horizontalSpacing() const

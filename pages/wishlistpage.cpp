@@ -92,7 +92,7 @@ void WishlistPage::fetchData()
                 for (const api::Product &product : std::as_const(data.products))
                 {
                     auto wishlistItem = new WishlistItem(product, apiClient, ui->resultsScrollAreaContents);
-                    connect(wishlistItem, &WishlistItem::navigateToProduct, this, [this](quint64 productId)
+                    connect(wishlistItem, &WishlistItem::clicked, this, [this, productId = product.id]()
                     {
                         emit navigate({Page::CATALOG_PRODUCT, productId});
                     });

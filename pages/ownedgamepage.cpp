@@ -2,6 +2,7 @@
 #include "ui_ownedgamepage.h"
 
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QScrollBar>
 
@@ -31,7 +32,7 @@ void OwnedGamePage::setApiClient(api::GogApiClient *apiClient)
 void OwnedGamePage::initialize(const QVariant &data)
 {
     auto systemLocale = QLocale::system();
-    auto networkReply = apiClient->getOwnedProductInfo(data.toLongLong(),
+    auto networkReply = apiClient->getOwnedProductInfo(data.toString(),
                                                        QLocale::languageToCode(systemLocale.language(), QLocale::ISO639Part1));
     connect(networkReply, &QNetworkReply::finished, this, [=](){
         if (networkReply->error() == QNetworkReply::NoError)
@@ -65,40 +66,40 @@ void OwnedGamePage::initialize(const QVariant &data)
             QVector<const api::BonusDownload *> goodies;
             for (const api::BonusDownload &bonusDownload : std::as_const(data.mainProductInfo.downloads.bonusContent))
             {
-                goodies.append(&bonusDownload);
+                goodies << &bonusDownload;
             }
             QVector<const api::GameDownload *> installers;
             for (const api::GameDownload &installerDownload : std::as_const(data.mainProductInfo.downloads.installers))
             {
-                installers.append(&installerDownload);
+                installers << &installerDownload;
             }
             QVector<const api::GameDownload *> patches;
             for (const api::GameDownload &patchDownload : std::as_const(data.mainProductInfo.downloads.patches))
             {
-                patches.append(&patchDownload);
+                patches << &patchDownload;
             }
             QVector<const api::GameDownload *> languagePacks;
             for (const api::GameDownload &languagePackDownload : std::as_const(data.mainProductInfo.downloads.languagePacks))
             {
-                languagePacks.append(&languagePackDownload);
+                languagePacks << &languagePackDownload;
             }
             for (const api::ProductInfo &dlc : std::as_const(data.expandedDlcs))
             {
                 for (const api::BonusDownload &bonusDownload : std::as_const(dlc.downloads.bonusContent))
                 {
-                    goodies.append(&bonusDownload);
+                    goodies << &bonusDownload;
                 }
                 for (const api::GameDownload &installerDownload: std::as_const(dlc.downloads.installers))
                 {
-                    installers.append(&installerDownload);
+                    installers << &installerDownload;
                 }
                 for (const api::GameDownload &patchDownload : std::as_const(dlc.downloads.patches))
                 {
-                    patches.append(&patchDownload);
+                    patches << &patchDownload;
                 }
                 for (const api::GameDownload &languagePackDownload : std::as_const(dlc.downloads.languagePacks))
                 {
-                    languagePacks.append(&languagePackDownload);
+                    languagePacks << &languagePackDownload;
                 }
             }
 

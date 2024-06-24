@@ -3,6 +3,7 @@
 
 #include <QDesktopServices>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkReply>
 #include <QStyle>
 

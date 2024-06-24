@@ -1,10 +1,10 @@
 #ifndef SERIESGAMESERIALIZATION_H
 #define SERIESGAMESERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/seriesgame.h"
 
-void parseGetSeriesGamesResponse(const QJsonObject &json, api::GetSeriesGamesResponse &data);
+void parseGetSeriesGamesResponse(const QJsonValue &json, api::GetSeriesGamesResponse &data);
 
 #endif // SERIESGAMESERIALIZATION_H

@@ -21,7 +21,7 @@ public:
     ~OrderGroup();
 
 signals:
-    void navigateToProduct(unsigned long long productId);
+    void navigateToProduct(const QString &productId);
 
 private:
     Ui::OrderGroup *ui;

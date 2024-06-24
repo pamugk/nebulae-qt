@@ -5,38 +5,35 @@
 #include <QMap>
 #include <QVector>
 
+#include "platformachievement.h"
+
 namespace api
 {
-    struct Achievement
+    struct PlatformUserAchievement : PlatformAchievement
     {
-        QString achievementId;
-        QString achievementKey;
-        QString clientId;
-        bool visible;
-        QString name;
-        QString description;
-        QString imageUrlUnlocked;
-        QString imageUrlLocked;
-        double rarity;
         QDateTime dateUnlocked;
-        QString rarityLevelDescription;
-        QString rarityLevelSlug;
     };
 
-    struct GetAchievementsResponse
+    struct GetUserPlatformAchievementsResponse
     {
-        unsigned int totalCount;
         unsigned int limit;
-        unsigned int pageToken;
-        bool hasNextPage;
-        QString achievementsMode;
-        QVector<Achievement> items;
+        QString pageToken;
+        QString nextPageToken;
+        QVector<PlatformUserAchievement> items;
     };
 
-    struct GetPlaySessionsResponse
+    struct PlatformReleaseTimeStatistics
     {
-        unsigned int totalSum;
-        QMap<quint64, quint32> gameTime;
+        QString releasePerPlatformId;
+        unsigned int timeSum;
+        QDateTime lastSessionDate;
+    };
+
+    struct GetUserGameTimeStatisticsResponse
+    {
+        unsigned int limit;
+        QString pageToken;
+        QVector<PlatformReleaseTimeStatistics> items;
     };
 }
 

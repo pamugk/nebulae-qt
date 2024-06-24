@@ -1,11 +1,11 @@
 #ifndef STATISTICSSERIALIZATION_H
 #define STATISTICSSERIALIZATION_H
 
-#include <QJsonObject>
+#include <QJsonValue>
 
 #include "../models/statistics.h"
 
-void parseGetAchievementsResponse(const QJsonObject &json, api::GetAchievementsResponse &data);
-void parseGetSessionsResponse(const QJsonObject &json, api::GetPlaySessionsResponse &data);
+void parseGetUserPlatformAchievementsResponse(const QJsonValue &json, api::GetUserPlatformAchievementsResponse &data);
+void parseGetUserGameTimeStatisticsResponse(const QJsonValue &json, api::GetUserGameTimeStatisticsResponse &data);
 
 #endif // STATISTICSSERIALIZATION_H

@@ -2,21 +2,21 @@
 
 #include <QJsonArray>
 
-void parseTag(const QJsonObject &json, api::Tag &data)
+void parseTag(const QJsonValue &json, api::Tag &data)
 {
     data.id = json["id"].toString();
     data.name = json["name"].toString();
     data.productCount = json["productCount"].toInt();
 }
 
-void parseOwnedProduct(const QJsonObject &json, api::OwnedProduct &data)
+void parseOwnedProduct(const QJsonValue &json, api::OwnedProduct &data)
 {
     data.galaxyCompatible = json["isGalaxyCompatible"].toBool();
     auto tagIds = json["tags"].toArray();
-    data.tags.resize(tagIds.count());
-    for (int i = 0; i < tagIds.count(); i++)
+    data.tags.reserve(tagIds.count());
+    for (const QJsonValue &tagId : std::as_const(tagIds))
     {
-        data.tags[i] = tagIds[i].toString();
+        data.tags << tagId.toString();
     }
     data.id = json["id"].toInteger();
     if (json["availability"].isObject())
@@ -53,7 +53,7 @@ void parseOwnedProduct(const QJsonObject &json, api::OwnedProduct &data)
     data.hidden = json["isHidden"].toBool();
 }
 
-void parseOwnedProductsResponse(const QJsonObject &json, api::GetOwnedProductsResponse &data)
+void parseOwnedProductsResponse(const QJsonValue &json, api::GetOwnedProductsResponse &data)
 {
     data.page = json["page"].toInt();
     data.totalPages = json["totalPages"].toInt();
@@ -66,15 +66,15 @@ void parseOwnedProductsResponse(const QJsonObject &json, api::GetOwnedProductsRe
 
     auto tags = json["tags"].toArray();
     data.tags.resize(tags.count());
-    for (int i = 0; i < tags.count(); i++)
+    for (std::size_t i = 0; i < tags.count(); i++)
     {
-        parseTag(tags[i].toObject(), data.tags[i]);
+        parseTag(tags[i], data.tags[i]);
     }
 
     auto products = json["products"].toArray();
     data.products.resize(products.count());
-    for (int i = 0; i < products.count(); i++)
+    for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseOwnedProduct(products[i].toObject(), data.products[i]);
+        parseOwnedProduct(products[i], data.products[i]);
     }
 }
