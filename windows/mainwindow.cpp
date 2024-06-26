@@ -18,7 +18,7 @@
 #include "../pages/catalogproductpage.h"
 #include "../pages/newspage.h"
 #include "../pages/orderspage.h"
-#include "../pages/ownedgamepage.h"
+#include "../pages/releasepage.h"
 #include "../pages/ownedgamespage.h"
 #include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
@@ -45,6 +45,7 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
         dialog.exec();
     });
 
+    QIcon externalLinkIcon(":/icons/up-right-from-square.svg");
     auto infoMenu = new QMenu(ui->infoToolButton);
     auto addSubmenu = infoMenu->addMenu("Add games && friends");
     addSubmenu->addAction("Connect gaming accounts");
@@ -56,30 +57,25 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
     addSubmenu->addAction("Add friends");
     infoMenu->addAction("Sync integrations");
     infoMenu->addSeparator();
-    connect(infoMenu->addAction("Settings"), &QAction::triggered,
-            this, [this]()
+    infoMenu->addAction("Settings", infoMenu, [this]()
     {
         SettingsDialog dialog(this);
         dialog.setSettingsManager(this->settingsManager);
         dialog.exec();
     });
-    connect(infoMenu->addAction("Get support (GOG)"), &QAction::triggered,
-            this, [this]()
+    infoMenu->addAction("Get support (GOG)", infoMenu, []()
     {
         QDesktopServices::openUrl(QUrl("https://support.gog.com/hc"));
-    });
+    })->setIcon(externalLinkIcon);
     infoMenu->addSeparator();
-    connect(infoMenu->addAction("Legal && privacy"), &QAction::triggered,
-            this, [this]()
+    infoMenu->addAction("Legal && privacy", this, [this]()
     {
         LegalInfoDialog dialog(this);
         dialog.exec();
-    });
-    connect(infoMenu->addAction("About Qt"), &QAction::triggered,
-            &QApplication::aboutQt);
+    })->setIcon(externalLinkIcon);
+    infoMenu->addAction("About Qt", &QApplication::aboutQt);
     infoMenu->addSeparator();
-    connect(infoMenu->addAction("Exit"), &QAction::triggered,
-            this, [this]()
+    infoMenu->addAction("Exit", this, [this]()
     {
         QApplication::instance()->exit();
     });
@@ -191,8 +187,8 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
     case CATALOG_PRODUCT:
         page = new CatalogProductPage(ui->scaffold);
         break;
-    case OWNED_PRODUCT:
-        page = new OwnedGamePage(ui->scaffold);
+    case RELEASE:
+        page = new ReleasePage(ui->scaffold);
         break;
     case NEWS:
         page = new NewsPage(ui->scaffold);

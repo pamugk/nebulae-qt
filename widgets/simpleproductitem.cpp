@@ -70,9 +70,7 @@ void SimpleProductItem::setPrice(double basePrice, double finalPrice,
     auto systemLocale = QLocale::system();
     if (discount > 0)
     {
-        ui->discountLabel->setText(QString("-%1%2")
-                                   .arg(discount)
-                                   .arg(systemLocale.percent()));
+        ui->discountLabel->setText(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(discount), systemLocale.percent()));
         ui->discountLabel->setVisible(true);
         ui->oldPriceLabel->setText(systemLocale.toCurrencyString(basePrice, currency));
         ui->oldPriceLabel->setVisible(true);

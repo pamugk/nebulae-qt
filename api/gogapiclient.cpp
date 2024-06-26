@@ -155,6 +155,21 @@ QNetworkReply *api::GogApiClient::getCurrentUserPlatformAchievements(const QStri
     return client.get(url);
 }
 
+QNetworkReply *api::GogApiClient::getCurrentUserPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId, const QString &pageToken)
+{
+    QUrl url(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/users/%3/achievements").arg(platformId, platformReleaseId, userId));
+    if (!pageToken.isEmpty())
+    {
+        url.setQuery(QUrlQuery({ std::make_pair("page_token", pageToken) }));
+    }
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getCurrentUserPlatformReleaseGameTimeStatistics(const QString &platformId, const QString &platformReleaseId)
+{
+    return client.get(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/users/%3/sessions").arg(platformId, platformReleaseId, userId));
+}
+
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
 {
     return client.get(QStringLiteral("https://galaxy-library.gog.com/users/%1/releases").arg(userId));

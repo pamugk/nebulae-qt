@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CatalogProductMediaDialog</class>
- <widget class="QDialog" name="CatalogProductMediaDialog">
+ <class>ReleaseMediaDialog</class>
+ <widget class="QDialog" name="ReleaseMediaDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gallery</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background: transparent;</string>
+   <string>Dialog</string>
   </property>
   <layout class="QHBoxLayout" name="rootLayout">
    <item>

@@ -90,12 +90,13 @@ set(PROJECT_SOURCES
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
         pages/newspage.h pages/newspage.cpp pages/newspage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
-        pages/ownedgamepage.h pages/ownedgamepage.cpp pages/ownedgamepage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
+        pages/releasepage.h pages/releasepage.cpp pages/releasepage.ui
         pages/storebasepage.h pages/storebasepage.cpp
         pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
+        widgets/achievementlistitem.h widgets/achievementlistitem.cpp widgets/achievementlistitem.ui
         widgets/bonusitem.h widgets/bonusitem.cpp widgets/bonusitem.ui
         widgets/checkeditem.h widgets/checkeditem.cpp widgets/checkeditem.ui
         widgets/clearfilterbutton.h widgets/clearfilterbutton.cpp widgets/clearfilterbutton.ui
@@ -124,6 +125,7 @@ set(PROJECT_SOURCES
         windows/catalogproductmediadialog.h windows/catalogproductmediadialog.cpp windows/catalogproductmediadialog.ui
         windows/legalinfodialog.h windows/legalinfodialog.cpp windows/legalinfodialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
+        windows/releasemediadialog.h windows/releasemediadialog.cpp windows/releasemediadialog.ui
         windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui
         ${TS_FILES}

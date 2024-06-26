@@ -2,12 +2,10 @@
 #define IMAGEHOLDER_H
 
 #include <QMouseEvent>
-#include <QNetworkReply>
 #include <QSize>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
-#include "../api/models/catalogproductinfo.h"
 
 namespace Ui {
 class ImageHolder;
@@ -19,7 +17,7 @@ class ImageHolder : public QWidget
 
 public:
     explicit ImageHolder(QSize size,
-                         const api::FormattedLink &data,
+                         const QString &url,
                          api::GogApiClient *apiClient,
                          QWidget *parent = nullptr);
     ~ImageHolder();
@@ -31,7 +29,6 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QNetworkReply *imageReply;
     Ui::ImageHolder *ui;
 };
 

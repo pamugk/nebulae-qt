@@ -397,7 +397,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     // How come it is not displayed on a web-site? Just... why?
                     if (video.provider != "wistia")
                     {
-                        auto videoHolder = new VideoHolder(QSize(271, 143), video,apiClient, ui->mediaScrollAreaContents);
+                        auto videoHolder = new VideoHolder(QSize(271, 143), video.thumbnailLink, apiClient, ui->mediaScrollAreaContents);
                         videoHolder->setCursor(Qt::PointingHandCursor);
                         connect(videoHolder, &VideoHolder::clicked, this, [this, mediaIndex]()
                         {
@@ -410,7 +410,12 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 }
                 for (const api::FormattedLink &screenshotLink : std::as_const(data.screenshots))
                 {
-                    auto screenshotHolder = new ImageHolder(QSize(271, 143), screenshotLink,apiClient, ui->mediaScrollAreaContents);
+                    QString url = screenshotLink.href;
+                    if (screenshotLink.templated)
+                    {
+                        url.replace("{formatter}", screenshotLink.formatters[1]);
+                    }
+                    auto screenshotHolder = new ImageHolder(QSize(271, 143), url, apiClient, ui->mediaScrollAreaContents);
                     screenshotHolder->setCursor(Qt::PointingHandCursor);
                     connect(screenshotHolder, &ImageHolder::clicked, this, [this, mediaIndex]()
                     {
@@ -1480,6 +1485,6 @@ void CatalogProductPage::on_wishlistButton_toggled(bool checked)
 
 void CatalogProductPage::on_libraryButton_clicked()
 {
-    emit navigate({ Page::OWNED_PRODUCT, id });
+    // TODO: implement store library page
 }
 

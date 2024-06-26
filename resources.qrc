@@ -89,5 +89,7 @@
         <file>icons/filter.svg</file>
         <file>icons/gift.svg</file>
         <file>icons/heart-solid.svg</file>
+        <file>icons/up-right-from-square.svg</file>
+        <file>icons/clock.svg</file>
     </qresource>
 </RCC>
