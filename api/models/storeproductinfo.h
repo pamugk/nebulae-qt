@@ -1,5 +1,5 @@
-#ifndef OWNEDPRODUCTINFO_H
-#define OWNEDPRODUCTINFO_H
+#ifndef STOREPRODUCTINFO_H
+#define STOREPRODUCTINFO_H
 
 #include <QDateTime>
 #include <QMap>
@@ -80,7 +80,7 @@ namespace api
         QString provider;
     };
 
-    struct GetOwnedProductInfoResponse
+    struct GetStoreProductInfoResponse
     {
         ProductInfo mainProductInfo;
         QVector<ProductInfo> expandedDlcs;
@@ -93,4 +93,4 @@ namespace api
     };
 }
 
-#endif // OWNEDPRODUCTINFO_H
+#endif // STOREPRODUCTINFO_H

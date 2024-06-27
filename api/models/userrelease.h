@@ -3,6 +3,7 @@
 
 #include <QDateTime>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 namespace api
@@ -11,7 +12,7 @@ namespace api
     {
         QString platformId;
         QString externalId;
-        QVector<QString> tags;
+        QStringList tags;
         std::optional<int> rating;
         std::optional<bool> hidden;
         QDateTime dateCreated;

@@ -31,7 +31,6 @@ set(PROJECT_SOURCES
         api/models/news.h
         api/models/order.h api/models/orderfilter.h
         api/models/ownedproduct.h
-        api/models/ownedproductinfo.h
         api/models/platformachievement.h
         api/models/price.h
         api/models/product.h
@@ -43,6 +42,7 @@ set(PROJECT_SOURCES
         api/models/sort.h
         api/models/statistics.h
         api/models/store.h
+        api/models/storeproductinfo.h
         api/models/tag.h
         api/models/user.h
         api/models/userlibraryfilters.h api/models/userlibraryrequest.h
@@ -55,7 +55,6 @@ set(PROJECT_SOURCES
         api/utils/newsserialization.h api/utils/newsserialization.cpp
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
-        api/utils/ownedproductinfoserialization.h api/utils/ownedproductinfoserialization.cpp
         api/utils/platformachievementserialization.h api/utils/platformachievementserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
         api/utils/recommendationserialization.h api/utils/recommendationserialization.cpp
@@ -64,6 +63,7 @@ set(PROJECT_SOURCES
         api/utils/serialization.h api/utils/serialization.cpp
         api/utils/seriesgameserialization.h api/utils/seriesgameserialization.cpp
         api/utils/statisticsserialization.h api/utils/statisticsserialization.cpp
+        api/utils/storeproductinfoserialization.h api/utils/storeproductinfoserialization.cpp
         api/utils/storeserialization.h api/utils/storeserialization.cpp
         api/utils/userreleaseserialization.h api/utils/userreleaseserialization.cpp
         api/utils/userserialization.h api/utils/userserialization.cpp
@@ -125,6 +125,7 @@ set(PROJECT_SOURCES
         windows/catalogproductmediadialog.h windows/catalogproductmediadialog.cpp windows/catalogproductmediadialog.ui
         windows/legalinfodialog.h windows/legalinfodialog.cpp windows/legalinfodialog.ui
         windows/mainwindow.cpp windows/mainwindow.h windows/mainwindow.ui
+        windows/releasechangelogdialog.h windows/releasechangelogdialog.cpp windows/releasechangelogdialog.ui
         windows/releasemediadialog.h windows/releasemediadialog.cpp windows/releasemediadialog.ui
         windows/searchdialog.h windows/searchdialog.cpp windows/searchdialog.ui
         windows/settingsdialog.h windows/settingsdialog.cpp windows/settingsdialog.ui

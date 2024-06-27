@@ -44,6 +44,18 @@ WHERE user_id = ? AND NOT EXISTS (
 LIMIT 1;
 )");
 
+const auto SELECT_USER_RELEASE = QLatin1String(R"(
+SELECT created_at, owned_since, owned, hidden, rating
+FROM user_release
+WHERE user_id = ? AND platform = ? AND platform_release_id = ?;
+)");
+
+const auto SELECT_USER_RELEASE_TAGS = QLatin1String(R"(
+SELECT tag
+FROM user_release_tag
+WHERE user_id = ? AND platform = ? AND platform_release_id = ?;
+)");
+
 const auto SELECT_USER_RELEASES_GENRES = QLatin1String(R"(
 SELECT id, name, slug
 FROM genre
@@ -160,6 +172,77 @@ FROM user_release
     JOIN game ON "release".game_id = game.id
 WHERE user_release.user_id = ? AND user_release.hidden = ? AND "release"."type" = 'game' AND game.visible
 )");
+
+std::optional<api::UserRelease> db::getUserRelease(const QString &userId, const QString &platformId, const QString &platformReleaseId)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    if (!db.transaction())
+    {
+        qDebug() << "Failed to start DB transaction" << db.lastError();
+        return std::nullopt;
+    }
+
+    QSqlQuery selectQuery;
+    if (!selectQuery.prepare(SELECT_USER_RELEASE))
+    {
+        qDebug() << "Failed to prepare query to select user release" << selectQuery.lastError();
+        db.rollback();
+        return std::nullopt;
+    }
+    selectQuery.addBindValue(userId);
+    selectQuery.addBindValue(platformId);
+    selectQuery.addBindValue(platformReleaseId);
+    if (!selectQuery.exec())
+    {
+        qDebug() << "Failed to select user release" << selectQuery.lastError();
+        db.rollback();
+        return std::nullopt;
+    }
+
+    std::optional<api::UserRelease> userRelease = std::nullopt;
+    if (selectQuery.next())
+    {
+        auto hidden = selectQuery.value(3);
+        auto rating = selectQuery.value(4);
+        api::UserRelease userReleaseData =
+            {
+                platformId, platformReleaseId, QStringList(),
+                rating.isNull() || rating == "" ? std::nullopt : std::make_optional(rating.toInt()),
+                hidden.isNull() || hidden == "" ? std::nullopt : std::make_optional(selectQuery.value(3).toBool()),
+                selectQuery.value(0).toDateTime(), selectQuery.value(1).toDateTime(),
+                QString(),
+                selectQuery.value(2).toBool()
+            };
+
+        if (selectQuery.prepare(SELECT_USER_RELEASE_TAGS))
+        {
+            selectQuery.addBindValue(userId);
+            selectQuery.addBindValue(platformId);
+            selectQuery.addBindValue(platformReleaseId);
+            if (selectQuery.exec())
+            {
+                while (selectQuery.next())
+                {
+                    userReleaseData.tags << selectQuery.value(0).toString();
+                }
+            }
+            else
+            {
+                qDebug() << "Failed to select user release tags" << selectQuery.lastError();
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to prepare query to select user release tags" << selectQuery.lastError();
+        }
+
+        userRelease = userReleaseData;
+    }
+
+    db.commit();
+
+    return userRelease;
+}
 
 QVector<db::UserReleaseGroup> db::getUserReleases(const QString &userId, const api::SearchUserReleasesRequest &request)
 {

@@ -23,6 +23,8 @@ public:
 
 private:
     api::GogApiClient *apiClient;
+    QString platformId;
+    QString platformReleaseId;
     QVector<QString> screenshots;
     QVector<api::NamedVideo> videos;
     Ui::ReleasePage *ui;
@@ -31,6 +33,9 @@ private:
     QNetworkReply *releaseAchievementsReply;
     QNetworkReply *releaseGametimeStatisticsReply;
     QNetworkReply *releaseReply;
+    QNetworkReply *storeProductReply;
+
+    void updateUserReleaseInfo();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

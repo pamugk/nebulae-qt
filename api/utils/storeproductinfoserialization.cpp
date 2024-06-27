@@ -1,4 +1,4 @@
-#include "./ownedproductinfoserialization.h"
+#include "./storeproductinfoserialization.h"
 
 #include <QJsonArray>
 
@@ -182,7 +182,7 @@ void parseProductVideo(const QJsonValue &json, api::ProductVideo &data)
     data.provider = json["provider"].toString();
 }
 
-void parseGetOwnedProductInfoResponse(const QJsonValue &json, api::GetOwnedProductInfoResponse &data)
+void parseStoreOwnedProductInfoResponse(const QJsonValue &json, api::GetStoreProductInfoResponse &data)
 {
     parseProductInfo(json, data.mainProductInfo);
     auto dlcs = json["expanded_dlcs"].toArray();

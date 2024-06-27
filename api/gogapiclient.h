@@ -37,7 +37,6 @@ namespace api
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
-        QNetworkReply *getOwnedProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                         const QString &order = "title",
                                         unsigned short page = 1);
@@ -69,6 +68,7 @@ namespace api
         QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",

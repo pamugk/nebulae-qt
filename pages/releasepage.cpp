@@ -1,6 +1,7 @@
 #include "releasepage.h"
 #include "ui_releasepage.h"
 
+#include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMenu>
@@ -9,18 +10,24 @@
 #include <QTabBar>
 #include <QToolButton>
 
-#include "../api/utils/statisticsserialization.h"
 #include "../api/utils/releaseserialization.h"
+#include "../api/utils/statisticsserialization.h"
+#include "../api/utils/storeproductinfoserialization.h"
+#include "../db/database.h"
 #include "../widgets/achievementlistitem.h"
 #include "../widgets/imageholder.h"
 #include "../widgets/videoholder.h"
+#include "../windows/releasechangelogdialog.h"
 #include "../windows/releasemediadialog.h"
 
 ReleasePage::ReleasePage(QWidget *parent) :
     BasePage(parent),
+    platformId(),
+    platformReleaseId(),
     releaseAchievementsReply(nullptr),
     releaseGametimeStatisticsReply(nullptr),
     releaseReply(nullptr),
+    storeProductReply(nullptr),
     ui(new Ui::ReleasePage)
 {
     ui->setupUi(this);
@@ -65,7 +72,7 @@ ReleasePage::ReleasePage(QWidget *parent) :
     detailsToolButton->setVisible(false);
 
     auto detailsMenu = new QMenu(detailsToolButton);
-    detailsMenu->addAction("View patch notes");
+    detailsMenu->addAction("View patch notes")->setVisible(false);
     detailsMenu->addAction("Edit…")->setVisible(false);
     detailsMenu->addSeparator()->setVisible(false);
     auto installationManagementMenu = detailsMenu->addMenu("Manage installation");
@@ -79,19 +86,19 @@ ReleasePage::ReleasePage(QWidget *parent) :
     installationManagementMenu->addAction("Uninstall");
     installationManagementMenu->menuAction()->setVisible(false);
     detailsMenu->addAction("Check for updates")->setVisible(false);
-    detailsMenu->addSeparator();
+    detailsMenu->addSeparator()->setVisible(false);
     QIcon externalLinkIcon(":/icons/up-right-from-square.svg");
-    detailsMenu->addAction("Get support", detailsMenu, [this]()
-    {
+    auto supportAction = detailsMenu->addAction("Get support");
+    supportAction->setIcon(externalLinkIcon);
+    supportAction->setVisible(false);
 
-    })->setIcon(externalLinkIcon);
-    detailsMenu->addAction("View game forum", detailsMenu, [this]()
-    {
+    auto gameForumAction = detailsMenu->addAction("View game forum");
+    gameForumAction->setIcon(externalLinkIcon);
+    gameForumAction->setVisible(false);
 
-    })->setIcon(externalLinkIcon);
     detailsMenu->addAction("View in store", detailsMenu, [this]()
     {
-
+        emit navigate({ CATALOG_PRODUCT, platformReleaseId });
     });
 
     detailsToolButton->setMenu(detailsMenu);
@@ -112,6 +119,10 @@ ReleasePage::~ReleasePage()
     if (releaseReply != nullptr)
     {
         releaseReply->abort();
+    }
+    if (storeProductReply != nullptr)
+    {
+        storeProductReply->abort();
     }
     delete ui;
 }
@@ -140,8 +151,16 @@ void ReleasePage::initialize(const QVariant &data)
             api::Release data;
             parseRelease(resultJson, data);
 
+            platformId = data.platformId;
+            platformReleaseId = data.externalId;
+            if (!apiClient->currentUserId().isNull())
+            {
+                updateUserReleaseInfo();
+            }
+
             if (data.platformId == "gog")
             {
+                uiActions[3]->setVisible(true);
                 ui->platformLabel->setText("GOG.com");
             }
             else
@@ -183,6 +202,7 @@ void ReleasePage::initialize(const QVariant &data)
                 screenshots << screenshotLink;
                 mediaIndex++;
             }
+            ui->mediaScrollAreaContentsLayout->addStretch();
             ui->mediaScrollArea->setVisible(mediaIndex > 0);
 
             auto locale = QLocale::system();
@@ -250,6 +270,65 @@ void ReleasePage::initialize(const QVariant &data)
             uiActions[0]->setVisible(true);
             ui->resultsStack->setCurrentWidget(ui->resultsOverviewPage);
             ui->contentsStack->setCurrentWidget(ui->resultsPage);
+
+            if (data.platformId == "gog")
+            {
+                storeProductReply = apiClient->getStoreProductInfo(data.externalId, locale.bcp47Name());
+                connect(storeProductReply, &QNetworkReply::finished, this, [this, iconUrl = data.game.squareIcon]()
+                {
+                    auto networkReply = storeProductReply;
+                    storeProductReply = nullptr;
+                    if (networkReply->error() == QNetworkReply::NoError)
+                    {
+                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        api::GetStoreProductInfoResponse data;
+                        parseStoreOwnedProductInfoResponse(resultJson, data);
+
+                        auto detailsToolButton = static_cast<QToolButton *>(uiActions[3]);
+                        auto detailsMenu = detailsToolButton->menu();
+                        auto detailsActions = detailsMenu->actions();
+                        if (!data.changelog.isEmpty())
+                        {
+                            auto changelogAction = detailsActions[0];
+                            connect(changelogAction, &QAction::triggered, detailsMenu, [this, changelog = data.changelog, iconUrl]()
+                            {
+                                QString formattedIconUrl = QString(iconUrl).replace("{formatter}", "_glx_square_icon_v2").replace("{ext}", "webp");
+                                ReleaseChangelogDialog dialog(changelog, ui->titleLabel->text(), "GOG.com", formattedIconUrl,
+                                                              this->apiClient, this);
+                                dialog.exec();
+                            });
+                            changelogAction->setVisible(true);
+                            detailsActions[2]->setVisible(true);
+                        }
+                        if (!data.mainProductInfo.supportLink.isNull())
+                        {
+                            auto supportAction = detailsActions[6];
+                            connect(supportAction, &QAction::triggered, detailsMenu, [supportUrl = data.mainProductInfo.supportLink]()
+                            {
+                                QDesktopServices::openUrl(supportUrl);
+                            });
+                            supportAction->setVisible(true);
+                        }
+                        if (!data.mainProductInfo.forumLink.isNull())
+                        {
+                            auto supportAction = detailsActions[7];
+                            connect(supportAction, &QAction::triggered, detailsMenu, [forumUrl = data.mainProductInfo.forumLink]()
+                            {
+                                QDesktopServices::openUrl(forumUrl);
+                            });
+                            supportAction->setVisible(true);
+                        }
+                    }
+                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << networkReply->error()
+                                 << networkReply->errorString()
+                                 << QString(networkReply->readAll()).toUtf8();
+                    }
+
+                    networkReply->deleteLater();
+                });
+            }
 
             releaseAchievementsReply = apiClient->getCurrentUserPlatformReleaseAchievements(data.platformId, data.externalId, QString());
             connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this]()
@@ -351,7 +430,19 @@ void ReleasePage::initialize(const QVariant &data)
 
 void ReleasePage::switchUiAuthenticatedState(bool authenticated)
 {
-
+    // TODO: reset / fetch achievements & game time statistics
+    if (authenticated)
+    {
+        if (!platformId.isNull())
+        {
+            updateUserReleaseInfo();
+        }
+    }
+    else
+    {
+        ui->ratingLabel->setText(QString());
+        ui->userTagsLabel->setText(QString());
+    }
 }
 
 void ReleasePage::openGalleryOnItem(std::size_t index)
@@ -359,4 +450,27 @@ void ReleasePage::openGalleryOnItem(std::size_t index)
     ReleaseMediaDialog dialog(videos, screenshots, apiClient, this);
     dialog.viewMedia(index);
     dialog.exec();
+}
+
+void ReleasePage::updateUserReleaseInfo()
+{
+    auto userRelease = db::getUserRelease(apiClient->currentUserId(), platformId, platformReleaseId);
+    if (userRelease.has_value())
+    {
+        const api::UserRelease &userReleaseData = userRelease.value();
+        if (userReleaseData.rating.has_value())
+        {
+            ui->ratingLabel->setText(QString(userReleaseData.rating.value(), u'★') + QString(5 - userReleaseData.rating.value(), u'☆'));
+        }
+        else
+        {
+            ui->ratingLabel->setText("No rating");
+        }
+        ui->userTagsLabel->setText(QLocale::system().createSeparatedList(userReleaseData.tags));
+    }
+    else
+    {
+        ui->ratingLabel->setText(QString());
+        ui->userTagsLabel->setText(QString());
+    }
 }

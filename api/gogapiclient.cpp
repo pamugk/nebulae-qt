@@ -230,14 +230,6 @@ QNetworkReply *api::GogApiClient::getOwnedLicensesIds()
     return client.get(QUrl("https://menu.gog.com/v1/account/licences"));
 }
 
-QNetworkReply *api::GogApiClient::getOwnedProductInfo(const QString &id, const QString &locale)
-{
-    QVariantMap parameters;
-    parameters["expand"] = "downloads,expanded_dlcs,description,screenshots,videos,related_products,changelog";
-    parameters["locale"] = locale;
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/%1").arg(id)), parameters);
-}
-
 QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, unsigned short page)
 {
     QVariantMap parameters;
@@ -426,6 +418,14 @@ QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
 QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
 {
     return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
+}
+
+QNetworkReply *api::GogApiClient::getStoreProductInfo(const QString &id, const QString &locale)
+{
+    QVariantMap parameters;
+    parameters["expand"] = "downloads,expanded_dlcs,related_products,changelog";
+    parameters["locale"] = locale;
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/%1").arg(id)), parameters);
 }
 
 QNetworkReply *api::GogApiClient::getUser(const QString &id)

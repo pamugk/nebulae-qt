@@ -91,7 +91,7 @@
          </property>
          <layout class="QGridLayout" name="headerLayout">
           <item row="1" column="2" alignment="Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop">
-           <widget class="QLabel" name="userLabelsLabel">
+           <widget class="QLabel" name="userTagsLabel">
             <property name="text">
              <string notr="true"/>
             </property>
@@ -197,7 +197,7 @@
                        <x>0</x>
                        <y>0</y>
                        <width>489</width>
-                       <height>124</height>
+                       <height>128</height>
                       </rect>
                      </property>
                      <layout class="QHBoxLayout" name="mediaScrollAreaContentsLayout">
