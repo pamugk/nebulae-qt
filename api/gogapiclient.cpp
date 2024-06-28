@@ -51,6 +51,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         {
             userId = QString();
         }
+        qDebug() << client.token();
         emit authenticated(!client.token().isEmpty());
     });
     tokenStorage->getAuthData();

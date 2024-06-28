@@ -23,6 +23,7 @@ public:
 
 private:
     api::GogApiClient *apiClient;
+    bool owned;
     QString platformId;
     QString platformReleaseId;
     QVector<QString> screenshots;

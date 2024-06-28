@@ -22,6 +22,7 @@
 
 ReleasePage::ReleasePage(QWidget *parent) :
     BasePage(parent),
+    owned(false),
     platformId(),
     platformReleaseId(),
     releaseAchievementsReply(nullptr),
@@ -318,6 +319,77 @@ void ReleasePage::initialize(const QVariant &data)
                             });
                             supportAction->setVisible(true);
                         }
+
+                        bool showDownloads = false;
+                        QVector<const api::BonusDownload *> goodies;
+                        for (const api::BonusDownload &bonusDownload : std::as_const(data.mainProductInfo.downloads.bonusContent))
+                        {
+                            goodies << &bonusDownload;
+                        }
+                        QVector<const api::GameDownload *> installers;
+                        for (const api::GameDownload &installerDownload : std::as_const(data.mainProductInfo.downloads.installers))
+                        {
+                            installers << &installerDownload;
+                        }
+                        QVector<const api::GameDownload *> patches;
+                        for (const api::GameDownload &patchDownload : std::as_const(data.mainProductInfo.downloads.patches))
+                        {
+                            patches << &patchDownload;
+                        }
+                        QVector<const api::GameDownload *> languagePacks;
+                        for (const api::GameDownload &languagePackDownload : std::as_const(data.mainProductInfo.downloads.languagePacks))
+                        {
+                            languagePacks << &languagePackDownload;
+                        }
+                        for (const api::ProductInfo &dlc : std::as_const(data.expandedDlcs))
+                        {
+                            for (const api::BonusDownload &bonusDownload : std::as_const(dlc.downloads.bonusContent))
+                            {
+                                goodies << &bonusDownload;
+                            }
+                            for (const api::GameDownload &installerDownload: std::as_const(dlc.downloads.installers))
+                            {
+                                installers << &installerDownload;
+                            }
+                            for (const api::GameDownload &patchDownload : std::as_const(dlc.downloads.patches))
+                            {
+                                patches << &patchDownload;
+                            }
+                            for (const api::GameDownload &languagePackDownload : std::as_const(dlc.downloads.languagePacks))
+                            {
+                                languagePacks << &languagePackDownload;
+                            }
+                        }
+
+                        if (!goodies.isEmpty())
+                        {
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel("Goodies", ui->resultsExtrasPageScrollAreaContents));
+                            for (const api::Download *item : std::as_const(goodies))
+                            {
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                            }
+                            showDownloads = true;
+                        }
+                        if (!installers.isEmpty())
+                        {
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel("Offline backup installers", ui->resultsExtrasPageScrollAreaContents));
+                            for (const api::Download *item : std::as_const(installers))
+                            {
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                            }
+                            for (const api::Download *item : std::as_const(languagePacks))
+                            {
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                            }
+                            for (const api::Download *item : std::as_const(patches))
+                            {
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                            }
+                            showDownloads = true;
+                        }
+
+                        auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
+                        sectionsToolBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
                     }
                     else if (networkReply->error() != QNetworkReply::OperationCanceledError)
                     {
@@ -440,9 +512,13 @@ void ReleasePage::switchUiAuthenticatedState(bool authenticated)
     }
     else
     {
+        owned = false;
         ui->ratingLabel->setText(QString());
         ui->userTagsLabel->setText(QString());
     }
+
+    auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
+    sectionsToolBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
 }
 
 void ReleasePage::openGalleryOnItem(std::size_t index)
@@ -457,6 +533,7 @@ void ReleasePage::updateUserReleaseInfo()
     auto userRelease = db::getUserRelease(apiClient->currentUserId(), platformId, platformReleaseId);
     if (userRelease.has_value())
     {
+        owned = true;
         const api::UserRelease &userReleaseData = userRelease.value();
         if (userReleaseData.rating.has_value())
         {
@@ -470,6 +547,7 @@ void ReleasePage::updateUserReleaseInfo()
     }
     else
     {
+        owned = false;
         ui->ratingLabel->setText(QString());
         ui->userTagsLabel->setText(QString());
     }
