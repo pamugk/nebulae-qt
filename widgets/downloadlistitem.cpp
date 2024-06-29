@@ -7,6 +7,10 @@ DownloadListItem::DownloadListItem(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QPalette palette;
+    palette.setColor(backgroundRole(), QColorConstants::Transparent);
+    setAutoFillBackground(true);
+    setPalette(palette);
     ui->sizeLabel->setVisible(false);
     ui->versionLabel->setVisible(false);
 }
@@ -14,6 +18,20 @@ DownloadListItem::DownloadListItem(QWidget *parent) :
 DownloadListItem::~DownloadListItem()
 {
     delete ui;
+}
+
+void DownloadListItem::enterEvent(QEnterEvent* event)
+{
+    QPalette palette;
+    palette.setColor(backgroundRole(), QColor(255, 255, 255, 128));
+    setPalette(palette);
+}
+
+void DownloadListItem::leaveEvent(QEvent* event)
+{
+    QPalette palette;
+    palette.setColor(backgroundRole(), QColorConstants::Transparent);
+    setPalette(palette);
 }
 
 void DownloadListItem::mousePressEvent(QMouseEvent* event)

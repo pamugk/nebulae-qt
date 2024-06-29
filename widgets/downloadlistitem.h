@@ -23,7 +23,9 @@ signals:
     void clicked();
 
 protected:
-    void mousePressEvent(QMouseEvent* event);
+    virtual void enterEvent(QEnterEvent* event) override;
+    virtual void leaveEvent(QEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
 
 private:
     Ui::DownloadListItem *ui;

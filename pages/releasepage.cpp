@@ -476,7 +476,7 @@ void ReleasePage::initialize(const QVariant &data)
                                 ui->resultsExtrasPageScrollAreaContentsLayout->addSpacing(24);
                             }
 
-                            QString preferredLanguage = locale.languageToCode(locale.language(), QLocale::LanguageCodeType::ISO639Alpha2);
+                            QString systemLanguage = locale.languageToCode(locale.language(), QLocale::LanguageCodeType::ISO639Alpha2);
                             QString preferredOs;
 #ifdef Q_OS_WINDOWS
                             preferredOs = "windows";
@@ -492,10 +492,7 @@ void ReleasePage::initialize(const QVariant &data)
                             {
                                 preferredOs = supportedOperatingSystems[0];
                             }
-                            if (!installers[preferredOs].contains(preferredLanguage))
-                            {
-                                preferredLanguage = installers[preferredOs].contains("en") ? "en" : supportedLanguages[preferredOs][0];
-                            }
+
                             auto headerWidget = new QWidget(ui->resultsExtrasPageScrollAreaContents);
                             auto headerLayout = new QHBoxLayout;
                             headerWidget->setLayout(headerLayout);
@@ -504,7 +501,14 @@ void ReleasePage::initialize(const QVariant &data)
                             headerLayout->addWidget(headerLabel);
 
                             auto editionsToolButton = new QToolButton(headerWidget);
+                            headerLayout->addWidget(editionsToolButton);
+                            headerLayout->addStretch();
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(headerWidget);
                             auto editionsMenu = new QMenu(editionsToolButton);
+                            editionsToolButton->setMenu(editionsMenu);
+                            editionsToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+
+                            QMap<QString, QAction *> osActions;
                             auto osActionsGroup = new QActionGroup(editionsMenu);
                             for (const auto &os : std::as_const(supportedOperatingSystems))
                             {
@@ -512,63 +516,141 @@ void ReleasePage::initialize(const QVariant &data)
                                 osAction->setCheckable(true);
                                 osAction->setChecked(os == preferredOs);
                                 osActionsGroup->addAction(osAction);
+                                osActions[os] = osAction;
+
+                                connect(osAction, &QAction::toggled, editionsToolButton,
+                                        [editionsToolButton, os, supportedLanguagesNames, supportedOperatingSystemsNames](bool toggled)
+                                {
+                                   if (toggled)
+                                   {
+                                       editionsToolButton->setProperty("os", os);
+                                       auto language = editionsToolButton->property("language").toMap()[os].toString();
+                                       editionsToolButton->setText(QString("%1, %2").arg(supportedOperatingSystemsNames[os],
+                                                                                         supportedLanguagesNames[language]));
+                                   }
+                                });
                             }
                             editionsMenu->addSeparator();
-                            auto languageActionsGroup = new QActionGroup(editionsMenu);
-                            for (const auto &language : std::as_const(supportedLanguages[preferredOs]))
+
+                            QVariantMap selectedLanguages;
+                            for (const auto [os, osSupportedLanguages] : supportedLanguages.asKeyValueRange())
                             {
-                                auto languageAction = editionsMenu->addAction(supportedLanguagesNames.value(language));
-                                languageAction->setCheckable(true);
-                                languageAction->setChecked(language == preferredLanguage);
-                                languageActionsGroup->addAction(languageAction);
+                                bool isPreferredOs = os == preferredOs;
+                                auto osAction = osActions[os];
+                                QString preferredLanguage;
+                                if (installers[os].contains(systemLanguage))
+                                {
+                                    preferredLanguage = systemLanguage;
+                                }
+                                else
+                                {
+                                    preferredLanguage = installers[os].contains("en") ? "en" : osSupportedLanguages[0];
+                                }
+                                selectedLanguages[os] = preferredLanguage;
+
+                                auto osLanguagesActionGroup = new QActionGroup(editionsMenu);
+                                for (const auto &language : std::as_const(osSupportedLanguages))
+                                {
+                                    auto isPreferredLanguage = language == preferredLanguage;
+                                    auto languageAction = editionsMenu->addAction(supportedLanguagesNames.value(language));
+                                    languageAction->setCheckable(true);
+                                    languageAction->setChecked(isPreferredLanguage);
+                                    languageAction->setVisible(isPreferredOs);
+                                    osLanguagesActionGroup->addAction(languageAction);
+
+                                    connect(osAction, &QAction::toggled, languageAction, &QAction::setVisible);
+                                    connect(languageAction, &QAction::toggled, editionsToolButton,
+                                            [editionsToolButton, language, supportedLanguagesNames, supportedOperatingSystemsNames](bool toggled)
+                                    {
+                                       if (toggled)
+                                       {
+                                           auto os = editionsToolButton->property("os").toString();
+                                           editionsToolButton->property("language").toMap()[os] = language;
+                                           editionsToolButton->setText(QString("%1, %2").arg(supportedOperatingSystemsNames[os],
+                                                                                             supportedLanguagesNames[language]));
+                                       }
+                                    });
+
+                                    if (installers.contains(os) && installers[os].contains(language))
+                                    {
+                                        for (const api::GameDownload &item : std::as_const(installers[os][language]))
+                                        {
+                                            auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                            itemWidget->setCursor(Qt::PointingHandCursor);
+                                            itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                            itemWidget->setTitle(item.name);
+                                            itemWidget->setVersion(item.version);
+                                            itemWidget->setVisible(isPreferredOs && isPreferredLanguage);
+                                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+
+                                            connect(languageAction, &QAction::toggled, itemWidget, [itemWidget, osAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && osAction->isChecked());
+                                            });
+                                            connect(osAction, &QAction::toggled, itemWidget, [itemWidget, languageAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && languageAction->isChecked());
+                                            });
+                                        }
+                                    }
+                                    if (languagePacks.contains(os) && languagePacks[os].contains(language))
+                                    {
+                                        for (const api::GameDownload &item : std::as_const(languagePacks[os][language]))
+                                        {
+                                            auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                            itemWidget->setCursor(Qt::PointingHandCursor);
+                                            itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                            itemWidget->setTitle(item.name);
+                                            itemWidget->setVersion(item.version);
+                                            itemWidget->setVisible(isPreferredOs && isPreferredLanguage);
+                                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+
+                                            connect(languageAction, &QAction::toggled, itemWidget, [itemWidget, osAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && osAction->isChecked());
+                                            });
+                                            connect(osAction, &QAction::toggled, itemWidget, [itemWidget, languageAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && languageAction->isChecked());
+                                            });
+                                        }
+                                    }
+                                    if (patches.contains(os) && patches[os].contains(language))
+                                    {
+                                        for (const api::GameDownload &item : std::as_const(patches[os][language]))
+                                        {
+                                            auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                            itemWidget->setCursor(Qt::PointingHandCursor);
+                                            itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                            itemWidget->setTitle(item.name);
+                                            itemWidget->setVersion(item.version);
+                                            itemWidget->setVisible(isPreferredOs && isPreferredLanguage);
+                                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+
+                                            connect(languageAction, &QAction::toggled, itemWidget, [itemWidget, osAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && osAction->isChecked());
+                                            });
+                                            connect(osAction, &QAction::toggled, itemWidget, [itemWidget, languageAction](bool toggled)
+                                            {
+                                                itemWidget->setVisible(toggled && languageAction->isChecked());
+                                            });
+                                        }
+                                    }
+                                }
                             }
-                            editionsToolButton->setMenu(editionsMenu);
-                            editionsToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+
+                            editionsToolButton->setProperty("os", preferredOs);
+                            editionsToolButton->setProperty("language", selectedLanguages);
                             editionsToolButton->setText(QString("%1, %2").arg(supportedOperatingSystemsNames[preferredOs],
-                                                                            supportedLanguagesNames[preferredLanguage]));
-                            headerLayout->addWidget(editionsToolButton);
-                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(headerWidget);
-
-                            for (const api::GameDownload &item : std::as_const(installers[preferredOs][preferredLanguage]))
-                            {
-                                auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
-                                itemWidget->setCursor(Qt::PointingHandCursor);
-                                itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
-                                itemWidget->setTitle(item.name);
-                                itemWidget->setVersion(item.version);
-                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
-                            }
-
-                            if (languagePacks.contains(preferredOs) && languagePacks[preferredOs].contains(preferredLanguage))
-                            {
-                                for (const api::GameDownload &item : std::as_const(languagePacks[preferredOs][preferredLanguage]))
-                                {
-                                    auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
-                                    itemWidget->setCursor(Qt::PointingHandCursor);
-                                    itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
-                                    itemWidget->setTitle(item.name);
-                                    itemWidget->setVersion(item.version);
-                                    ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
-                                }
-                            }
-                            if (patches.contains(preferredOs) && patches[preferredOs].contains(preferredLanguage))
-                            {
-                                for (const api::GameDownload &item : std::as_const(patches[preferredOs][preferredLanguage]))
-                                {
-                                    auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
-                                    itemWidget->setCursor(Qt::PointingHandCursor);
-                                    itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
-                                    itemWidget->setTitle(item.name);
-                                    itemWidget->setVersion(item.version);
-                                    ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
-                                }
-                            }
+                                                                              supportedLanguagesNames[selectedLanguages[preferredOs].toString()]));
                         }
 
                         if (!ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty())
                         {
-                            auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
-                            sectionsToolBar->setTabVisible(2, owned);
+                            auto sectionsTabBar = static_cast<QTabBar *>(uiActions[0]);
+                            sectionsTabBar->setTabVisible(2, owned);
+                            sectionsTabBar->setMinimumWidth(owned ? 300 : 200);
                             ui->resultsExtrasPageScrollAreaContentsLayout->addStretch();
                         }
                     }
@@ -597,7 +679,7 @@ void ReleasePage::initialize(const QVariant &data)
                     if (data.items.isEmpty())
                     {
                         ui->resultsProgressPageScrollArea->setVisible(false);
-                        ui->resultsPageLayout->addStretch();
+                        ui->resultsProgressPageLayout->addStretch();
                     }
                     else
                     {
@@ -698,8 +780,9 @@ void ReleasePage::switchUiAuthenticatedState(bool authenticated)
         ui->userTagsLabel->setText(QString());
     }
 
-    auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
-    sectionsToolBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
+    auto sectionsTabBar = static_cast<QTabBar *>(uiActions[0]);
+    sectionsTabBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
+    sectionsTabBar->setMinimumWidth(sectionsTabBar->isTabVisible(2) ? 300 : 200);
 }
 
 void ReleasePage::openGalleryOnItem(std::size_t index)

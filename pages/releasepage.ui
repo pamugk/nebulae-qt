@@ -80,7 +80,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="resultsPage">
-      <layout class="QVBoxLayout" name="resultsPageLayout">
+      <layout class="QVBoxLayout" name="resultsPageLayout" stretch="0,1">
        <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QWidget" name="header" native="true">
          <property name="minimumSize">
@@ -272,7 +272,7 @@
           </layout>
          </widget>
          <widget class="QWidget" name="resultsProgressPage">
-          <layout class="QVBoxLayout" name="resultsProgressPageLayout">
+          <layout class="QVBoxLayout" name="resultsProgressPageLayout" stretch="0,1">
            <item>
             <widget class="QWidget" name="resultsProgressPageHeader" native="true">
              <layout class="QHBoxLayout" name="resultsProgressPageHeaderLayout">
@@ -379,8 +379,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>63</width>
-                <height>16</height>
+                <width>772</width>
+                <height>380</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsProgressPageScrollContentsLayout"/>
@@ -401,8 +401,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>776</width>
-                <height>450</height>
+                <width>88</width>
+                <height>18</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsExtrasPageScrollAreaContentsLayout">
