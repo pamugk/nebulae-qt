@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QLabel { color: white; }</string>
+  </property>
   <layout class="QVBoxLayout" name="rootLayout">
    <property name="spacing">
     <number>0</number>
@@ -81,6 +84,18 @@
      </widget>
      <widget class="QWidget" name="resultsPage">
       <layout class="QVBoxLayout" name="resultsPageLayout" stretch="0,1">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QWidget" name="header" native="true">
          <property name="minimumSize">
@@ -150,14 +165,38 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>776</width>
-                <height>450</height>
+                <width>95</width>
+                <height>293</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item alignment="Qt::AlignmentFlag::AlignTop">
                 <widget class="QWidget" name="resultsOverviewInfo" native="true">
                  <layout class="QVBoxLayout" name="resultsOverviewInfoLayout" stretch="0,0,0,0,0,0,0,0">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
                    <widget class="QLabel" name="overviewTitleLabel">
                     <property name="text">
@@ -196,7 +235,7 @@
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>489</width>
+                       <width>83</width>
                        <height>128</height>
                       </rect>
                      </property>
@@ -273,6 +312,18 @@
          </widget>
          <widget class="QWidget" name="resultsProgressPage">
           <layout class="QVBoxLayout" name="resultsProgressPageLayout" stretch="0,1">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QWidget" name="resultsProgressPageHeader" native="true">
              <layout class="QHBoxLayout" name="resultsProgressPageHeaderLayout">
@@ -371,6 +422,9 @@
            </item>
            <item>
             <widget class="QScrollArea" name="resultsProgressPageScrollArea">
+             <property name="styleSheet">
+              <string notr="true">background: transparent;</string>
+             </property>
              <property name="widgetResizable">
               <bool>true</bool>
              </property>
@@ -379,8 +433,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>772</width>
-                <height>380</height>
+                <width>796</width>
+                <height>404</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsProgressPageScrollContentsLayout"/>
@@ -391,6 +445,18 @@
          </widget>
          <widget class="QWidget" name="resultsExtrasPage">
           <layout class="QVBoxLayout" name="resultsExtrasPageLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QScrollArea" name="resultsExtrasPageScrollArea">
              <property name="widgetResizable">
@@ -401,8 +467,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>88</width>
-                <height>18</height>
+                <width>100</width>
+                <height>30</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="resultsExtrasPageScrollAreaContentsLayout">

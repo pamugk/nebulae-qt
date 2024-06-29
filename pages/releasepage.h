@@ -21,8 +21,12 @@ public:
     virtual const QVector<QWidget *> getHeaderControls() override;
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
+    QPixmap horizontalArtwork;
     bool owned;
     QString platformId;
     QString platformReleaseId;

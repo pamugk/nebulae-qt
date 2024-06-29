@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QMenu>
 #include <QNetworkReply>
+#include <QPainter>
 #include <QPushButton>
 #include <QTabBar>
 #include <QToolButton>
@@ -748,6 +749,28 @@ void ReleasePage::initialize(const QVariant &data)
 
                 networkReply->deleteLater();
             });
+
+            if (!data.game.horizontalArtwork.isEmpty())
+            {
+                auto horizontalArtworkReply = apiClient->getAnything(QString(data.game.horizontalArtwork).replace("{formatter}", "_glx_bg_top_padding_7").replace("{ext}", "webp"));
+                connect(horizontalArtworkReply, &QNetworkReply::finished, this, [this, horizontalArtworkReply]()
+                {
+                    if (horizontalArtworkReply->error() == QNetworkReply::NoError)
+                    {
+                        horizontalArtwork.loadFromData(horizontalArtworkReply->readAll());
+                        repaint();
+                    }
+                    else if (horizontalArtworkReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << horizontalArtworkReply->error()
+                                 << horizontalArtworkReply->errorString()
+                                 << QString(horizontalArtworkReply->readAll()).toUtf8();
+                    }
+
+                    horizontalArtworkReply->deleteLater();
+                });
+                connect(this, &QObject::destroyed, horizontalArtworkReply, &QNetworkReply::abort);
+            }
         }
         else if (networkReply->error() == QNetworkReply::ContentNotFoundError)
         {
@@ -761,6 +784,18 @@ void ReleasePage::initialize(const QVariant &data)
         }
         networkReply->deleteLater();
     });
+}
+
+void ReleasePage::paintEvent(QPaintEvent *event)
+{
+    QPainter backgroundPainter(this);
+    if (!horizontalArtwork.isNull())
+    {
+        backgroundPainter.drawPixmap(0, 0, horizontalArtwork.scaled(size(), Qt::KeepAspectRatioByExpanding));
+    }
+
+    backgroundPainter.fillRect(rect(), QColor(128, 128, 128, 128));
+    QWidget::paintEvent(event);
 }
 
 void ReleasePage::switchUiAuthenticatedState(bool authenticated)
