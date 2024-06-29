@@ -11,7 +11,7 @@ namespace api
     struct DownloadFile
     {
         QString id;
-        unsigned int size;
+        unsigned long long size;
         QString downloadLink;
     };
 
@@ -19,14 +19,14 @@ namespace api
     {
         QString id;
         QString name;
-        unsigned int totalSize;
+        unsigned long long totalSize;
         QVector<DownloadFile> files;
     };
 
     struct BonusDownload: Download
     {
         QString type;
-        unsigned char count;
+        unsigned int count;
     };
 
     struct GameDownload: Download

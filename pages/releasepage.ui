@@ -405,7 +405,11 @@
                 <height>450</height>
                </rect>
               </property>
-              <layout class="QVBoxLayout" name="resultsExtrasPageScrollAreaContentsLayout"/>
+              <layout class="QVBoxLayout" name="resultsExtrasPageScrollAreaContentsLayout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+              </layout>
              </widget>
             </widget>
            </item>

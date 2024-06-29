@@ -1,6 +1,7 @@
 #include "releasepage.h"
 #include "ui_releasepage.h"
 
+#include <QActionGroup>
 #include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -15,6 +16,7 @@
 #include "../api/utils/storeproductinfoserialization.h"
 #include "../db/database.h"
 #include "../widgets/achievementlistitem.h"
+#include "../widgets/downloadlistitem.h"
 #include "../widgets/imageholder.h"
 #include "../widgets/videoholder.h"
 #include "../windows/releasechangelogdialog.h"
@@ -320,27 +322,77 @@ void ReleasePage::initialize(const QVariant &data)
                             supportAction->setVisible(true);
                         }
 
-                        bool showDownloads = false;
                         QVector<const api::BonusDownload *> goodies;
                         for (const api::BonusDownload &bonusDownload : std::as_const(data.mainProductInfo.downloads.bonusContent))
                         {
                             goodies << &bonusDownload;
                         }
-                        QVector<const api::GameDownload *> installers;
+
+                        QMap<QString, QSet<QString>> encounteredLanguages;
+                        QMap<QString, QVector<QString>> supportedLanguages;
+                        QMap<QString, QString> supportedLanguagesNames;
+                        QVector<QString> supportedOperatingSystems;
+                        QMap<QString, QString> supportedOperatingSystemsNames({
+                                                                                  std::pair("linux", "Linux"),
+                                                                                  std::pair("mac", "macOs"),
+                                                                                  std::pair("windows", "Windows")
+                                                                              });
+
+                        QMap<QString, QMap<QString, QVector<api::GameDownload>>> installers;
                         for (const api::GameDownload &installerDownload : std::as_const(data.mainProductInfo.downloads.installers))
                         {
-                            installers << &installerDownload;
+                            if (!encounteredLanguages.contains(installerDownload.os))
+                            {
+                                supportedOperatingSystems << installerDownload.os;
+                            }
+                            if (!encounteredLanguages[installerDownload.os].contains(installerDownload.language))
+                            {
+                                encounteredLanguages[installerDownload.os] << installerDownload.language;
+                                supportedLanguages[installerDownload.os] << installerDownload.language;
+                            }
+                            if (!supportedLanguagesNames.contains(installerDownload.language))
+                            {
+                                supportedLanguagesNames[installerDownload.language] = installerDownload.languageFull;
+                            }
+                            installers[installerDownload.os][installerDownload.language] << installerDownload;
                         }
-                        QVector<const api::GameDownload *> patches;
+                        QMap<QString, QMap<QString, QVector<api::GameDownload>>> patches;
                         for (const api::GameDownload &patchDownload : std::as_const(data.mainProductInfo.downloads.patches))
                         {
-                            patches << &patchDownload;
+                            if (!encounteredLanguages.contains(patchDownload.os))
+                            {
+                                supportedOperatingSystems << patchDownload.os;
+                            }
+                            if (!encounteredLanguages[patchDownload.os].contains(patchDownload.language))
+                            {
+                                encounteredLanguages[patchDownload.os] << patchDownload.language;
+                                supportedLanguages[patchDownload.os] << patchDownload.language;
+                            }
+                            if (!supportedLanguagesNames.contains(patchDownload.language))
+                            {
+                                supportedLanguagesNames[patchDownload.language] = patchDownload.languageFull;
+                            }
+                            patches[patchDownload.os][patchDownload.language] << patchDownload;
                         }
-                        QVector<const api::GameDownload *> languagePacks;
+                        QMap<QString, QMap<QString, QVector<api::GameDownload>>> languagePacks;
                         for (const api::GameDownload &languagePackDownload : std::as_const(data.mainProductInfo.downloads.languagePacks))
                         {
-                            languagePacks << &languagePackDownload;
+                            if (!encounteredLanguages.contains(languagePackDownload.os))
+                            {
+                                supportedOperatingSystems << languagePackDownload.os;
+                            }
+                            if (!encounteredLanguages[languagePackDownload.os].contains(languagePackDownload.language))
+                            {
+                                encounteredLanguages[languagePackDownload.os] << languagePackDownload.language;
+                                supportedLanguages[languagePackDownload.os] << languagePackDownload.language;
+                            }
+                            if (!supportedLanguagesNames.contains(languagePackDownload.language))
+                            {
+                                supportedLanguagesNames[languagePackDownload.language] = languagePackDownload.languageFull;
+                            }
+                            languagePacks[languagePackDownload.os][languagePackDownload.language] << languagePackDownload;
                         }
+
                         for (const api::ProductInfo &dlc : std::as_const(data.expandedDlcs))
                         {
                             for (const api::BonusDownload &bonusDownload : std::as_const(dlc.downloads.bonusContent))
@@ -349,47 +401,176 @@ void ReleasePage::initialize(const QVariant &data)
                             }
                             for (const api::GameDownload &installerDownload: std::as_const(dlc.downloads.installers))
                             {
-                                installers << &installerDownload;
+                                if (!encounteredLanguages[installerDownload.os].contains(installerDownload.language))
+                                {
+                                    supportedOperatingSystems << installerDownload.os;
+                                }
+                                if (!encounteredLanguages[installerDownload.os].contains(installerDownload.language))
+                                {
+                                    encounteredLanguages[installerDownload.os] << installerDownload.language;
+                                    supportedLanguages[installerDownload.os] << installerDownload.language;
+                                }
+                                if (!supportedLanguagesNames.contains(installerDownload.language))
+                                {
+                                    supportedLanguagesNames[installerDownload.language] = installerDownload.languageFull;
+                                }
+                                installers[installerDownload.os][installerDownload.language] << installerDownload;
                             }
                             for (const api::GameDownload &patchDownload : std::as_const(dlc.downloads.patches))
                             {
-                                patches << &patchDownload;
+                                if (!encounteredLanguages.contains(patchDownload.os))
+                                {
+                                    supportedOperatingSystems << patchDownload.os;
+                                }
+                                if (!encounteredLanguages[patchDownload.os].contains(patchDownload.language))
+                                {
+                                    encounteredLanguages[patchDownload.os] << patchDownload.language;
+                                    supportedLanguages[patchDownload.os] << patchDownload.language;
+                                }
+                                if (!supportedLanguagesNames.contains(patchDownload.language))
+                                {
+                                    supportedLanguagesNames[patchDownload.language] = patchDownload.languageFull;
+                                }
+                                patches[patchDownload.os][patchDownload.language] << patchDownload;
                             }
                             for (const api::GameDownload &languagePackDownload : std::as_const(dlc.downloads.languagePacks))
                             {
-                                languagePacks << &languagePackDownload;
+                                if (!encounteredLanguages.contains(languagePackDownload.os))
+                                {
+                                    supportedOperatingSystems << languagePackDownload.os;
+                                }
+                                if (!encounteredLanguages[languagePackDownload.os].contains(languagePackDownload.language))
+                                {
+                                    encounteredLanguages[languagePackDownload.os] << languagePackDownload.language;
+                                    supportedLanguages[languagePackDownload.os] << languagePackDownload.language;
+                                }
+                                if (!supportedLanguagesNames.contains(languagePackDownload.language))
+                                {
+                                    supportedLanguagesNames[languagePackDownload.language] = languagePackDownload.languageFull;
+                                }
+                                languagePacks[languagePackDownload.os][languagePackDownload.language] << languagePackDownload;
                             }
                         }
 
+                        QFont downloadsTitleFont;
+                        downloadsTitleFont.setBold(true);
+                        auto locale = QLocale::system();
                         if (!goodies.isEmpty())
                         {
-                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel("Goodies", ui->resultsExtrasPageScrollAreaContents));
+                            auto headerLabel = new QLabel("Goodies", ui->resultsExtrasPageScrollAreaContents);
+                            headerLabel->setFont(downloadsTitleFont);
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(headerLabel);
                             for (const api::Download *item : std::as_const(goodies))
                             {
-                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                                auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                itemWidget->setCursor(Qt::PointingHandCursor);
+                                itemWidget->setSize(locale.formattedDataSize(item->totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                itemWidget->setTitle(item->name);
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
                             }
-                            showDownloads = true;
                         }
                         if (!installers.isEmpty())
                         {
-                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel("Offline backup installers", ui->resultsExtrasPageScrollAreaContents));
-                            for (const api::Download *item : std::as_const(installers))
+                            if (!ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty())
                             {
-                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addSpacing(24);
                             }
-                            for (const api::Download *item : std::as_const(languagePacks))
+
+                            QString preferredLanguage = locale.languageToCode(locale.language(), QLocale::LanguageCodeType::ISO639Alpha2);
+                            QString preferredOs;
+#ifdef Q_OS_WINDOWS
+                            preferredOs = "windows";
+#endif
+#ifdef Q_OS_MACOS
+                            preferredOs = "mac";
+#endif
+#ifdef Q_OS_LINUX
+                            preferredOs = "linux";
+#endif
+
+                            if (!installers.contains(preferredOs))
                             {
-                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                                preferredOs = supportedOperatingSystems[0];
                             }
-                            for (const api::Download *item : std::as_const(patches))
+                            if (!installers[preferredOs].contains(preferredLanguage))
                             {
-                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(new QLabel(item->name, ui->resultsExtrasPageScrollAreaContents));
+                                preferredLanguage = installers[preferredOs].contains("en") ? "en" : supportedLanguages[preferredOs][0];
                             }
-                            showDownloads = true;
+                            auto headerWidget = new QWidget(ui->resultsExtrasPageScrollAreaContents);
+                            auto headerLayout = new QHBoxLayout;
+                            headerWidget->setLayout(headerLayout);
+                            auto headerLabel = new QLabel("Offline backup installers", headerWidget);
+                            headerLabel->setFont(downloadsTitleFont);
+                            headerLayout->addWidget(headerLabel);
+
+                            auto editionsToolButton = new QToolButton(headerWidget);
+                            auto editionsMenu = new QMenu(editionsToolButton);
+                            auto osActionsGroup = new QActionGroup(editionsMenu);
+                            for (const auto &os : std::as_const(supportedOperatingSystems))
+                            {
+                                auto osAction = editionsMenu->addAction(supportedOperatingSystemsNames.value(os, "Unknown OS"));
+                                osAction->setCheckable(true);
+                                osAction->setChecked(os == preferredOs);
+                                osActionsGroup->addAction(osAction);
+                            }
+                            editionsMenu->addSeparator();
+                            auto languageActionsGroup = new QActionGroup(editionsMenu);
+                            for (const auto &language : std::as_const(supportedLanguages[preferredOs]))
+                            {
+                                auto languageAction = editionsMenu->addAction(supportedLanguagesNames.value(language));
+                                languageAction->setCheckable(true);
+                                languageAction->setChecked(language == preferredLanguage);
+                                languageActionsGroup->addAction(languageAction);
+                            }
+                            editionsToolButton->setMenu(editionsMenu);
+                            editionsToolButton->setPopupMode(QToolButton::MenuButtonPopup);
+                            editionsToolButton->setText(QString("%1, %2").arg(supportedOperatingSystemsNames[preferredOs],
+                                                                            supportedLanguagesNames[preferredLanguage]));
+                            headerLayout->addWidget(editionsToolButton);
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(headerWidget);
+
+                            for (const api::GameDownload &item : std::as_const(installers[preferredOs][preferredLanguage]))
+                            {
+                                auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                itemWidget->setCursor(Qt::PointingHandCursor);
+                                itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                itemWidget->setTitle(item.name);
+                                itemWidget->setVersion(item.version);
+                                ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+                            }
+
+                            if (languagePacks.contains(preferredOs) && languagePacks[preferredOs].contains(preferredLanguage))
+                            {
+                                for (const api::GameDownload &item : std::as_const(languagePacks[preferredOs][preferredLanguage]))
+                                {
+                                    auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                    itemWidget->setCursor(Qt::PointingHandCursor);
+                                    itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                    itemWidget->setTitle(item.name);
+                                    itemWidget->setVersion(item.version);
+                                    ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+                                }
+                            }
+                            if (patches.contains(preferredOs) && patches[preferredOs].contains(preferredLanguage))
+                            {
+                                for (const api::GameDownload &item : std::as_const(patches[preferredOs][preferredLanguage]))
+                                {
+                                    auto itemWidget = new DownloadListItem(ui->resultsExtrasPageScrollAreaContents);
+                                    itemWidget->setCursor(Qt::PointingHandCursor);
+                                    itemWidget->setSize(locale.formattedDataSize(item.totalSize, 1, QLocale::DataSizeTraditionalFormat));
+                                    itemWidget->setTitle(item.name);
+                                    itemWidget->setVersion(item.version);
+                                    ui->resultsExtrasPageScrollAreaContentsLayout->addWidget(itemWidget);
+                                }
+                            }
                         }
 
-                        auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
-                        sectionsToolBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
+                        if (!ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty())
+                        {
+                            auto sectionsToolBar = static_cast<QTabBar *>(uiActions[0]);
+                            sectionsToolBar->setTabVisible(2, owned);
+                            ui->resultsExtrasPageScrollAreaContentsLayout->addStretch();
+                        }
                     }
                     else if (networkReply->error() != QNetworkReply::OperationCanceledError)
                     {
