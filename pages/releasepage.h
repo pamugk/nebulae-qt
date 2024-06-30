@@ -35,11 +35,6 @@ private:
     Ui::ReleasePage *ui;
     QVector<QWidget *> uiActions;
 
-    QNetworkReply *releaseAchievementsReply;
-    QNetworkReply *releaseGametimeStatisticsReply;
-    QNetworkReply *releaseReply;
-    QNetworkReply *storeProductReply;
-
     void getAchievements();
     void updateUserReleaseInfo();
 

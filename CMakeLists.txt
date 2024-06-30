@@ -88,6 +88,7 @@ set(PROJECT_SOURCES
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/basepage.h pages/basepage.cpp
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
+        pages/discoverpage.h pages/discoverpage.cpp pages/discoverpage.ui
         pages/newspage.h pages/newspage.cpp pages/newspage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui

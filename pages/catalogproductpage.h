@@ -67,21 +67,7 @@ private:
     Ui::CatalogProductPage *ui;
     QSet<const QString> wishlist;
 
-    QNetworkReply *averageRatingReply;
-    QNetworkReply *averageOwnerRatingReply;
-    QNetworkReply *backgroundReply;
-    QVector<QNetworkReply *> dependentProductReplies;
     QNetworkReply *lastReviewsReply;
-    QNetworkReply *logotypeReply;
-    QNetworkReply *mainReply;
-    QNetworkReply *ownedProductsReply;
-    QNetworkReply *pricesReply;
-    QNetworkReply *recommendedPurchasedTogetherReply;
-    QNetworkReply *recommendedSimilarReply;
-    QVector<QNetworkReply *> requiredProductReplies;
-    QNetworkReply *seriesGamesReply;
-    QNetworkReply *seriesTotalPriceReply;
-    QNetworkReply *wishlistReply;
 
     unsigned short reviewsPage;
     unsigned short reviewsPageSize;

@@ -37,8 +37,6 @@ private:
     QSet<const QString> wishlist;
 
     QNetworkReply *lastCatalogReply;
-    QNetworkReply *ownedProductsReply;
-    QNetworkReply *wishlistReply;
 
     void fetchData();
     void layoutResults();

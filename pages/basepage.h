@@ -17,6 +17,9 @@ public:
     virtual const QVector<QWidget *> getHeaderControls();
     virtual void setApiClient(api::GogApiClient *apiClient) = 0;
 
+protected:
+    Q_SIGNAL void uiAuthenticatedSwitchRequested();
+
 signals:
     void navigateBack();
     void navigate(NavigationDestination destination);
