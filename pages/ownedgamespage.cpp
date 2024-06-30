@@ -640,7 +640,7 @@ OwnedGamesPage::OwnedGamesPage(QWidget *parent) :
         }
         else
         {
-            emit navigate({ OWNED_PRODUCT, data[groupIndex].items[clickedReleaseIndex].externalId });
+            emit navigate({ RELEASE, data[groupIndex].items[clickedReleaseIndex].id });
         }
     });
 }
@@ -695,7 +695,7 @@ QString buildGroupTitle(const db::UserReleaseGroup &group,
         groupTitle = group.discriminator.toBool() ? "INSTALLED" : "NOT INSTALLED";
         break;
     case api::PLATFORM_GROUP:
-        groupTitle = group.discriminator.toString() == "gog" ? "GOG" : "UNKNOWN PLATFORM";
+        groupTitle = group.discriminator.toString() == "gog" ? "GOG.COM" : "OTHER";
         break;
     case api::RATING_GROUP:
         if (group.discriminator.isNull())
@@ -744,7 +744,7 @@ void initializeUserReleaseRow(QTreeWidgetItem *rowItem, const db::UserReleaseSho
     {
         rowItem->setText(1, (QString(data.rating.value(), u'★') + QString(5 - data.rating.value(), u'☆')));
     }
-    rowItem->setText(2, data.platformId == "gog" ? "GOG" : "Unknown");
+    rowItem->setText(2, data.platformId == "gog" ? "GOG.com" : "Other");
     rowItem->setText(3, data.tags);
     rowItem->setText(4, data.releaseDate.isNull() ? "-" : systemLocale.toString(data.releaseDate, QLocale::ShortFormat));
     rowItem->setText(5, "");
@@ -771,7 +771,7 @@ void initializeUserReleaseRow(QTreeWidgetItem *rowItem, const db::UserReleaseSho
     rowItem->setText(9, data.genres);
     if (data.totalAchievementCount > 0)
     {
-        rowItem->setText(10, systemLocale.toString(std::round(100. * data.unlockedAchievementCount / data.totalAchievementCount)) + systemLocale.percent());
+        rowItem->setText(10, QString("%1%2").arg(systemLocale.toString(std::round(100. * data.unlockedAchievementCount / data.totalAchievementCount)), systemLocale.percent()));
     }
 }
 
@@ -824,9 +824,9 @@ void OwnedGamesPage::layoutData()
                         gridItem, &OwnedProductGridItem::setRatingVisibility);
                 connect(this, &OwnedGamesPage::gridItemTitleVisibilityChanged,
                         gridItem, &OwnedProductGridItem::setTitleVisibility);
-                connect(gridItem, &OwnedProductGridItem::clicked, this, [this, productId = item.externalId]()
+                connect(gridItem, &OwnedProductGridItem::clicked, this, [this, releaseId = item.id]()
                 {
-                    emit navigate({Page::OWNED_PRODUCT, productId});
+                    emit navigate({Page::RELEASE, releaseId});
                 });
                 groupLayout->addWidget(gridItem);
             }
@@ -981,7 +981,7 @@ void OwnedGamesPage::updateFilters()
     for (const auto &platform : std::as_const(filters.platforms))
     {
         // TODO: map platform codes to names somehow
-        QString platformName = platform == "gog" ? "GOG" : "Unknown platform";
+        QString platformName = platform == "gog" ? "GOG.com" : "Other";
         auto platformItem = platformsSubmenu->menu()->addAction(platformName);
         platformItem->setCheckable(true);
         platformItem->setChecked(request.platforms.contains(platform));

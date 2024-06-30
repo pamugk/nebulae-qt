@@ -336,8 +336,13 @@ void StorePage::getDealOfTheDay()
                     ui->dealOfTheDayScrollAreaContentsLayout->addWidget(itemWidget);
                 }
                 ui->dealOfTheDayScrollAreaContentsLayout->addStretch();
-                ui->dealOfTheDayLabel->setVisible(true);
-                ui->dealOfTheDayScrollArea->setVisible(true);
+                ui->dealOfTheDayLabel->setVisible(!data.items.isEmpty());
+                ui->dealOfTheDayScrollArea->setVisible(!data.items.isEmpty());
+            }
+            else
+            {
+                ui->dealOfTheDayLabel->setVisible(false);
+                ui->dealOfTheDayScrollArea->setVisible(false);
             }
         }
         else if (networkReply->error() != QNetworkReply::OperationCanceledError)
@@ -374,11 +379,15 @@ void StorePage::getDiscoverBestsellingGames()
                 auto itemWidget = new StoreDiscoverItem(ui->discoverBestsellingResultsPage);
                 itemWidget->setCover(item.coverHorizontal, apiClient);
                 itemWidget->setTitle(item.title);
-                itemWidget->setPrice(item.price.baseMoney.amount, item.price.finalMoney.amount,
-                                     item.price.discount.isNull()
-                                        ? 0
-                                        : round(100. * (item.price.baseMoney.amount - item.price.finalMoney.amount) / item.price.baseMoney.amount),
-                                     item.price.finalMoney.amount == 0, item.price.finalMoney.currency);
+                if (item.price.has_value())
+                {
+                    const auto &price = item.price.value();
+                    itemWidget->setPrice(price.baseMoney.amount, price.finalMoney.amount,
+                                         price.discount.isNull() || price.baseMoney.amount == 0
+                                            ? 0
+                                            : std::round(100. * (price.baseMoney.amount - price.finalMoney.amount) / price.baseMoney.amount),
+                                         price.finalMoney.amount == 0, price.finalMoney.currency);
+                }
                 connect(this, &StorePage::ownedProductsChanged,
                         itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
                 {
@@ -704,10 +713,14 @@ void StorePage::getNowOnSale()
                 auto discountedProductItem = new SimpleProductItem(ui->nowOnSaleDealsScrollAreaContents);
                 discountedProductItem->setCover(discountedProduct.coverHorizontal, apiClient);
                 discountedProductItem->setTitle(discountedProduct.title);
-                auto discount = round((discountedProduct.price.baseMoney.amount - discountedProduct.price.finalMoney.amount) / discountedProduct.price.baseMoney.amount * 100);
-                discountedProductItem->setPrice(discountedProduct.price.baseMoney.amount, discountedProduct.price.finalMoney.amount,
-                                                discount, discountedProduct.price.baseMoney.amount == 0,
-                                                discountedProduct.price.baseMoney.currency);
+                if (discountedProduct.price.has_value())
+                {
+                    const auto &price = discountedProduct.price.value();
+                    auto discount = round((price.baseMoney.amount - price.finalMoney.amount) / price.baseMoney.amount * 100);
+                    discountedProductItem->setPrice(price.baseMoney.amount, price.finalMoney.amount,
+                                                    discount, price.baseMoney.amount == 0,
+                                                    price.baseMoney.currency);
+                }
                 connect(this, &StorePage::ownedProductsChanged,
                         discountedProductItem, [discountedProductItem, productId = discountedProduct.id](const QSet<const QString> &ids)
                 {

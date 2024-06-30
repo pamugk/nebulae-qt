@@ -5,10 +5,14 @@
 
 StoreDiscoverItem::StoreDiscoverItem(QWidget *parent) :
     QWidget(parent),
+    imageReply(nullptr),
     ui(new Ui::StoreDiscoverItem)
 {
     ui->setupUi(this);
 
+    ui->discountLabel->setVisible(false);
+    ui->oldPriceLabel->setVisible(false);
+    ui->newPriceLabel->setVisible(false);
     ui->ownedLabel->setVisible(false);
     ui->upcomingLabel->setVisible(false);
     ui->wishlistedLabel->setVisible(false);
@@ -65,16 +69,12 @@ void StoreDiscoverItem::setPrice(double basePrice, double finalPrice,
     auto systemLocale = QLocale::system();
     if (discount > 0)
     {
-        ui->discountLabel->setText(QString("-%1%2")
-                                   .arg(discount)
-                                   .arg(systemLocale.percent()));
+        ui->discountLabel->setVisible(true);
+        ui->oldPriceLabel->setVisible(true);
+        ui->discountLabel->setText(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(discount), systemLocale.percent()));
         ui->oldPriceLabel->setText(systemLocale.toCurrencyString(basePrice, currency));
     }
-    else
-    {
-        ui->discountLabel->setVisible(false);
-        ui->oldPriceLabel->setVisible(false);
-    }
+    ui->newPriceLabel->setVisible(true);
     ui->newPriceLabel->setText(
                 free
                 ? "Free"

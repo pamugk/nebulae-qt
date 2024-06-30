@@ -1,8 +1,10 @@
 #include "videoholder.h"
 #include "ui_videoholder.h"
 
+#include <QNetworkReply>
+
 VideoHolder::VideoHolder(QSize size,
-                         const api::ThumbnailedVideo &data,
+                         const QString &thumbnailLink,
                          api::GogApiClient *apiClient,
                          QWidget *parent) :
     QWidget(parent),
@@ -10,29 +12,25 @@ VideoHolder::VideoHolder(QSize size,
 {
     ui->setupUi(this);
     setFixedSize(size);
-    thumbnailReply = apiClient->getAnything(data.thumbnailLink);
-    connect(thumbnailReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = thumbnailReply;
-        thumbnailReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *thumbnailReply = apiClient->getAnything(thumbnailLink);
+    connect(thumbnailReply, &QNetworkReply::finished, this, [this, thumbnailReply]()
+    {
+        if (thumbnailReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(thumbnailReply->readAll());
             QPalette backgroundPalette;
             backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::IgnoreAspectRatio)));
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        networkReply->deleteLater();
+        thumbnailReply->deleteLater();
     });
+    connect(this, &QObject::destroyed, thumbnailReply, &QNetworkReply::abort);
 }
 
 VideoHolder::~VideoHolder()
 {
-    if (thumbnailReply != nullptr)
-    {
-        thumbnailReply->abort();
-    }
     delete ui;
 }
 

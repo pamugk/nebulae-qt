@@ -14,7 +14,7 @@ StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
     auto systemLocale = QLocale::system();
     ui->titleLabel->setText(data.text);
     ui->upToLabel->setVisible(data.discountUpTo);
-    ui->discountLabel->setText(QString("-%1%2").arg(data.discountValue).arg(systemLocale.percent()));
+    ui->discountLabel->setText(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(data.discountValue), systemLocale.percent()));
     ui->endLabel->setText(systemLocale.toString(data.countdownDate, QLocale::ShortFormat));
 
     ui->content->setStyleSheet(QString("background: rgba(%1, %2, %3, 0.75)")

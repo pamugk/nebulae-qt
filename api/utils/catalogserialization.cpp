@@ -45,6 +45,10 @@ void parseCatalogProduct(const QJsonValue &json, api::CatalogProduct &data, cons
         data.userPreferredLanguage.inAudio = preferredLanguage["inAudio"].toBool();
         data.userPreferredLanguage.inText = preferredLanguage["inText"].toBool();
     }
+    else
+    {
+        data.userPreferredLanguage = {};
+    }
     data.releaseDate = json["releaseDate"].toString();
     data.productType = json["productType"].toString();
     data.title = json["title"].toString();
@@ -55,12 +59,15 @@ void parseCatalogProduct(const QJsonValue &json, api::CatalogProduct &data, cons
     parseStringArray(json["operatingSystems"].toArray(), data.operatingSystems);
     if (json["price"].isObject())
     {
-        auto price = json["price"];
-        data.price.final = price["final"].toString();
-        data.price.base = price["base"].toString();
-        data.price.discount = price["discount"].toString();
-        parseMoney(price["finalMoney"], data.price.finalMoney);
-        parseMoney(price["baseMoney"], data.price.baseMoney);
+        auto priceJson = json["price"];
+        api::CatalogPrice price = { priceJson["final"].toString(), priceJson["base"].toString(), priceJson["discount"].toString(), {}, {} };
+        parseMoney(priceJson["finalMoney"], price.finalMoney);
+        parseMoney(priceJson["baseMoney"], price.baseMoney);
+        data.price = price;
+    }
+    else
+    {
+        data.price = std::nullopt;
     }
     data.productState = json["productState"].toString();
     parseMetaTagArray(json["genres"].toArray(), data.genres);
@@ -76,6 +83,10 @@ void parseFilters(const QJsonValue &json, api::StoreFilters &data)
         data.releaseDateRange.min = releaseDateRange["min"].toInt();
         data.releaseDateRange.max = releaseDateRange["max"].toInt();
     }
+    else
+    {
+        data.releaseDateRange = {};
+    }
     if (json["priceRange"].isObject())
     {
         auto priceRange = json["priceRange"];
@@ -83,6 +94,10 @@ void parseFilters(const QJsonValue &json, api::StoreFilters &data)
         data.priceRange.max = priceRange["max"].toInt();
         data.priceRange.currency = priceRange["currency"].toString();
         data.priceRange.decimalPlaces = priceRange["decimalPlaces"].toInt();
+    }
+    else
+    {
+        data.priceRange = {};
     }
     parseMetaTagArray(json["genres"].toArray(), data.genres);
     parseMetaTagArray(json["languages"].toArray(), data.languages);

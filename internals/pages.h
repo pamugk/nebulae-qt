@@ -13,7 +13,7 @@ enum Page
     INSTALLED_GAMES,
     FRIENDS,
     CATALOG_PRODUCT,
-    OWNED_PRODUCT,
+    RELEASE,
     NEWS,
     DEALS,
     CART,

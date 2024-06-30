@@ -44,7 +44,7 @@ OwnedProductGridItem::OwnedProductGridItem(const db::UserReleaseShortDetails &da
                    std::make_pair(AdditionalInfo::GENRES, data.genres),
                    std::make_pair(AdditionalInfo::STATS, describeGameplayStats(data)),
                    std::make_pair(AdditionalInfo::TAGS, data.tags),
-                   std::make_pair(AdditionalInfo::PLATFORM, data.platformId == "gog" ? "GOG" : "Unknown platform"),
+                   std::make_pair(AdditionalInfo::PLATFORM, data.platformId == "gog" ? "GOG.com" : "Other"),
                    }),
     title(data.title),
     ui(new Ui::OwnedProductGridItem)

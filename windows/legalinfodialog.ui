@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Legal &amp; privacy</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTextBrowser" name="textBrowser">
@@ -33,7 +36,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Nebulae dependencies&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This product was built with the following libraries and frameworks:&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Qt under open-source license (&lt;a href=&quot;https://www.qt.io/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;site&lt;/span&gt;&lt;/a&gt;), more info can be found in &amp;quot;About Qt&amp;quot; section;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- QtKeyChain (&lt;a href=&quot;https://github.com/frankosterfeld/qtkeychain&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;source code&lt;/span&gt;&lt;/a&gt;).&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- QtKeyChain (&lt;a href=&quot;https://github.com/frankosterfeld/qtkeychain&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;source code&lt;/span&gt;&lt;/a&gt;);&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- SQLite (&lt;a href=&quot;https://www.sqlite.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;site&lt;/span&gt;&lt;/a&gt;, &lt;a href=&quot;https://www.sqlite.org/copyright.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;license&lt;/span&gt;&lt;/a&gt;).&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This product uses Font Awesome community icons (&lt;a href=&quot;https://fontawesome.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;site&lt;/span&gt;&lt;/a&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>

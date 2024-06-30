@@ -1,4 +1,4 @@
-#include "./ownedproductinfoserialization.h"
+#include "./storeproductinfoserialization.h"
 
 #include <QJsonArray>
 
@@ -12,7 +12,7 @@ void parseDownloadFile(const QJsonValue &json, api::DownloadFile &data)
     {
         data.id = QString::number(json["id"].toInteger());
     }
-    data.size = json["size"].toInt();
+    data.size = json["size"].toInteger();
     data.downloadLink = json["downlink"].toString();
 }
 
@@ -27,7 +27,7 @@ void parseDownload(const QJsonValue &json, api::Download &data)
         data.id = QString::number(json["id"].toInteger());
     }
     data.name = json["name"].toString();
-    data.totalSize = json["total_size"].toInt();
+    data.totalSize = json["total_size"].toInteger();
     auto files = json["files"].toArray();
     data.files.resize(files.count());
     for (std::size_t i = 0; i < files.count(); i++)
@@ -55,70 +55,26 @@ void parseGameDownload(const QJsonValue &json, api::GameDownload &data)
 
 void parseDownloads(const QJsonValue &json, api::Downloads &data)
 {
-    QMap<QString, api::GameDownload*> installers;
-    QJsonArray downloads;
-    downloads = json["installers"].toArray();
-    data.installers.clear();
-    for (const QJsonValue &item : std::as_const(downloads))
+    QJsonArray downloads = json["installers"].toArray();
+    data.installers.resize(downloads.count());
+    for (std::size_t i = 0; i < downloads.count(); i++)
     {
-        api::GameDownload download;
-        parseGameDownload(item, download);
-        if (installers.contains(download.name))
-        {
-            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
-            {
-                installers[download.name]->files << downloadFile;
-            }
-        }
-        else
-        {
-            data.installers << download;
-            installers[download.name] = &data.installers.last();
-        }
+        parseGameDownload(downloads[i], data.installers[i]);
     }
-    installers.clear();
 
     downloads = json["patches"].toArray();
-    data.patches.clear();
-    for (const QJsonValue &item : std::as_const(downloads))
+    data.patches.resize(downloads.count());
+    for (std::size_t i = 0; i < downloads.count(); i++)
     {
-        api::GameDownload download;
-        parseGameDownload(item, download);
-        if (installers.contains(download.name))
-        {
-            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
-            {
-                installers[download.name]->files << downloadFile;
-            }
-        }
-        else
-        {
-            data.patches << download;
-            installers[download.name] = &data.patches.last();
-        }
+        parseGameDownload(downloads[i], data.patches[i]);
     }
-    installers.clear();
 
     downloads = json["language_packs"].toArray();
-    data.languagePacks.clear();
-    for (const QJsonValue &item : std::as_const(downloads))
+    data.languagePacks.resize(downloads.count());
+    for (std::size_t i = 0; i < downloads.count(); i++)
     {
-        api::GameDownload download;
-        parseGameDownload(item, download);
-        if (installers.contains(download.name))
-        {
-            for (const api::DownloadFile &downloadFile : std::as_const(download.files))
-            {
-                installers[download.name]->files << downloadFile;
-            }
-        }
-        else
-        {
-            data.languagePacks << download;
-            installers[download.name] = &data.languagePacks.last();
-        }
+        parseGameDownload(downloads[i], data.languagePacks[i]);
     }
-    installers.clear();
 
     downloads = json["bonus_content"].toArray();
     data.bonusContent.resize(downloads.count());
@@ -182,7 +138,7 @@ void parseProductVideo(const QJsonValue &json, api::ProductVideo &data)
     data.provider = json["provider"].toString();
 }
 
-void parseGetOwnedProductInfoResponse(const QJsonValue &json, api::GetOwnedProductInfoResponse &data)
+void parseStoreOwnedProductInfoResponse(const QJsonValue &json, api::GetStoreProductInfoResponse &data)
 {
     parseProductInfo(json, data.mainProductInfo);
     auto dlcs = json["expanded_dlcs"].toArray();

@@ -289,7 +289,7 @@
              </column>
              <column>
               <property name="text">
-               <string>ACHIEVEMENTS %</string>
+               <string>🏆</string>
               </property>
              </column>
             </widget>

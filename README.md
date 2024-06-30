@@ -11,7 +11,7 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 	- view wishlist (✅; most filters are not yet implemented),
 	- view order history (✅; no info on payment options for now);
 * core GOG Galaxy functionality:
-	- browse owned products (WIP),
+	- browse owned products (✅),
 	- view owned product information (WIP),
 	- view user statistics (WIP);	
 * owned content management functionality:
@@ -33,7 +33,8 @@ It's still WIP, so if you came for a Galaxy-tier app - please, be patient :)
 ## Used libraries & frameworks
 
 * [Qt](https://www.qt.io/),
-* [QtKeychain](https://github.com/frankosterfeld/qtkeychain/).
+* [QtKeychain](https://github.com/frankosterfeld/qtkeychain/),
+* [SQLite](https://www.sqlite.org/).
 
 ## Additional useful materials
 

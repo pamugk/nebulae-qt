@@ -5,6 +5,7 @@ DependentProductItem::DependentProductItem(const api::GetCatalogProductInfoRespo
                                            api::GogApiClient *apiClient,
                                            QWidget *parent) :
     QWidget(parent),
+    imageReply(nullptr),
     ui(new Ui::DependentProductItem)
 {
     ui->setupUi(this);
@@ -29,6 +30,10 @@ DependentProductItem::DependentProductItem(const api::GetCatalogProductInfoRespo
 
 DependentProductItem::~DependentProductItem()
 {
+    if (imageReply != nullptr)
+    {
+        imageReply->abort();
+    }
     delete ui;
 }
 

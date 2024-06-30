@@ -46,7 +46,7 @@ namespace api
         QVector<QString> developers;
         QVector<QString> publishers;
         QVector<QString> operatingSystems;
-        CatalogPrice price;
+        std::optional<CatalogPrice> price;
         QString productState;
         QVector<MetaTag> genres;
         QVector<MetaTag> tags;

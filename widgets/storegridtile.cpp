@@ -12,17 +12,27 @@ StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
     ui->ownedLabel->setVisible(false);
     ui->upcomingLabel->setVisible(false);
     ui->wishlistedLabel->setVisible(false);
-    if (data.price.discount.isNull())
+    if (data.price.has_value())
     {
-        ui->discountLabel->setVisible(false);
-        ui->oldPriceLabel->setVisible(false);
+        const auto &price = data.price.value();
+        if (price.discount.isNull())
+        {
+            ui->discountLabel->setVisible(false);
+            ui->oldPriceLabel->setVisible(false);
+        }
+        else
+        {
+            ui->discountLabel->setText(price.discount);
+            ui->oldPriceLabel->setText(price.base);
+        }
+        ui->priceLabel->setText(price.final);
     }
     else
     {
-        ui->discountLabel->setText(data.price.discount);
-        ui->oldPriceLabel->setText(data.price.base);
+        ui->discountLabel->setVisible(false);
+        ui->oldPriceLabel->setVisible(false);
+        ui->priceLabel->setVisible(false);
     }
-    ui->priceLabel->setText(data.price.final);
     imageReply = apiClient->getAnything(data.coverHorizontal);
     connect(imageReply, &QNetworkReply::finished, this, [this]() {
         auto networkReply = imageReply;

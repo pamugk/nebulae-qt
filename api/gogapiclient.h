@@ -27,6 +27,8 @@ namespace api
         QNetworkReply *getCurrentUser();
         QNetworkReply *getCurrentUserGameTimeStatistics();
         QNetworkReply *getCurrentUserPlatformAchievements(const QString &platform, const QString &pageToken);
+        QNetworkReply *getCurrentUserPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId, const QString &pageToken);
+        QNetworkReply *getCurrentUserPlatformReleaseGameTimeStatistics(const QString &platformId, const QString &platformReleaseId);
         QNetworkReply *getCurrentUserReleases();
         QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
@@ -35,7 +37,6 @@ namespace api
         QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
-        QNetworkReply *getOwnedProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
                                         const QString &order = "title",
                                         unsigned short page = 1);
@@ -67,6 +68,7 @@ namespace api
         QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),
                                    const QString &order = "title",

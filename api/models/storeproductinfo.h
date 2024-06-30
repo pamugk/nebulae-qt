@@ -1,5 +1,5 @@
-#ifndef OWNEDPRODUCTINFO_H
-#define OWNEDPRODUCTINFO_H
+#ifndef STOREPRODUCTINFO_H
+#define STOREPRODUCTINFO_H
 
 #include <QDateTime>
 #include <QMap>
@@ -11,7 +11,7 @@ namespace api
     struct DownloadFile
     {
         QString id;
-        unsigned int size;
+        unsigned long long size;
         QString downloadLink;
     };
 
@@ -19,14 +19,14 @@ namespace api
     {
         QString id;
         QString name;
-        unsigned int totalSize;
+        unsigned long long totalSize;
         QVector<DownloadFile> files;
     };
 
     struct BonusDownload: Download
     {
         QString type;
-        unsigned char count;
+        unsigned int count;
     };
 
     struct GameDownload: Download
@@ -80,7 +80,7 @@ namespace api
         QString provider;
     };
 
-    struct GetOwnedProductInfoResponse
+    struct GetStoreProductInfoResponse
     {
         ProductInfo mainProductInfo;
         QVector<ProductInfo> expandedDlcs;
@@ -93,4 +93,4 @@ namespace api
     };
 }
 
-#endif // OWNEDPRODUCTINFO_H
+#endif // STOREPRODUCTINFO_H

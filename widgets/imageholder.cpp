@@ -1,8 +1,10 @@
 #include "imageholder.h"
 #include "ui_imageholder.h"
 
+#include <QNetworkReply>
+
 ImageHolder::ImageHolder(QSize size,
-                         const api::FormattedLink &data,
+                         const QString &url,
                          api::GogApiClient *apiClient,
                          QWidget *parent) :
     QWidget(parent),
@@ -10,34 +12,25 @@ ImageHolder::ImageHolder(QSize size,
 {
     ui->setupUi(this);
     setFixedSize(size);
-    QString url = data.href;
-    if (data.templated)
+    QNetworkReply *imageReply = apiClient->getAnything(url);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
     {
-        url.replace("{formatter}", data.formatters[1]);
-    }
-    imageReply = apiClient->getAnything(url);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             QPalette backgroundPalette;
             backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::IgnoreAspectRatio)));
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        networkReply->deleteLater();
+        imageReply->deleteLater();
     });
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
 }
 
 ImageHolder::~ImageHolder()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 
