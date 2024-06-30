@@ -161,6 +161,7 @@ void ReleasePage::initialize(const QVariant &data)
             {
                 updateUserReleaseInfo();
             }
+            getAchievements();
 
             if (data.platformId == "gog")
             {
@@ -666,90 +667,6 @@ void ReleasePage::initialize(const QVariant &data)
                 });
             }
 
-            releaseAchievementsReply = apiClient->getCurrentUserPlatformReleaseAchievements(data.platformId, data.externalId, QString());
-            connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this]()
-            {
-                auto networkReply = releaseAchievementsReply;
-                releaseAchievementsReply = nullptr;
-                if (networkReply->error() == QNetworkReply::NoError)
-                {
-                    auto locale = QLocale::system();
-                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-                    api::GetUserPlatformAchievementsResponse data;
-                    parseGetUserPlatformAchievementsResponse(resultJson, data);
-                    if (data.items.isEmpty())
-                    {
-                        ui->resultsProgressPageScrollArea->setVisible(false);
-                        ui->resultsProgressPageLayout->addStretch();
-                    }
-                    else
-                    {
-                        int unlockedAchievements = 0;
-                        std::sort(data.items.begin(), data.items.end(),
-                                  [](const api::PlatformUserAchievement &a, const api::PlatformUserAchievement &b)
-                        {
-                            return a.dateUnlocked == b.dateUnlocked && a.name < b.name || a.dateUnlocked > b.dateUnlocked;
-                        });
-                        for (const api::PlatformUserAchievement &achievement : std::as_const(data.items))
-                        {
-                            unlockedAchievements += achievement.dateUnlocked.isNull() ? 0 : 1;
-                            auto achievementItem = new AchievementListItem(achievement, achievement.dateUnlocked.date(), apiClient);
-                            ui->resultsProgressPageScrollContentsLayout->addWidget(achievementItem);
-                        }
-                        ui->resultsProgressPageScrollContentsLayout->addStretch();
-                        ui->achievementsProgressLabel->setText(QString("Achievements %1%2")
-                                                               .arg(locale.toString(std::round(100. * unlockedAchievements / data.items.count())), locale.percent()));
-                    }
-                }
-                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-                {
-                    qDebug() << networkReply->error()
-                             << networkReply->errorString()
-                             << QString(networkReply->readAll()).toUtf8();
-                }
-
-                networkReply->deleteLater();
-            });
-
-            releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(data.platformId, data.externalId);
-            connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, this, [this]()
-            {
-                auto networkReply = releaseGametimeStatisticsReply;
-                releaseGametimeStatisticsReply = nullptr;
-                if (networkReply->error() == QNetworkReply::NoError)
-                {
-                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
-                    if (!resultJson["time_sum"].isNull())
-                    {
-                        int totalPlaytime = resultJson["time_sum"].toInt();
-                        auto locale = QLocale::system();
-                        QString gametimeText("Game time ");
-                        if (totalPlaytime > 60)
-                        {
-                            gametimeText += locale.toString(totalPlaytime / 60);
-                            gametimeText += " h. ";
-                        }
-                        gametimeText += locale.toString(totalPlaytime % 60);
-                        gametimeText += " min.";
-                        ui->gametimeLabel->setText(gametimeText);
-                    }
-                    QDateTime lastPlayed;
-                    if (!resultJson["last_session_date"].isNull())
-                    {
-                        lastPlayed = QDateTime::fromSecsSinceEpoch(resultJson["last_session_date"].toInteger());
-                    }
-                    // TODO: process statistics
-                }
-                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-                {
-                    qDebug() << networkReply->error()
-                             << networkReply->errorString()
-                             << QString(networkReply->readAll()).toUtf8();
-                }
-
-                networkReply->deleteLater();
-            });
-
             if (!data.game.horizontalArtwork.isEmpty())
             {
                 auto horizontalArtworkReply = apiClient->getAnything(QString(data.game.horizontalArtwork).replace("{formatter}", "_glx_bg_top_padding_7").replace("{ext}", "webp"));
@@ -791,7 +708,14 @@ void ReleasePage::paintEvent(QPaintEvent *event)
     QPainter backgroundPainter(this);
     if (!horizontalArtwork.isNull())
     {
-        backgroundPainter.drawPixmap(0, 0, horizontalArtwork.scaled(size(), Qt::KeepAspectRatioByExpanding));
+        auto scaledBackground = horizontalArtwork.scaledToWidth(width());
+        backgroundPainter.drawPixmap(0, 0, scaledBackground);
+        auto remainingHeight = height() - scaledBackground.height();
+        // TODO: implement neat gradient based on image colors
+        if (remainingHeight > 0)
+        {
+            backgroundPainter.fillRect(0, scaledBackground.height(), width(), remainingHeight, Qt::black);
+        }
     }
 
     backgroundPainter.fillRect(rect(), QColor(128, 128, 128, 128));
@@ -800,7 +724,17 @@ void ReleasePage::paintEvent(QPaintEvent *event)
 
 void ReleasePage::switchUiAuthenticatedState(bool authenticated)
 {
-    // TODO: reset / fetch achievements & game time statistics
+    if (releaseAchievementsReply != nullptr)
+    {
+        releaseAchievementsReply->abort();
+    }
+    if (releaseGametimeStatisticsReply != nullptr)
+    {
+        releaseGametimeStatisticsReply->abort();
+    }
+
+    ui->achievementsProgressLabel->setText("Achievements N/A");
+    ui->gametimeLabel->setText("Game time N/A");
     if (authenticated)
     {
         if (!platformId.isNull())
@@ -818,6 +752,8 @@ void ReleasePage::switchUiAuthenticatedState(bool authenticated)
     auto sectionsTabBar = static_cast<QTabBar *>(uiActions[0]);
     sectionsTabBar->setTabVisible(2, owned && !ui->resultsExtrasPageScrollAreaContentsLayout->isEmpty());
     sectionsTabBar->setMinimumWidth(sectionsTabBar->isTabVisible(2) ? 300 : 200);
+
+    getAchievements();
 }
 
 void ReleasePage::openGalleryOnItem(std::size_t index)
@@ -825,6 +761,72 @@ void ReleasePage::openGalleryOnItem(std::size_t index)
     ReleaseMediaDialog dialog(videos, screenshots, apiClient, this);
     dialog.viewMedia(index);
     dialog.exec();
+}
+
+void ReleasePage::getAchievements()
+{
+    if (!platformId.isNull())
+    {
+        while (!ui->resultsProgressPageScrollContentsLayout->isEmpty())
+        {
+            auto item = ui->resultsProgressPageScrollContentsLayout->layout()->itemAt(0);
+            ui->resultsProgressPageScrollContentsLayout->layout()->removeItem(item);
+            item->widget()->deleteLater();
+            delete item;
+        }
+
+        if (apiClient->isAuthenticated())
+        {
+            releaseAchievementsReply = apiClient->getCurrentUserPlatformReleaseAchievements(platformId, platformReleaseId, QString());
+        }
+        else
+        {
+            releaseAchievementsReply = apiClient->getPlatformReleaseAchievements(platformId, platformReleaseId,
+                                                                                 "en-US");
+        }
+        connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = releaseAchievementsReply;
+            releaseAchievementsReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto locale = QLocale::system();
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                api::GetUserPlatformAchievementsResponse data;
+                parseGetUserPlatformAchievementsResponse(resultJson, data);
+                if (data.items.isEmpty())
+                {
+                    ui->resultsProgressPageScrollArea->setVisible(false);
+                }
+                else
+                {
+                    ui->resultsProgressPageScrollArea->setVisible(true);
+                    int unlockedAchievements = 0;
+                    std::sort(data.items.begin(), data.items.end(),
+                              [](const api::PlatformUserAchievement &a, const api::PlatformUserAchievement &b)
+                    {
+                        return a.dateUnlocked == b.dateUnlocked && a.name < b.name || a.dateUnlocked > b.dateUnlocked;
+                    });
+                    for (const api::PlatformUserAchievement &achievement : std::as_const(data.items))
+                    {
+                        unlockedAchievements += achievement.dateUnlocked.isNull() ? 0 : 1;
+                        auto achievementItem = new AchievementListItem(achievement, achievement.dateUnlocked.date(), apiClient);
+                        ui->resultsProgressPageScrollContentsLayout->addWidget(achievementItem);
+                    }
+                    ui->achievementsProgressLabel->setText(QString("Achievements %1%2")
+                                                           .arg(locale.toString(std::round(100. * unlockedAchievements / data.items.count())), locale.percent()));
+                }
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
+    }
 }
 
 void ReleasePage::updateUserReleaseInfo()
@@ -843,6 +845,44 @@ void ReleasePage::updateUserReleaseInfo()
             ui->ratingLabel->setText("No rating");
         }
         ui->userTagsLabel->setText(QLocale::system().createSeparatedList(userReleaseData.tags));
+
+        releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(platformId, platformReleaseId);
+        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, this, [this]()
+        {
+            auto networkReply = releaseGametimeStatisticsReply;
+            releaseGametimeStatisticsReply = nullptr;
+            if (networkReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                if (!resultJson["time_sum"].isNull())
+                {
+                    int totalPlaytime = resultJson["time_sum"].toInt();
+                    auto locale = QLocale::system();
+                    QString gametimeText("Game time ");
+                    if (totalPlaytime > 60)
+                    {
+                        gametimeText += locale.toString(totalPlaytime / 60);
+                        gametimeText += " h. ";
+                    }
+                    gametimeText += locale.toString(totalPlaytime % 60);
+                    gametimeText += " min.";
+                    ui->gametimeLabel->setText(gametimeText);
+                }
+                QDateTime lastPlayed;
+                if (!resultJson["last_session_date"].isNull())
+                {
+                    lastPlayed = QDateTime::fromSecsSinceEpoch(resultJson["last_session_date"].toInteger());
+                }
+            }
+            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << networkReply->error()
+                         << networkReply->errorString()
+                         << QString(networkReply->readAll()).toUtf8();
+            }
+
+            networkReply->deleteLater();
+        });
     }
     else
     {

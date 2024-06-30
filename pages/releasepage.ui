@@ -166,7 +166,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>95</width>
-                <height>293</height>
+                <height>294</height>
                </rect>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1">
@@ -235,7 +235,7 @@
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>83</width>
+                       <width>96</width>
                        <height>128</height>
                       </rect>
                      </property>
@@ -324,7 +324,7 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item>
+           <item alignment="Qt::AlignmentFlag::AlignTop">
             <widget class="QWidget" name="resultsProgressPageHeader" native="true">
              <layout class="QHBoxLayout" name="resultsProgressPageHeaderLayout">
               <item>

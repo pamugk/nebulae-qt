@@ -40,6 +40,7 @@ private:
     QNetworkReply *releaseReply;
     QNetworkReply *storeProductReply;
 
+    void getAchievements();
     void updateUserReleaseInfo();
 
 public slots:
