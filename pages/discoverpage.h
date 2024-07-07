@@ -21,7 +21,15 @@ public:
 
 private:
     api::GogApiClient *apiClient;
+    QSet<const QString> ownedProducts;
     Ui::DiscoverPage *ui;
+    QSet<const QString> wishlist;
+
+    void getGoodOldGames();
+    void getNews();
+    void getRecommendedDlc();
+    Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:
     virtual void initialize(const QVariant &data) override;

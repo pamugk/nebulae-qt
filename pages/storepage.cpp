@@ -164,7 +164,7 @@ void StorePage::getCustomSectionGOGGames()
             int row = 0;
             for (const api::StoreCustomSectionItem &item : std::as_const(data.items))
             {
-                auto itemWidget = new SimpleProductItem(ui->customSectionCDPRScrollAreaContents);
+                auto itemWidget = new SimpleProductItem(ui->customSectionGOGResultsPage);
                 itemWidget->setCover(item.product.image, apiClient);
                 itemWidget->setTitle(item.product.title);
                 itemWidget->setPrice(item.product.price.baseAmount, item.product.price.finalAmount,
@@ -698,7 +698,7 @@ void StorePage::getRecommendedDlc()
 
             for (const api::StoreProduct &item : std::as_const(data.recommendations))
             {
-                auto itemWidget = new SimpleProductItem(ui->discoverUpcomingResultsPage);
+                auto itemWidget = new SimpleProductItem(ui->recommendedDlcResultsPage);
                 itemWidget->setCover(item.image, apiClient);
                 itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
                                      item.price.free, "");

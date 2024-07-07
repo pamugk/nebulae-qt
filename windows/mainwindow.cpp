@@ -16,6 +16,7 @@
 #include "../api/utils/userserialization.h"
 #include "../pages/allgamespage.h"
 #include "../pages/catalogproductpage.h"
+#include "../pages/discoverpage.h"
 #include "../pages/newspage.h"
 #include "../pages/orderspage.h"
 #include "../pages/releasepage.h"
@@ -160,8 +161,10 @@ MainWindow::~MainWindow()
 QWidget *MainWindow::initializePage(const NavigationDestination &destination)
 {
     BasePage *page = nullptr;
-    switch (destination.page) {
+    switch (destination.page)
+    {
     case DISCOVER:
+        page = new DiscoverPage(ui->scaffold);
         break;
     case RECENT:
         break;

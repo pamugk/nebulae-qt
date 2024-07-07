@@ -13,6 +13,343 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #d9d9d9;</string>
+  </property>
+  <layout class="QVBoxLayout" name="pageLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="pageScrollArea">
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="pageScrollAreaContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>579</width>
+        <height>4159</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="pageScrollAreaContentsLayout">
+       <property name="spacing">
+        <number>16</number>
+       </property>
+       <property name="leftMargin">
+        <number>8</number>
+       </property>
+       <property name="topMargin">
+        <number>8</number>
+       </property>
+       <property name="rightMargin">
+        <number>8</number>
+       </property>
+       <property name="bottomMargin">
+        <number>16</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="recommendedDlcLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>Additional content for your games</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="recommendedDlcStackedWidget">
+         <widget class="QWidget" name="recommendedDlcLoadingPage">
+          <layout class="QVBoxLayout" name="recommendedDlcLoadingPageLayout">
+           <item>
+            <widget class="QProgressBar" name="recommendedDlcrogressBar">
+             <property name="maximum">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="recommendedDlcResultsPage">
+          <layout class="QVBoxLayout" name="recommendedDlcResultsPageLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="recommendedDlcScrollArea">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>273</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="recommendedDlcScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>100</width>
+                <height>273</height>
+               </rect>
+              </property>
+              <layout class="QHBoxLayout" name="recommendedDlcScrollAreaContentsLayout">
+               <property name="spacing">
+                <number>24</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="customSectionGOG">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>Good Old Games</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::TextFormat::PlainText</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="customSectionGOGStackedWidget">
+         <widget class="QWidget" name="customSectionGOGLoadingPage">
+          <layout class="QVBoxLayout" name="customSectionGOGLoadingPageLayout">
+           <item>
+            <widget class="QProgressBar" name="customSectionGOGProgressBar">
+             <property name="maximum">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="customSectionGOGResultsPage">
+          <layout class="QVBoxLayout" name="customSectionGOGResultsPageLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="customSectionGOGResultsScrollArea">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>482</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="customSectionGOGResultsScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>100</width>
+                <height>482</height>
+               </rect>
+              </property>
+              <layout class="QGridLayout" name="customSectionGOGResultsScrollAreaContentsLayout">
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="spacing">
+                <number>24</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="newsLabel">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">padding: 16px 0; border-bottom: 1px solid #bfbfbf;</string>
+         </property>
+         <property name="text">
+          <string>News</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::TextFormat::AutoText</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="newsStackedWidget">
+         <widget class="QWidget" name="newsLoadingPage">
+          <layout class="QVBoxLayout" name="newsLoadingPageLayout">
+           <item>
+            <widget class="QProgressBar" name="newsProgressBar">
+             <property name="maximum">
+              <number>0</number>
+             </property>
+             <property name="value">
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="newsResultsPage">
+          <layout class="QHBoxLayout" name="newsResultsPageLayout">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QScrollArea" name="newsScrollArea">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>296</height>
+              </size>
+             </property>
+             <property name="verticalScrollBarPolicy">
+              <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="newsScrollAreaContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>100</width>
+                <height>296</height>
+               </rect>
+              </property>
+              <layout class="QHBoxLayout" name="newsScrollAreaContentsLayout">
+               <property name="spacing">
+                <number>24</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>8</number>
+               </property>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <spacer name="pageVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
