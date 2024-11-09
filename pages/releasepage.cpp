@@ -28,10 +28,6 @@ ReleasePage::ReleasePage(QWidget *parent) :
     owned(false),
     platformId(),
     platformReleaseId(),
-    releaseAchievementsReply(nullptr),
-    releaseGametimeStatisticsReply(nullptr),
-    releaseReply(nullptr),
-    storeProductReply(nullptr),
     ui(new Ui::ReleasePage)
 {
     ui->setupUi(this);
@@ -112,22 +108,6 @@ ReleasePage::ReleasePage(QWidget *parent) :
 
 ReleasePage::~ReleasePage()
 {
-    if (releaseAchievementsReply != nullptr)
-    {
-        releaseAchievementsReply->abort();
-    }
-    if (releaseGametimeStatisticsReply != nullptr)
-    {
-        releaseGametimeStatisticsReply->abort();
-    }
-    if (releaseReply != nullptr)
-    {
-        releaseReply->abort();
-    }
-    if (storeProductReply != nullptr)
-    {
-        storeProductReply->abort();
-    }
     delete ui;
 }
 
@@ -144,11 +124,10 @@ void ReleasePage::setApiClient(api::GogApiClient *apiClient)
 void ReleasePage::initialize(const QVariant &data)
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    releaseReply = apiClient->getRelease(data.toString());
-    connect(releaseReply, &QNetworkReply::finished, this, [this](){
-        auto networkReply = releaseReply;
-        releaseReply = nullptr;
-
+    auto releaseReply = apiClient->getRelease(data.toString());
+    connect(releaseReply, &QNetworkReply::finished,
+            this, [this, networkReply = releaseReply]()
+    {
         if (networkReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -278,11 +257,10 @@ void ReleasePage::initialize(const QVariant &data)
 
             if (data.platformId == "gog")
             {
-                storeProductReply = apiClient->getStoreProductInfo(data.externalId, locale.bcp47Name());
-                connect(storeProductReply, &QNetworkReply::finished, this, [this, iconUrl = data.game.squareIcon]()
+                auto storeProductReply = apiClient->getStoreProductInfo(data.externalId, locale.bcp47Name());
+                connect(storeProductReply, &QNetworkReply::finished,
+                        this, [this, iconUrl = data.game.squareIcon, networkReply = storeProductReply]()
                 {
-                    auto networkReply = storeProductReply;
-                    storeProductReply = nullptr;
                     if (networkReply->error() == QNetworkReply::NoError)
                     {
                         auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
@@ -665,6 +643,7 @@ void ReleasePage::initialize(const QVariant &data)
 
                     networkReply->deleteLater();
                 });
+                connect(this, &QObject::destroyed, storeProductReply, &QNetworkReply::abort);
             }
 
             if (!data.game.horizontalArtwork.isEmpty())
@@ -701,6 +680,7 @@ void ReleasePage::initialize(const QVariant &data)
         }
         networkReply->deleteLater();
     });
+    connect(this, &QObject::destroyed, releaseReply, &QNetworkReply::abort);
 }
 
 void ReleasePage::paintEvent(QPaintEvent *event)
@@ -724,15 +704,7 @@ void ReleasePage::paintEvent(QPaintEvent *event)
 
 void ReleasePage::switchUiAuthenticatedState(bool authenticated)
 {
-    if (releaseAchievementsReply != nullptr)
-    {
-        releaseAchievementsReply->abort();
-    }
-    if (releaseGametimeStatisticsReply != nullptr)
-    {
-        releaseGametimeStatisticsReply->abort();
-    }
-
+    emit uiAuthenticatedSwitchRequested();
     ui->achievementsProgressLabel->setText("Achievements N/A");
     ui->gametimeLabel->setText("Game time N/A");
     if (authenticated)
@@ -775,6 +747,7 @@ void ReleasePage::getAchievements()
             delete item;
         }
 
+        QNetworkReply *releaseAchievementsReply;
         if (apiClient->isAuthenticated())
         {
             releaseAchievementsReply = apiClient->getCurrentUserPlatformReleaseAchievements(platformId, platformReleaseId, QString());
@@ -784,10 +757,9 @@ void ReleasePage::getAchievements()
             releaseAchievementsReply = apiClient->getPlatformReleaseAchievements(platformId, platformReleaseId,
                                                                                  "en-US");
         }
-        connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this]()
+        connect(releaseAchievementsReply, &QNetworkReply::finished,
+                this, [this, networkReply = releaseAchievementsReply]()
         {
-            auto networkReply = releaseAchievementsReply;
-            releaseAchievementsReply = nullptr;
             if (networkReply->error() == QNetworkReply::NoError)
             {
                 auto locale = QLocale::system();
@@ -826,6 +798,8 @@ void ReleasePage::getAchievements()
 
             networkReply->deleteLater();
         });
+        connect(this, &ReleasePage::uiAuthenticatedSwitchRequested, releaseAchievementsReply, &QNetworkReply::abort);
+        connect(this, &QObject::destroyed, releaseAchievementsReply, &QNetworkReply::abort);
     }
 }
 
@@ -846,11 +820,10 @@ void ReleasePage::updateUserReleaseInfo()
         }
         ui->userTagsLabel->setText(QLocale::system().createSeparatedList(userReleaseData.tags));
 
-        releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(platformId, platformReleaseId);
-        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, this, [this]()
+        auto releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(platformId, platformReleaseId);
+        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished,
+                this, [this, networkReply = releaseGametimeStatisticsReply]()
         {
-            auto networkReply = releaseGametimeStatisticsReply;
-            releaseGametimeStatisticsReply = nullptr;
             if (networkReply->error() == QNetworkReply::NoError)
             {
                 auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
@@ -883,6 +856,8 @@ void ReleasePage::updateUserReleaseInfo()
 
             networkReply->deleteLater();
         });
+        connect(this, &ReleasePage::uiAuthenticatedSwitchRequested, releaseGametimeStatisticsReply, &QNetworkReply::abort);
+        connect(this, &QObject::destroyed, releaseGametimeStatisticsReply, &QNetworkReply::abort);
     }
     else
     {

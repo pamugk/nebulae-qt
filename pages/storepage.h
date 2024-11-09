@@ -27,21 +27,6 @@ private:
     Ui::StorePage *ui;
     QSet<const QString> wishlist;
 
-    QNetworkReply *customSectionCDPRReply;
-    QNetworkReply *customSectionExclusivesReply;
-    QNetworkReply *customSectionGOGReply;
-    QNetworkReply *dealOfTheDayReply;
-    QNetworkReply *discoverBestsellingReply;
-    QNetworkReply *discoverGamesForYouReply;
-    QNetworkReply *discoverNewReply;
-    QNetworkReply *discoverUpcomingReply;
-    QNetworkReply *newsReply;
-    QNetworkReply *nowOnSaleReply;
-    QVector<QNetworkReply *> nowOnSaleSectionReplies;
-    QNetworkReply *ownedProductsReply;
-    QNetworkReply *recommendedDlcReply;
-    QNetworkReply *wishlistReply;
-
     void getCustomSectionCDPRGames();
     void getCustomSectionExclusiveGames();
     void getCustomSectionGOGGames();
