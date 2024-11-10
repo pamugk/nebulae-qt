@@ -21,6 +21,8 @@ namespace api
         bool isAuthenticated();
 
         QString currentUserId() const;
+        QNetworkReply *getAccountFilteredProducts(const SortOrder &order,
+                                                  unsigned short page = 1, unsigned int limit = 48);
         QNetworkReply *getAchievements();
         QNetworkReply *getAnything(const QString &url);
         QNetworkReply *getCatalogProductInfo(const QString &id, const QString &locale);

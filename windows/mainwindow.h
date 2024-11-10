@@ -38,6 +38,8 @@ private slots:
 
     void on_ordersButton_clicked();
 
+    void on_gogLibraryButton_clicked();
+
     void on_libraryButton_clicked();
 
     void on_installedButton_clicked();

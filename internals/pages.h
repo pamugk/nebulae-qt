@@ -9,6 +9,7 @@ enum Page
     ALL_GAMES,
     WISHLIST,
     ORDER_HISTORY,
+    GOG_LIBRARY,
     OWNED_GAMES,
     INSTALLED_GAMES,
     FRIENDS,

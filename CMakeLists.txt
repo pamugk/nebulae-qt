@@ -88,6 +88,7 @@ set(PROJECT_SOURCES
         pages/allgamespage.h pages/allgamespage.cpp pages/allgamespage.ui
         pages/basepage.h pages/basepage.cpp
         pages/catalogproductpage.h pages/catalogproductpage.cpp pages/catalogproductpage.ui
+        pages/librarypage.h pages/librarypage.cpp pages/librarypage.ui
         pages/newspage.h pages/newspage.cpp pages/newspage.ui
         pages/orderspage.h pages/orderspage.cpp pages/orderspage.ui
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
@@ -110,6 +111,8 @@ set(PROJECT_SOURCES
         widgets/newsitemtile.h widgets/newsitemtile.cpp widgets/newsitemtile.ui
         widgets/ordergroup.h widgets/ordergroup.cpp widgets/ordergroup.ui
         widgets/orderitem.h widgets/orderitem.cpp widgets/orderitem.ui
+        widgets/ownedgogproductgridtile.h widgets/ownedgogproductgridtile.cpp widgets/ownedgogproductgridtile.ui
+        widgets/ownedgogproductlistitem.h widgets/ownedgogproductlistitem.cpp widgets/ownedgogproductlistitem.ui
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui

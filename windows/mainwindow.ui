@@ -62,7 +62,7 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <item>
         <widget class="QWidget" name="pageActionsHolder" native="true">
          <layout class="QHBoxLayout" name="pageActionsHolderLayout">
           <property name="spacing">
@@ -426,6 +426,19 @@ QLabel {
          <property name="icon">
           <iconset resource="../resources.qrc">
            <normaloff>:/icons/receipt.svg</normaloff>:/icons/receipt.svg</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="gogLibraryButton">
+         <property name="text">
+          <string notr="true">GOG.com</string>
          </property>
          <property name="checkable">
           <bool>true</bool>

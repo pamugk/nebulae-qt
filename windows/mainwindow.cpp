@@ -16,6 +16,7 @@
 #include "../api/utils/userserialization.h"
 #include "../pages/allgamespage.h"
 #include "../pages/catalogproductpage.h"
+#include "../pages/librarypage.h"
 #include "../pages/newspage.h"
 #include "../pages/orderspage.h"
 #include "../pages/releasepage.h"
@@ -177,6 +178,9 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
     case ORDER_HISTORY:
         page = new OrdersPage(ui->scaffold);
         break;
+    case GOG_LIBRARY:
+        page = new LibraryPage(ui->scaffold);
+        break;
     case OWNED_GAMES:
         page = new OwnedGamesPage(ui->scaffold);
         break;
@@ -290,17 +294,21 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
         auto userNameLabel = static_cast<QLabel *>(userInfoLayout->itemAtPosition(0, 1)->widget());
         userNameLabel->setText("Loading user data…");
     }
-    ui->galaxyLabel->setVisible(authenticated);
-    ui->discoverButton->setVisible(authenticated);
-    ui->recentButton->setVisible(authenticated);
+    // TODO: return missing navigation points one by one,
+    // once pages are ready.
+    ui->galaxyLabel->setVisible(false);
+    ui->discoverButton->setVisible(false);
+    ui->recentButton->setVisible(false);
+    ui->dealsButton->setVisible(false);
     ui->wishlistButton->setVisible(authenticated);
-    ui->cartButton->setVisible(authenticated);
+    ui->cartButton->setVisible(false);
     ui->ordersButton->setVisible(authenticated);
+    ui->gogLibraryButton->setVisible(authenticated);
     ui->gamesLabel->setVisible(authenticated);
     ui->libraryButton->setVisible(authenticated);
-    ui->installedButton->setVisible(authenticated);
-    ui->friendsLabel->setVisible(authenticated);
-    ui->friendsButton->setVisible(authenticated);
+    ui->installedButton->setVisible(false);
+    ui->friendsLabel->setVisible(false);
+    ui->friendsButton->setVisible(false);
     // TODO: resolve QMenu crashes properly?
     initialized = true;
 }
@@ -315,6 +323,7 @@ void MainWindow::updateCheckedDrawerDestination(Page currentPage)
     ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
     ui->cartButton->setChecked(currentPage == Page::DEALS);
     ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
+    ui->gogLibraryButton->setChecked(currentPage == Page::GOG_LIBRARY);
     ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES);
     ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
     ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
@@ -401,6 +410,11 @@ void MainWindow::on_wishlistButton_clicked()
 void MainWindow::on_ordersButton_clicked()
 {
     navigate(NavigationDestination { Page::ORDER_HISTORY });
+}
+
+void MainWindow::on_gogLibraryButton_clicked()
+{
+    navigate(NavigationDestination { Page::GOG_LIBRARY });
 }
 
 void MainWindow::on_libraryButton_clicked()
