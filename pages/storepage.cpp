@@ -17,19 +17,6 @@
 StorePage::StorePage(QWidget *parent) :
     StoreBasePage(Page::STORE, parent),
     apiClient(nullptr),
-    customSectionCDPRReply(nullptr),
-    customSectionExclusivesReply(nullptr),
-    customSectionGOGReply(nullptr),
-    dealOfTheDayReply(nullptr),
-    discoverBestsellingReply(nullptr),
-    discoverGamesForYouReply(nullptr),
-    discoverNewReply(nullptr),
-    discoverUpcomingReply(nullptr),
-    newsReply(nullptr),
-    nowOnSaleReply(nullptr),
-    ownedProductsReply(nullptr),
-    recommendedDlcReply(nullptr),
-    wishlistReply(nullptr),
     ui(new Ui::StorePage)
 {
     ui->setupUi(this);
@@ -37,65 +24,6 @@ StorePage::StorePage(QWidget *parent) :
 
 StorePage::~StorePage()
 {
-    if (customSectionCDPRReply != nullptr)
-    {
-        customSectionCDPRReply->abort();
-    }
-    if (customSectionExclusivesReply != nullptr)
-    {
-        customSectionExclusivesReply->abort();
-    }
-    if (customSectionGOGReply != nullptr)
-    {
-        customSectionGOGReply->abort();
-    }
-    if (dealOfTheDayReply != nullptr)
-    {
-        dealOfTheDayReply->abort();
-    }
-    if (discoverBestsellingReply != nullptr)
-    {
-        discoverBestsellingReply->abort();
-    }
-    if (discoverGamesForYouReply != nullptr)
-    {
-        discoverGamesForYouReply->abort();
-    }
-    if (discoverNewReply != nullptr)
-    {
-        discoverNewReply->abort();
-    }
-    if (discoverUpcomingReply != nullptr)
-    {
-        discoverUpcomingReply->abort();
-    }
-    if (newsReply != nullptr)
-    {
-        newsReply->abort();
-    }
-    if (nowOnSaleReply != nullptr)
-    {
-        nowOnSaleReply->abort();
-    }
-    for (QNetworkReply *nowOnSaleSectionReply : std::as_const(nowOnSaleSectionReplies))
-    {
-        if (nowOnSaleSectionReply != nullptr)
-        {
-            nowOnSaleSectionReply->abort();
-        }
-    }
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (recommendedDlcReply != nullptr)
-    {
-        recommendedDlcReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
-    }
     delete ui;
 }
 
@@ -104,7 +32,7 @@ void StorePage::setApiClient(api::GogApiClient *apiClient)
     this->apiClient = apiClient;
 }
 
-void StorePage::getCustomSectionCDPRGames()
+/*void StorePage::getCustomSectionCDPRGames()
 {
     ui->customSectionCDPRStackedWidget->setCurrentWidget(ui->customSectionCDPRLoadingPage);
     customSectionCDPRReply = apiClient->getStoreCustomSection("68469ed0-e0d6-11ec-a381-fa163eebc216");
@@ -165,7 +93,7 @@ void StorePage::getCustomSectionCDPRGames()
 void StorePage::getCustomSectionExclusiveGames()
 {
     ui->customSectionExclusivesStackedWidget->setCurrentWidget(ui->customSectionExclusivesLoadingPage);
-    customSectionExclusivesReply = apiClient->getStoreCustomSection("eea11712-458e-11ee-9787-fa163eebc216");
+    /*customSectionExclusivesReply = apiClient->getStoreCustomSection("eea11712-458e-11ee-9787-fa163eebc216");
     connect(customSectionExclusivesReply, &QNetworkReply::finished,
             this, [this]()
     {
@@ -426,7 +354,7 @@ void StorePage::getDiscoverBestsellingGames()
 void StorePage::getDiscoverGamesForYou()
 {
     ui->discoverGamesForYouStackedWidget->setCurrentWidget(ui->discoverGamesForYouLoadingPage);
-    discoverGamesForYouReply = apiClient->getStoreDiscoverGamesForYou();
+    /*discoverGamesForYouReply = apiClient->getStoreDiscoverGamesForYou();
     connect(discoverGamesForYouReply, &QNetworkReply::finished,
             this, [this]() {
         auto networkReply = discoverGamesForYouReply;
@@ -483,7 +411,7 @@ void StorePage::getDiscoverGamesForYou()
 void StorePage::getDiscoverNewGames()
 {
     ui->discoverNewStackedWidget->setCurrentWidget(ui->discoverNewLoadingPage);
-    discoverNewReply = apiClient->getStoreDiscoverNewGames();
+    /*discoverNewReply = apiClient->getStoreDiscoverNewGames();
     connect(discoverNewReply, &QNetworkReply::finished,
             this, [this]() {
         auto networkReply = discoverNewReply;
@@ -540,7 +468,7 @@ void StorePage::getDiscoverNewGames()
 void StorePage::getDiscoverUpcomingGames()
 {
     ui->discoverUpcomingStackedWidget->setCurrentWidget(ui->discoverUpcomingLoadingPage);
-    discoverUpcomingReply = apiClient->getStoreDiscoverUpcomingGames();
+    /*discoverUpcomingReply = apiClient->getStoreDiscoverUpcomingGames();
     connect(discoverUpcomingReply, &QNetworkReply::finished,
             this, [this]() {
         auto networkReply = discoverUpcomingReply;
@@ -774,7 +702,7 @@ void StorePage::getNowOnSale()
 void StorePage::getRecommendedDlc()
 {
     ui->recommendedDlcStackedWidget->setCurrentWidget(ui->recommendedDlcLoadingPage);
-    recommendedDlcReply = apiClient->getRecommendedDlcs();
+    /*recommendedDlcReply = apiClient->getRecommendedDlcs();
     connect(recommendedDlcReply, &QNetworkReply::finished, this, [this]()
     {
         auto networkReply = recommendedDlcReply;
@@ -829,11 +757,52 @@ void StorePage::getRecommendedDlc()
         }
         networkReply->deleteLater();
     });
+}*/
+
+void StorePage::getSections()
+{
+    ui->landingStackedWidget->setCurrentWidget(ui->landingLoadingPage);
+    QLayoutItem *sectionItem;
+    while ((sectionItem = ui->landingScrollAreaContentsLayout->takeAt(0)))
+    {
+        auto widget = sectionItem->widget();
+        delete sectionItem;
+        if (widget != nullptr)
+        {
+            delete widget;
+        }
+    }
+
+    const auto systemLocale = QLocale::system();
+    const auto sectionsReply = apiClient->getStoreSections(systemLocale.name(QLocale::TagSeparator::Dash),
+                                                           QLocale::territoryToCode(systemLocale.territory()),
+                                                           systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
+    connect(this, &QObject::destroyed, sectionsReply, &QNetworkReply::abort);
+    connect(sectionsReply, &QNetworkReply::finished, this, [this, sectionsReply]()
+    {
+        if (sectionsReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(sectionsReply->readAll()).toUtf8()).object();
+            api::GetStoreSectionsResponse data;
+            parseGetStoreSectionsResponse(resultJson, data);
+
+            ui->landingStackedWidget->setCurrentWidget(ui->landingResultPage);
+        }
+        else if (sectionsReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << sectionsReply->error()
+                     << sectionsReply->errorString()
+                     << QString(sectionsReply->readAll()).toUtf8();
+            ui->landingStackedWidget->setCurrentWidget(ui->landingErrorPage);
+        }
+
+        sectionsReply->deleteLater();
+    });
 }
 
 void StorePage::initialize(const QVariant &data)
 {
-    ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
+    /*ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
     getDiscoverBestsellingGames();
     getDiscoverNewGames();
     getDiscoverUpcomingGames();
@@ -842,67 +811,25 @@ void StorePage::initialize(const QVariant &data)
     getCustomSectionCDPRGames();
     getCustomSectionExclusiveGames();
     getCustomSectionGOGGames();
-    getNews();
+    getNews();*/
+    getSections();
 }
 
 void StorePage::switchUiAuthenticatedState(bool authenticated)
 {
+    emit authenticationStateChanged();
     StoreBasePage::switchUiAuthenticatedState(authenticated);
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
-    }
-
-    QLayoutItem *item;
-    if (discoverGamesForYouReply != nullptr)
-    {
-        discoverGamesForYouReply->abort();
-    }
-    while ((item = ui->discoverGamesForYouResultsPageLayout->takeAt(0)))
-    {
-        auto widget = item->widget();
-        delete item;
-        if (widget != nullptr)
-        {
-            delete widget;
-        }
-    }
-    ui->discoverTabWidget->setTabVisible(0, authenticated);
-
-    if (recommendedDlcReply != nullptr)
-    {
-        recommendedDlcReply->abort();
-    }
-    ui->recommendedDlcLabel->setVisible(false);
-    ui->recommendedDlcStackedWidget->setVisible(false);
-
-    while ((item = ui->recommendedDlcScrollAreaContentsLayout->takeAt(0)))
-    {
-        auto widget = item->widget();
-        delete item;
-        if (widget != nullptr)
-        {
-            delete widget;
-        }
-    }
 
     if (authenticated)
     {
-        getDiscoverGamesForYou();
-        getRecommendedDlc();
-
-        ownedProductsReply = apiClient->getOwnedLicensesIds();
-        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        const auto ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(this, &QObject::destroyed, ownedProductsReply, &QNetworkReply::abort);
+        connect(this, &StorePage::authenticationStateChanged, ownedProductsReply, &QNetworkReply::abort);
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this, ownedProductsReply]()
         {
-            auto networkReply = ownedProductsReply;
-            ownedProductsReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (ownedProductsReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(ownedProductsReply->readAll()).toUtf8());
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
@@ -910,23 +837,24 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (ownedProductsReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << ownedProductsReply->error()
+                         << ownedProductsReply->errorString()
+                         << QString(ownedProductsReply->readAll()).toUtf8();
             }
 
-            networkReply->deleteLater();
+            ownedProductsReply->deleteLater();
         });
-        wishlistReply = apiClient->getWishlistIds();
-        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+
+        const auto wishlistReply = apiClient->getWishlistIds();
+        connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
+        connect(this, &StorePage::authenticationStateChanged, wishlistReply, &QNetworkReply::abort);
+        connect(wishlistReply, &QNetworkReply::finished, this, [this, wishlistReply]()
         {
-            auto networkReply = wishlistReply;
-            wishlistReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (wishlistReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(wishlistReply->readAll()).toUtf8());
                 auto wishlistedItems = resultJson["wishlist"].toObject();
                 for (const QString &key : wishlistedItems.keys())
                 {
@@ -937,22 +865,18 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                 }
                 emit wishlistChanged(wishlist);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (wishlistReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << wishlistReply->error()
+                         << wishlistReply->errorString()
+                         << QString(wishlistReply->readAll()).toUtf8();
             }
 
-            networkReply->deleteLater();
+            wishlistReply->deleteLater();
         });
     }
     else
     {
-        if (ui->discoverTabWidget->currentWidget() == ui->discoverGamesForYouTab)
-        {
-            ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
-        }
         ownedProducts.clear();
         emit ownedProductsChanged(ownedProducts);
         wishlist.clear();
@@ -960,7 +884,7 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
     }
 }
 
-void StorePage::on_showCatalogButton_clicked()
+/*void StorePage::on_showCatalogButton_clicked()
 {
     if (ui->discoverTabWidget->currentWidget() == ui->discoverBestsellingTab)
     {
@@ -1100,5 +1024,5 @@ void StorePage::on_nowOnSaleTabWidget_currentChanged(int index)
 void StorePage::on_discoverTabWidget_currentChanged(int index)
 {
     ui->showCatalogButton->setVisible(index > 0);
-}
+}*/
 

@@ -420,6 +420,16 @@ QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
 {
     return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
 }
+QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode)
+{
+    QUrl url("https://sections.gog.com/v1/pages/2f");
+    url.setQuery(QUrlQuery({
+                               std::pair("locale", locale),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currencyCode", currencyCode),
+                           }));
+    return client.get(url);
+}
 
 QNetworkReply *api::GogApiClient::getStoreProductInfo(const QString &id, const QString &locale)
 {

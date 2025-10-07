@@ -40,6 +40,16 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
     data.preorder = json["isPreorder"].toBool();
 }
 
+void parseSection(const QJsonValue &json, api::StoreSection &data)
+{
+    data.id = json["sectionId"].toString();
+    data.sectionType = json["sectionType"].toString();
+    data.personalized = json["isPersonalized"].toBool();
+    data.hideOnLoad = json["hideOnLoad"].toBool();
+    data.loadOnEmbed = json["loadOnEmbed"].toBool();
+    data.contentSourceType = json["contentSourceType"].toString();
+}
+
 void parseCustomSectionItem(const QJsonValue &json, api::StoreCustomSectionItem &data,
                             const QString &coverFormat)
 {
@@ -151,5 +161,15 @@ void parseGetStoreRecommendedDlcsResponse(const QJsonValue &json, api::GetStoreR
     for (std::size_t i = 0; i < recommendations.count(); i++)
     {
         parseProduct(recommendations[i], data.recommendations[i], "_product_tile_256.webp");
+    }
+}
+
+void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data)
+{
+    auto sections = json["sections"].toArray();
+    data.sections.resize(sections.count());
+    for (std::size_t i = 0; i < sections.count(); i++)
+    {
+        parseSection(sections[i], data.sections[i]);
     }
 }

@@ -68,6 +68,7 @@ namespace api
         QNetworkReply *getStoreDiscoverGamesForYou();
         QNetworkReply *getStoreDiscoverNewGames();
         QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),

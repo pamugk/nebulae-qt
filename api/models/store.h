@@ -62,6 +62,16 @@ namespace api
         StoreProduct product;
     };
 
+    struct StoreSection
+    {
+        QString id;
+        QString sectionType;
+        bool personalized;
+        bool hideOnLoad;
+        bool loadOnEmbed;
+        QString contentSourceType;
+    };
+
     struct GetStoreCustomSectionResponse
     {
         QString id;
@@ -95,6 +105,11 @@ namespace api
     {
         bool hasRecommendations;
         QVector<StoreProduct> recommendations;
+    };
+
+    struct GetStoreSectionsResponse
+    {
+        QVector<StoreSection> sections;
     };
 }
 

@@ -11,5 +11,6 @@ void parseGetStoreDiscoverGamesResponse(const QJsonValue &json, api::GetStoreDis
 void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data);
 void parseGetStoreNowOnSaleSectionResponse(const QJsonValue &json, api::GetStoreNowOnSaleSectionResponse &data);
 void parseGetStoreRecommendedDlcsResponse(const QJsonValue &json, api::GetStoreRecommendedDlcsResponse &data);
+void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data);
 
 #endif // STORESERIALIZATION_H
