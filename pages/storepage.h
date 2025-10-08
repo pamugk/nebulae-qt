@@ -25,6 +25,7 @@ private:
     Ui::StorePage *ui;
     QSet<const QString> wishlist;
 
+    void getSection(const QString &id, const QString &type);
     void getSections();
 
     Q_SIGNAL void authenticationStateChanged();

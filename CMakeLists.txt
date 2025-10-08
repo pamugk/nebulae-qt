@@ -118,7 +118,6 @@ set(PROJECT_SOURCES
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
         widgets/storesalebrowseallcard.h widgets/storesalebrowseallcard.cpp widgets/storesalebrowseallcard.ui
-        widgets/storesalecard.h widgets/storesalecard.cpp widgets/storesalecard.ui
         widgets/videoholder.h widgets/videoholder.cpp widgets/videoholder.ui
         widgets/wishlistitem.h widgets/wishlistitem.cpp widgets/wishlistitem.ui
 

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #d9d9d9;</string>
+  </property>
   <layout class="QVBoxLayout" name="pageLayout">
    <property name="spacing">
     <number>0</number>
@@ -75,8 +78,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>800</width>
-            <height>600</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="landingScrollAreaContentsLayout">

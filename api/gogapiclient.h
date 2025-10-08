@@ -33,8 +33,6 @@ namespace api
         QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
-        QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
-        QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
@@ -58,16 +56,12 @@ namespace api
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
-        QNetworkReply *getRecommendedDlcs();
         QNetworkReply *getRelease(const QString &id);
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
-        QNetworkReply *getStoreCustomSection(const QString &id);
-        QNetworkReply *getStoreDiscoverGamesForYou();
-        QNetworkReply *getStoreDiscoverNewGames();
-        QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);

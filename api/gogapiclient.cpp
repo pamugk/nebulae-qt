@@ -193,22 +193,6 @@ QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QStrin
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode)
-{
-    QUrl url("https://api.gog.com/now_on_sale");
-    url.setQuery(QUrlQuery({
-                               std::pair("locale", locale),
-                               std::pair("countryCode", countryCode),
-                               std::pair("currencyCode", currencyCode),
-                           }));
-    return client.get(url);
-}
-
-QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
-{
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
-}
-
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
     QVariantMap parameters;
@@ -369,11 +353,6 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getRecommendedDlcs()
-{
-    return client.get(QUrl("https://api.gog.com/recommendations/dlcs"));
-}
-
 QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
 {
     QUrl url("https://api.gog.com/v2/games");
@@ -401,25 +380,17 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
     return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getStoreCustomSection(const QString &id)
+QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/custom_sections/%1").arg(id)));
+    QUrl url(QStringLiteral("https://sections.gog.com/v1/pages/2f/sections/%1").arg(id));
+    url.setQuery(QUrlQuery({
+                               std::pair("locale", locale),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currencyCode", currencyCode),
+                           }));
+    return client.get(url);
 }
 
-QNetworkReply *api::GogApiClient::getStoreDiscoverGamesForYou()
-{
-    return client.get(QUrl("https://api.gog.com/discover_games/for_you"));
-}
-
-QNetworkReply *api::GogApiClient::getStoreDiscoverNewGames()
-{
-    return client.get(QUrl("https://api.gog.com/discover_games/new"));
-}
-
-QNetworkReply *api::GogApiClient::getStoreDiscoverUpcomingGames()
-{
-    return client.get(QUrl("https://api.gog.com/discover_games/upcoming"));
-}
 QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
     QUrl url("https://sections.gog.com/v1/pages/2f");

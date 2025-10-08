@@ -1,7 +1,6 @@
 #ifndef STORE_H
 #define STORE_H
 
-#include <QDateTime>
 #include <QString>
 #include <QVector>
 
@@ -9,59 +8,6 @@
 
 namespace api
 {
-    struct StoreNowOnSaleTabCard
-    {
-        QString background;
-        QString logo;
-        QString color;
-        std::array<unsigned char, 3> colorRgbArray;
-        QString text;
-        QString textSlug;
-        unsigned char discountValue;
-        bool discountUpTo;
-        QString url;
-        QDateTime countdownDate;
-    };
-
-    struct StoreNowOnSaleTab
-    {
-        QString id;
-        QString title;
-        StoreNowOnSaleTabCard bigThingy;
-    };
-
-    struct StoreProductPrice
-    {
-        double baseAmount;
-        double finalAmount;
-        unsigned char discountPercentage;
-        bool free;
-    };
-
-    struct StoreProduct
-    {
-        QString id;
-        QString title;
-        QString image;
-        StoreProductPrice price;
-        QVector<QString> supportedOperatingSystems;
-
-        bool comingSoon;
-        bool inDevelopment;
-        bool availableForSale;
-        bool buyable;
-        bool movie;
-        bool visibleInCatalog;
-        bool preorder;
-    };
-
-    struct StoreCustomSectionItem
-    {
-        QDateTime dealActiveFrom;
-        QDateTime dealActiveTo;
-        StoreProduct product;
-    };
-
     struct StoreSection
     {
         QString id;
@@ -72,39 +18,14 @@ namespace api
         QString contentSourceType;
     };
 
-    struct GetStoreCustomSectionResponse
+    struct GetStoreProductsSectionResponse
     {
-        QString id;
+        QString sectionId;
+        QString contentSourceType;
         QString title;
-        QVector<StoreCustomSectionItem> items;
-
-        QDateTime currentServerTime;
-        QDateTime visibleFrom;
-        QDateTime visibleTo;
-    };
-
-    struct GetStoreDiscoverGamesSectionResponse
-    {
-        QVector<StoreProduct> personalizedProducts;
-    };
-
-    struct GetStoreNowOnSaleResponse
-    {
-        QVector<CatalogProduct> products;
-        QVector<StoreNowOnSaleTab> tabs;
-    };
-
-    struct GetStoreNowOnSaleSectionResponse
-    {
-        QString id;
-        QVector<StoreProduct> personalizedProducts;
-        StoreNowOnSaleTabCard bigThingy;
-    };
-
-    struct GetStoreRecommendedDlcsResponse
-    {
-        bool hasRecommendations;
-        QVector<StoreProduct> recommendations;
+        QString description;
+        QVector<CatalogProduct> items;
+        QString seeMoreLink;
     };
 
     struct GetStoreSectionsResponse

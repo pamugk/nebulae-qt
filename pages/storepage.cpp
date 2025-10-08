@@ -3,6 +3,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
 #include <QNetworkReply>
 
 #include "../api/utils/catalogserialization.h"
@@ -11,7 +12,6 @@
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
 #include "../widgets/storesalebrowseallcard.h"
-#include "../widgets/storesalecard.h"
 #include "../widgets/newsitemtile.h"
 
 StorePage::StorePage(QWidget *parent) :
@@ -759,6 +759,96 @@ void StorePage::getRecommendedDlc()
     });
 }*/
 
+void StorePage::getSection(const QString &id, const QString &type)
+{
+    QWidget *sectionWidget = new QWidget(ui->landingScrollAreaContents);
+    ui->landingScrollAreaContentsLayout->addWidget(sectionWidget);
+
+    const auto systemLocale = QLocale::system();
+    const auto sectionReply = apiClient->getStoreSection(id, systemLocale.name(QLocale::TagSeparator::Dash),
+                                                        QLocale::territoryToCode(systemLocale.territory()),
+                                                        systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
+    connect(this, &QObject::destroyed, sectionReply, &QNetworkReply::abort);
+    connect(sectionReply, &QNetworkReply::finished, this, [this, sectionReply, sectionWidget]()
+    {
+        if (sectionReply->error() == QNetworkReply::NoError)
+        {
+            auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+            api::GetStoreProductsSectionResponse data;
+            parseGetStoreProductsSectionResponse(resultJson, data);
+            if (data.items.isEmpty())
+            {
+                ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+                sectionWidget->deleteLater();
+            }
+            else
+            {
+                sectionWidget->setLayout(new QVBoxLayout());
+                auto sectionScrollArea = new QScrollArea(sectionWidget);
+                sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                sectionScrollArea->setMinimumHeight(273);
+                auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
+                auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
+                sectionScrollAreaContentsLayout->setContentsMargins(6, 0, 6, 6);
+                sectionScrollAreaContentsLayout->setSpacing(24);
+                for (const api::CatalogProduct &item : std::as_const(data.items))
+                {
+                    auto itemWidget = new SimpleProductItem(sectionScrollArea);
+                    itemWidget->setCover(item.coverHorizontal, apiClient);
+                    itemWidget->setTitle(item.title);
+                    if (item.price.has_value())
+                    {
+                        itemWidget->setPrice(item.price->baseMoney.amount, item.price->finalMoney.amount,
+                                             std::round((item.price->finalMoney.amount / item.price->baseMoney.amount) * 100),
+                                             item.price->finalMoney.amount == 0, "");
+                    }
+                    connect(this, &StorePage::ownedProductsChanged,
+                            itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setOwned(ids.contains(productId));
+                    });
+                    itemWidget->setOwned(ownedProducts.contains(item.id));
+                    connect(this, &StorePage::wishlistChanged,
+                            itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setWishlisted(ids.contains(productId));
+                    });
+                    itemWidget->setWishlisted(wishlist.contains(item.id));
+                    connect(apiClient, &api::GogApiClient::authenticated,
+                            itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                    itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                    connect(itemWidget, &SimpleProductItem::clicked,
+                            this, [this, productId = item.id]()
+                    {
+                        emit navigate({Page::CATALOG_PRODUCT, productId});
+                    });
+                    sectionScrollAreaContentsLayout->addWidget(itemWidget);
+                }
+                sectionScrollAreaContentsLayout->addStretch();
+                sectionScrollArea->setWidget(sectionScrollAreaContents);
+                sectionWidget->layout()->addWidget(sectionScrollArea);
+
+                if (!data.title.isEmpty())
+                {
+                    auto titleLabel = new QLabel(data.title, ui->landingScrollAreaContents);
+                    titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                    ui->landingScrollAreaContentsLayout->insertWidget(ui->landingScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
+                }
+            }
+        }
+        else if (sectionReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << sectionReply->error()
+                     << sectionReply->errorString()
+                     << QString(sectionReply->readAll()).toUtf8();
+            ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+            sectionWidget->deleteLater();
+        }
+
+        sectionReply->deleteLater();
+    });
+}
+
 void StorePage::getSections()
 {
     ui->landingStackedWidget->setCurrentWidget(ui->landingLoadingPage);
@@ -785,6 +875,13 @@ void StorePage::getSections()
             auto resultJson = QJsonDocument::fromJson(QString(sectionsReply->readAll()).toUtf8()).object();
             api::GetStoreSectionsResponse data;
             parseGetStoreSectionsResponse(resultJson, data);
+            for (const auto &section: std::as_const(data.sections))
+            {
+                if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION"))
+                {
+                    getSection(section.id, section.sectionType);
+                }
+            }
 
             ui->landingStackedWidget->setCurrentWidget(ui->landingResultPage);
         }
@@ -802,16 +899,6 @@ void StorePage::getSections()
 
 void StorePage::initialize(const QVariant &data)
 {
-    /*ui->discoverTabWidget->setCurrentWidget(ui->discoverBestsellingTab);
-    getDiscoverBestsellingGames();
-    getDiscoverNewGames();
-    getDiscoverUpcomingGames();
-    getDealOfTheDay();
-    getNowOnSale();
-    getCustomSectionCDPRGames();
-    getCustomSectionExclusiveGames();
-    getCustomSectionGOGGames();
-    getNews();*/
     getSections();
 }
 
