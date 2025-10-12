@@ -100,7 +100,7 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         if (!client.token().isEmpty())
         {
             data["access_token"] = client.token();
-            data["refresh_token"] = client.token();
+            data["refresh_token"] = client.refreshToken();
             data["user_id"] = userId;
         }
         tokenStorage->setAuthData(data);
@@ -191,6 +191,22 @@ QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QStrin
                                std::pair("limit", QString::number(limit)),
                            }));
     return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode)
+{
+    QUrl url("https://api.gog.com/now_on_sale");
+    url.setQuery(QUrlQuery({
+                               std::pair("locale", locale),
+                               std::pair("countryCode", countryCode),
+                               std::pair("currencyCode", currencyCode),
+                           }));
+    return client.get(url);
+}
+
+QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
+{
+    return client.get(QUrl(QStringLiteral("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
 }
 
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)

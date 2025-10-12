@@ -21,10 +21,13 @@ public:
 
 private:
     api::GogApiClient *apiClient;
+    QVector<QString> nowOnSaleSectionsIds;
+    QVector<bool> nowOnSaleSectionsRequested;
     QSet<const QString> ownedProducts;
     Ui::StorePage *ui;
     QSet<const QString> wishlist;
 
+    void getNowOnSale();
     void getSection(const QString &id, const QString &type);
     void getSections();
 

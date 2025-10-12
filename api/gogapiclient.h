@@ -33,6 +33,8 @@ namespace api
         QNetworkReply *getGame(const QString &id);
         QNetworkReply *getNews(unsigned short pageToken, const QString &locale,
                                unsigned char limit);
+        QNetworkReply *getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode);
+        QNetworkReply *getNowOnSaleSection(const QString &sectionId);
         QNetworkReply *getOrdersHistory(const OrderFilter &filter, unsigned short page = 1);
         QNetworkReply *getOwnedLicensesIds();
         QNetworkReply *getOwnedProducts(const QString &query = QString(),
