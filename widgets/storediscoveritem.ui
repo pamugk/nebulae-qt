@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>620</width>
-    <height>76</height>
+    <height>114</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>76</height>
+    <height>114</height>
    </size>
   </property>
   <property name="cursor">
@@ -57,14 +57,14 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>136</width>
-       <height>76</height>
+       <width>80</width>
+       <height>114</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>136</width>
-       <height>16777215</height>
+       <width>80</width>
+       <height>114</height>
       </size>
      </property>
      <property name="text">
@@ -119,19 +119,6 @@
           <number>0</number>
          </property>
          <item>
-       <widget class="QLabel" name="upcomingLabel">
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(9, 74, 119);</string>
-        </property>
-        <property name="text">
-         <string>SOON</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
-        </property>
-       </widget>
-         </item>
-         <item>
           <widget class="QLabel" name="wishlistedLabel">
            <property name="font">
             <font>
@@ -174,8 +161,8 @@
            </property>
           </spacer>
          </item>
- </layout>
- </widget>
+        </layout>
+       </widget>
       </item>
       <item row="2" column="2">
        <widget class="QLabel" name="newPriceLabel">

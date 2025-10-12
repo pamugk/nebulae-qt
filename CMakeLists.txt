@@ -93,7 +93,7 @@ set(PROJECT_SOURCES
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
         pages/releasepage.h pages/releasepage.cpp pages/releasepage.ui
         pages/storebasepage.h pages/storebasepage.cpp
-        pages/storepage.h pages/storepage.cpp pages/storepage.ui pages/storepageold.ui
+        pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
         widgets/achievementlistitem.h widgets/achievementlistitem.cpp widgets/achievementlistitem.ui

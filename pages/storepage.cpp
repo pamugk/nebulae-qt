@@ -7,7 +7,6 @@
 #include <QNetworkReply>
 #include <QTabWidget>
 
-#include "../api/utils/catalogserialization.h"
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
@@ -305,247 +304,6 @@ void StorePage::getNowOnSale()
     });
 }
 
-/*
-void StorePage::getDiscoverBestsellingGames()
-{
-    auto systemLocale = QLocale::system();
-    ui->discoverBestsellingStackedWidget->setCurrentWidget(ui->discoverBestsellingLoadingPage);
-    discoverBestsellingReply = apiClient->searchCatalog({ "trending", false }, {},
-                                                        QLocale::territoryToCode(systemLocale.territory()),
-                                                        systemLocale.name(QLocale::TagSeparator::Dash),
-                                                        systemLocale.currencySymbol(QLocale::CurrencyIsoCode), 1, 8);
-    connect(discoverBestsellingReply, &QNetworkReply::finished,
-            this, [this]() {
-        auto networkReply = discoverBestsellingReply;
-        discoverBestsellingReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::SearchCatalogResponse data;
-            parseSearchCatalogResponse(resultJson, data);
-
-            for (const api::CatalogProduct &item : std::as_const(data.products))
-            {
-                auto itemWidget = new StoreDiscoverItem(ui->discoverBestsellingResultsPage);
-                itemWidget->setCover(item.coverHorizontal, apiClient);
-                itemWidget->setTitle(item.title);
-                if (item.price.has_value())
-                {
-                    const auto &price = item.price.value();
-                    itemWidget->setPrice(price.baseMoney.amount, price.finalMoney.amount,
-                                         price.discount.isNull() || price.baseMoney.amount == 0
-                                            ? 0
-                                            : std::round(100. * (price.baseMoney.amount - price.finalMoney.amount) / price.baseMoney.amount),
-                                         price.finalMoney.amount == 0, price.finalMoney.currency);
-                }
-                connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setOwned(ids.contains(productId));
-                });
-                itemWidget->setOwned(ownedProducts.contains(item.id));
-                connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setWishlisted(ids.contains(productId));
-                });
-                itemWidget->setWishlisted(wishlist.contains(item.id));
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
-                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::clicked,
-                        this, [this, productId = item.id]()
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->discoverBestsellingResultsPageLayout->addWidget(itemWidget);
-            }
-            ui->discoverBestsellingResultsPageLayout->addStretch();
-            ui->discoverBestsellingStackedWidget->setCurrentWidget(ui->discoverBestsellingResultsPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-}
-
-void StorePage::getDiscoverGamesForYou()
-{
-    ui->discoverGamesForYouStackedWidget->setCurrentWidget(ui->discoverGamesForYouLoadingPage);
-    /*discoverGamesForYouReply = apiClient->getStoreDiscoverGamesForYou();
-    connect(discoverGamesForYouReply, &QNetworkReply::finished,
-            this, [this]() {
-        auto networkReply = discoverGamesForYouReply;
-        discoverGamesForYouReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetStoreDiscoverGamesSectionResponse data;
-            parseGetStoreDiscoverGamesResponse(resultJson, data);
-
-            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
-            {
-                auto itemWidget = new StoreDiscoverItem(ui->discoverGamesForYouResultsPage);
-                itemWidget->setCover(item.image, apiClient);
-                itemWidget->setTitle(item.title);
-                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
-                                     item.price.free, "");
-                connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setOwned(ids.contains(productId));
-                });
-                itemWidget->setOwned(ownedProducts.contains(item.id));
-                connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setWishlisted(ids.contains(productId));
-                });
-                itemWidget->setWishlisted(wishlist.contains(item.id));
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
-                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::clicked,
-                        this, [this, productId = item.id]()
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->discoverGamesForYouResultsPageLayout->addWidget(itemWidget);
-            }
-            ui->discoverGamesForYouResultsPageLayout->addStretch();
-            ui->discoverGamesForYouStackedWidget->setCurrentWidget(ui->discoverGamesForYouResultsPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-}
-
-void StorePage::getDiscoverNewGames()
-{
-    ui->discoverNewStackedWidget->setCurrentWidget(ui->discoverNewLoadingPage);
-    /*discoverNewReply = apiClient->getStoreDiscoverNewGames();
-    connect(discoverNewReply, &QNetworkReply::finished,
-            this, [this]() {
-        auto networkReply = discoverNewReply;
-        discoverNewReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetStoreDiscoverGamesSectionResponse data;
-            parseGetStoreDiscoverGamesResponse(resultJson, data);
-
-            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
-            {
-                auto itemWidget = new StoreDiscoverItem(ui->discoverNewResultsPage);
-                itemWidget->setCover(item.image, apiClient);
-                itemWidget->setTitle(item.title);
-                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
-                                     item.price.free, "");
-                connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setOwned(ids.contains(productId));
-                });
-                itemWidget->setOwned(ownedProducts.contains(item.id));
-                connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setWishlisted(ids.contains(productId));
-                });
-                itemWidget->setWishlisted(wishlist.contains(item.id));
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
-                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::clicked,
-                        this, [this, productId = item.id]()
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->discoverNewResultsPageLayout->addWidget(itemWidget);
-            }
-            ui->discoverNewResultsPageLayout->addStretch();
-            ui->discoverNewStackedWidget->setCurrentWidget(ui->discoverNewResultsPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-}
-
-void StorePage::getDiscoverUpcomingGames()
-{
-    ui->discoverUpcomingStackedWidget->setCurrentWidget(ui->discoverUpcomingLoadingPage);
-    /*discoverUpcomingReply = apiClient->getStoreDiscoverUpcomingGames();
-    connect(discoverUpcomingReply, &QNetworkReply::finished,
-            this, [this]() {
-        auto networkReply = discoverUpcomingReply;
-        discoverUpcomingReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
-        {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
-            api::GetStoreDiscoverGamesSectionResponse data;
-            parseGetStoreDiscoverGamesResponse(resultJson, data);
-
-            for (const api::StoreProduct &item : std::as_const(data.personalizedProducts))
-            {
-                auto itemWidget = new StoreDiscoverItem(ui->discoverUpcomingResultsPage);
-                itemWidget->setCover(item.image, apiClient);
-                itemWidget->setPreorder(item.preorder);
-                itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount, item.price.discountPercentage,
-                                     item.price.free, "");
-                itemWidget->setTitle(item.title);
-                connect(this, &StorePage::ownedProductsChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setOwned(ids.contains(productId));
-                });
-                itemWidget->setOwned(ownedProducts.contains(item.id));
-                connect(this, &StorePage::wishlistChanged,
-                        itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
-                {
-                    itemWidget->setWishlisted(ids.contains(productId));
-                });
-                itemWidget->setWishlisted(wishlist.contains(item.id));
-                connect(apiClient, &api::GogApiClient::authenticated,
-                        itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
-                itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
-                connect(itemWidget, &StoreDiscoverItem::clicked,
-                        this, [this, productId = item.id]()
-                {
-                    emit navigate({Page::CATALOG_PRODUCT, productId});
-                });
-                ui->discoverUpcomingResultsPageLayout->addWidget(itemWidget);
-            }
-            ui->discoverUpcomingResultsPageLayout->addStretch();
-            ui->discoverUpcomingStackedWidget->setCurrentWidget(ui->discoverUpcomingResultsPage);
-        }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
-        }
-        networkReply->deleteLater();
-    });
-}*/
-
 void StorePage::getSection(const QString &id, const QString &type)
 {
     QWidget *sectionWidget = new QWidget(ui->landingScrollAreaContents);
@@ -623,6 +381,92 @@ void StorePage::getSection(const QString &id, const QString &type)
                         titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
                         ui->landingScrollAreaContentsLayout->insertWidget(ui->landingScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
                     }
+                }
+            }
+            else if (type == QLatin1StringView("DISCOVER_GAMES_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStoreDiscoverGamesSectionResponse data;
+                parseGetStoreDiscoverSectionResponse(resultJson, data);
+
+                auto sectionLayout = new QGridLayout();
+                sectionLayout->setHorizontalSpacing(24);
+                sectionWidget->setLayout(sectionLayout);
+
+                auto leftTitleLabel = new QLabel(data.columnLeft.title, sectionWidget);
+                leftTitleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                sectionLayout->addWidget(leftTitleLabel, 0, 0);
+                for (std::size_t i = 0; i < data.columnLeft.items.count(); i++)
+                {
+                    const auto item = &data.columnLeft.items[i];
+                    auto itemWidget = new StoreDiscoverItem(sectionWidget);
+                    itemWidget->setCover(item->coverVertical, apiClient);
+                    if (item->price.has_value())
+                    {
+                        itemWidget->setPrice(item->price->baseMoney.amount, item->price->finalMoney.amount,
+                                             100 - std::round((item->price->finalMoney.amount / item->price->baseMoney.amount) * 100),
+                                             item->price->finalMoney.amount == 0, "");
+                    }
+                    itemWidget->setTitle(item->title);
+                    connect(this, &StorePage::ownedProductsChanged,
+                            itemWidget, [itemWidget, productId = item->id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setOwned(ids.contains(productId));
+                    });
+                    itemWidget->setOwned(ownedProducts.contains(item->id));
+                    connect(this, &StorePage::wishlistChanged,
+                            itemWidget, [itemWidget, productId = item->id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setWishlisted(ids.contains(productId));
+                    });
+                    itemWidget->setWishlisted(wishlist.contains(item->id));
+                    connect(apiClient, &api::GogApiClient::authenticated,
+                            itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                    itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                    connect(itemWidget, &StoreDiscoverItem::clicked,
+                            this, [this, productId = item->id]()
+                    {
+                        emit navigate({Page::CATALOG_PRODUCT, productId});
+                    });
+                    sectionLayout->addWidget(itemWidget, i + 1, 0);
+                }
+
+                auto rightTitleLabel = new QLabel(data.columnRight.title, sectionWidget);
+                rightTitleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                sectionLayout->addWidget(rightTitleLabel, 0, 1);
+                for (std::size_t i = 0; i < data.columnRight.items.count(); i++)
+                {
+                    const auto item = &data.columnRight.items[i];
+                    auto itemWidget = new StoreDiscoverItem(sectionWidget);
+                    itemWidget->setCover(item->coverVertical, apiClient);
+                    if (item->price.has_value())
+                    {
+                        itemWidget->setPrice(item->price->baseMoney.amount, item->price->finalMoney.amount,
+                                             100 - std::round((item->price->finalMoney.amount / item->price->baseMoney.amount) * 100),
+                                             item->price->finalMoney.amount == 0, "");
+                    }
+                    itemWidget->setTitle(item->title);
+                    connect(this, &StorePage::ownedProductsChanged,
+                            itemWidget, [itemWidget, productId = item->id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setOwned(ids.contains(productId));
+                    });
+                    itemWidget->setOwned(ownedProducts.contains(item->id));
+                    connect(this, &StorePage::wishlistChanged,
+                            itemWidget, [itemWidget, productId = item->id](const QSet<const QString> &ids)
+                    {
+                        itemWidget->setWishlisted(ids.contains(productId));
+                    });
+                    itemWidget->setWishlisted(wishlist.contains(item->id));
+                    connect(apiClient, &api::GogApiClient::authenticated,
+                            itemWidget, &StoreDiscoverItem::switchUiAuthenticatedState);
+                    itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                    connect(itemWidget, &StoreDiscoverItem::clicked,
+                            this, [this, productId = item->id]()
+                    {
+                        emit navigate({Page::CATALOG_PRODUCT, productId});
+                    });
+                    sectionLayout->addWidget(itemWidget, i + 1, 1);
                 }
             }
             else if (type == QLatin1StringView("NEWS_SECTION"))
@@ -704,6 +548,7 @@ void StorePage::getSections()
             for (const auto &section: std::as_const(data.sections))
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
+                    || section.sectionType == QLatin1StringView("DISCOVER_GAMES_SECTION")
                     || section.sectionType == QLatin1StringView("NEWS_SECTION"))
                 {
                     getSection(section.id, section.sectionType);

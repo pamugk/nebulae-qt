@@ -14,7 +14,6 @@ StoreDiscoverItem::StoreDiscoverItem(QWidget *parent) :
     ui->oldPriceLabel->setVisible(false);
     ui->newPriceLabel->setVisible(false);
     ui->ownedLabel->setVisible(false);
-    ui->upcomingLabel->setVisible(false);
     ui->wishlistedLabel->setVisible(false);
 }
 
@@ -46,11 +45,6 @@ void StoreDiscoverItem::setCover(const QString &coverUrl, api::GogApiClient *api
 void StoreDiscoverItem::setOwned(bool owned)
 {
     ui->ownedLabel->setVisible(owned);
-}
-
-void StoreDiscoverItem::setPreorder(bool preorder)
-{
-    ui->upcomingLabel->setVisible(preorder);
 }
 
 void StoreDiscoverItem::setTitle(const QString &title)

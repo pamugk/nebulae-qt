@@ -18,8 +18,7 @@ public:
     ~StoreDiscoverItem();
 
     void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
-    void setOwned(bool owned);
-    void setPreorder(bool preorder);
+    void setOwned(bool owned);;
     void setPrice(double basePrice, double finalPrice,
                   unsigned char discount, bool free, const QString &currency);
     void setTitle(const QString &title);
