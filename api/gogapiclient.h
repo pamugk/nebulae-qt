@@ -1,6 +1,8 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
+#include <QNetworkAccessManager>
+#include <QNetworkRequestFactory>
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QObject>
 
@@ -88,7 +90,9 @@ namespace api
         void authenticated(bool authenticated);
 
     private:
-        QOAuth2AuthorizationCodeFlow client;
+        QNetworkRequestFactory api;
+        QNetworkAccessManager client;
+        QOAuth2AuthorizationCodeFlow oauth;
         bool refreshingToken;
         QString userId;
     };

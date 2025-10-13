@@ -318,25 +318,28 @@ void parseCatalogProductInfoResponse(const QJsonValue &json, api::GetCatalogProd
         // For some reason, there can be several bonuses with the same name and different ids,
         // so they have to be merged by a name.
         QSet<QString> fullBonusSet;
-        for (std::size_t i = 0; i < data.editions.count() - 1; i++)
+        if (data.editions.count() > 0)
         {
-            for (const QString &bonusName : std::as_const(data.editions[i].bonuses))
+            for (std::size_t i = 0; i < data.editions.count() - 1; i++)
             {
-                if (fullBonusSet.contains(bonusName))
+                for (const QString &bonusName : std::as_const(data.editions[i].bonuses))
                 {
-                    continue;
-                }
+                    if (fullBonusSet.contains(bonusName))
+                    {
+                        continue;
+                    }
 
-                bool isCommonBonus = true;
-                for (std::size_t j = i + 1; j < data.editions.count() && isCommonBonus; j++)
-                {
-                    isCommonBonus = data.editions[j].bonusSet.contains(bonusName);
-                }
+                    bool isCommonBonus = true;
+                    for (std::size_t j = i + 1; j < data.editions.count() && isCommonBonus; j++)
+                    {
+                        isCommonBonus = data.editions[j].bonusSet.contains(bonusName);
+                    }
 
-                if (isCommonBonus)
-                {
-                    fullBonusSet << bonusName;
-                    data.fullBonusList << bonusName;
+                    if (isCommonBonus)
+                    {
+                        fullBonusSet << bonusName;
+                        data.fullBonusList << bonusName;
+                    }
                 }
             }
         }

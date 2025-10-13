@@ -1,6 +1,5 @@
 #include "gogapiclient.h"
 
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QOAuthHttpServerReplyHandler>
@@ -9,16 +8,18 @@
 
 api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
     : QObject{parent},
-      client(new QNetworkAccessManager(this), this),
+      api(),
+      client(this),
+      oauth(this),
       refreshingToken(false),
       userId()
 {
-    connect(client.networkAccessManager(), &QNetworkAccessManager::finished, this, [this](QNetworkReply *reply)
+    connect(&client, &QNetworkAccessManager::finished, this, [this](QNetworkReply *reply)
     {
         if (reply->error() == QNetworkReply::AuthenticationRequiredError && !refreshingToken)
         {
             refreshingToken = true;
-            client.refreshAccessToken();
+            oauth.refreshTokens();
         }
     });
     auto environment = QProcessEnvironment::systemEnvironment();
@@ -28,50 +29,61 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
             this, [this, tokenStorage](const QVariantMap &data)
     {
         refreshingToken = false;
+        userId = data[QLatin1StringView("user_id")].toString();
         QVariantMap savedData(
-                    {
-                        std::pair("access_token", data["access_token"]),
-                        std::pair("refresh_token", data["refresh_token"]),
-                        std::pair("user_id", data["user_id"].toString()),
-                    });
-        userId = data["user_id"].toString();
+        {
+            std::pair(QLatin1StringView("access_token"), data[QLatin1StringView("access_token")]),
+            std::pair(QLatin1StringView("refresh_token"), data[QLatin1StringView("refresh_token")]),
+            std::pair(QLatin1StringView("user_id"), userId),
+        });
         tokenStorage->setAuthData(savedData);
     });
-    client.setReplyHandler(replyHandler);
+    oauth.setReplyHandler(replyHandler);
     connect(tokenStorage, &AuthDataStorage::authDataAcquired,
             this, [this](const QVariantMap &data)
     {
-        client.setToken(data["access_token"].toString());
-        client.setRefreshToken(data["refresh_token"].toString());
-        if (data.contains("user_id"))
+        QString token = data[QLatin1StringView("access_token")].toString();
+        oauth.setToken(token);
+        oauth.setRefreshToken(data[QLatin1StringView("refresh_token")].toString());
+        if (data.contains(QLatin1StringView("user_id")))
         {
-            userId = data["user_id"].toString();
+            userId = data[QLatin1StringView("user_id")].toString();
         }
         else
         {
             userId = QString();
         }
-        qDebug() << client.token();
-        emit authenticated(!client.token().isEmpty());
+
+        bool authenticated = !token.isEmpty() && !token.isNull();
+        if (authenticated)
+        {
+            api.setBearerToken(token.toLatin1());
+        }
+        else
+        {
+            api.clearBearerToken();
+        }
+
+        emit this->authenticated(authenticated);
     });
     tokenStorage->getAuthData();
-    client.setClientIdentifier(environment.value("GOG_CLIENT_ID"));
-    client.setClientIdentifierSharedKey(environment.value("GOG_CLIENT_SECRET"));
-    client.setAuthorizationUrl(QUrl("https://auth.gog.com/auth"));
-    client.setAccessTokenUrl(QUrl("https://auth.gog.com/token"));
-    client.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters)
+    oauth.setClientIdentifier(environment.value(QLatin1StringView("GOG_CLIENT_ID")));
+    oauth.setClientIdentifierSharedKey(environment.value(QLatin1StringView("GOG_CLIENT_SECRET")));
+    oauth.setAuthorizationUrl(QUrl(QLatin1StringView("https://auth.gog.com/auth")));
+    oauth.setTokenUrl(QUrl(QLatin1StringView("https://auth.gog.com/token")));
+    oauth.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant> *parameters)
     {
         switch (stage)
         {
             case QAbstractOAuth::Stage::RequestingTemporaryCredentials:
             case QAbstractOAuth::Stage::RequestingAuthorization:
             {
-                parameters->insert("layout", "client2");
+                parameters->insert(QLatin1StringView("layout"), QLatin1StringView("client2"));
             }
             case QAbstractOAuth::Stage::RequestingAccessToken:
             {
-                parameters->remove("redirect_uri");
-                parameters->insert("redirect_uri", "https://embed.gog.com/on_login_success?origin=client");
+                parameters->remove(QLatin1StringView("redirect_uri"));
+                parameters->insert(QLatin1StringView("redirect_uri"), QLatin1StringView("https://embed.gog.com/on_login_success?origin=client"));
                 break;
             }
             case QAbstractOAuth::Stage::RefreshingAccessToken:
@@ -79,29 +91,30 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
         }
     });
 
-    connect(&client, &QOAuth2AuthorizationCodeFlow::statusChanged,
+    connect(&oauth, &QOAuth2AuthorizationCodeFlow::statusChanged,
             this, [this](QAbstractOAuth::Status status)
     {
-        refreshingToken = false;
         if (status == QAbstractOAuth::Status::Granted)
         {
+            refreshingToken = false;
             emit authenticated(true);
         }
         else if (status == QAbstractOAuth::Status::NotAuthenticated)
         {
+            refreshingToken = false;
             logout();
         }
     });
-    connect(&client, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
+    connect(&oauth, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this, &GogApiClient::authorize);
 
     connect(tokenStorage, &AuthDataStorage::authDataRequested, this, [this, tokenStorage]()
     {
         QVariantMap data;
-        if (!client.token().isEmpty())
+        if (!oauth.token().isEmpty())
         {
-            data["access_token"] = client.token();
-            data["refresh_token"] = client.refreshToken();
-            data["user_id"] = userId;
+            data[QLatin1StringView("access_token")] = oauth.token();
+            data[QLatin1StringView("refresh_token")] = oauth.refreshToken();
+            data[QLatin1StringView("user_id")] = userId;
         }
         tokenStorage->setAuthData(data);
     });
@@ -114,24 +127,34 @@ QString api::GogApiClient::currentUserId() const
 
 bool api::GogApiClient::isAuthenticated()
 {
-    return !client.token().isNull();
+    return !oauth.token().isEmpty() && !oauth.token().isNull();
 }
 
 QNetworkReply *api::GogApiClient::getAchievements()
 {
-    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gameplay.gog.com/users/%1/sessions").arg(userId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getAnything(const QString &url)
 {
-    return client.get(url);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(url));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCatalogProductInfo(const QString &id, const QString &locale)
 {
-    QVariantMap parameters;
-    parameters["locale"] = locale;
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/v2/games/%1").arg(id)), parameters);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("locale"), locale),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/v2/games/%1").arg(id));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUser()
@@ -141,145 +164,210 @@ QNetworkReply *api::GogApiClient::getCurrentUser()
 
 QNetworkReply *api::GogApiClient::getCurrentUserGameTimeStatistics()
 {
-    return client.get(QStringLiteral("https://gameplay.gog.com/users/%1/external_game_time_stats").arg(userId));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gameplay.gog.com/users/%1/external_game_time_stats").arg(userId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserPlatformAchievements(const QString &platform, const QString &pageToken)
 {
-    QUrlQuery query({ std::make_pair<QString>("platform", platform) });
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("platform"), platform),
+    });
     if (!pageToken.isEmpty())
     {
-        query.addQueryItem("page_token", pageToken);
+        parameters.addQueryItem(QLatin1StringView("page_token"), pageToken);
     }
-    QUrl url(QStringLiteral("https://gameplay.gog.com/users/%1/external_achievements").arg(userId));
-    url.setQuery(query);
-    return client.get(url);
+
+    QUrl url(QLatin1StringView("https://gameplay.gog.com/users/%1/external_achievements").arg(userId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId, const QString &pageToken)
 {
-    QUrl url(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/users/%3/achievements").arg(platformId, platformReleaseId, userId));
+    QUrl url(QLatin1StringView("https://gameplay.gog.com/external_releases/%1_%2/users/%3/achievements").arg(platformId, platformReleaseId, userId));
     if (!pageToken.isEmpty())
     {
-        url.setQuery(QUrlQuery({ std::make_pair("page_token", pageToken) }));
+        QUrlQuery parameters(
+        {
+            std::pair(QLatin1StringView("page_token"), pageToken),
+        });
+        url.setQuery(parameters);
     }
-    return client.get(url);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserPlatformReleaseGameTimeStatistics(const QString &platformId, const QString &platformReleaseId)
 {
-    return client.get(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/users/%3/sessions").arg(platformId, platformReleaseId, userId));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gameplay.gog.com/external_releases/%1_%2/users/%3/sessions").arg(platformId, platformReleaseId, userId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getCurrentUserReleases()
 {
-    return client.get(QStringLiteral("https://galaxy-library.gog.com/users/%1/releases").arg(userId));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://galaxy-library.gog.com/users/%1/releases").arg(userId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getGame(const QString &id)
 {
-    return client.get(QStringLiteral("https://gamesdb.gog.com/games/%1").arg(id));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gamesdb.gog.com/games/%1").arg(id)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getNews(unsigned short pageToken, const QString &locale,
                                           unsigned char limit)
 {
-    QUrl url("https://api.gog.com/news");
-    url.setQuery(QUrlQuery({
-                               std::pair("language_code", locale),
-                               std::pair("page_token", QString::number(pageToken)),
-                               std::pair("limit", QString::number(limit)),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("language_code"), locale),
+        std::pair(QLatin1StringView("page_token"), QString::number(pageToken)),
+        std::pair(QLatin1StringView("limit"), QString::number(limit)),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/news"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getNowOnSale(const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
-    QUrl url("https://api.gog.com/now_on_sale");
-    url.setQuery(QUrlQuery({
-                               std::pair("locale", locale),
-                               std::pair("countryCode", countryCode),
-                               std::pair("currencyCode", currencyCode),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("locale"), locale),
+        std::pair(QLatin1StringView("countryCode"), countryCode),
+        std::pair(QLatin1StringView("currencyCode"), currencyCode),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/now_on_sale"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getNowOnSaleSection(const QString &sectionId)
 {
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://api.gog.com/now_on_sale/%1").arg(sectionId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getOrdersHistory(const OrderFilter &filter, unsigned short page)
 {
-    QVariantMap parameters;
-    parameters["canceled"] = filter.cancelled ? "1" : "0";
-    parameters["completed"] = filter.completed ? "1" : "0";
-    parameters["in_progress"] = filter.inProgress ? "1" : "0";
-    parameters["not_redeemed"] = filter.notRedeemed ? "1" : "0";
-    parameters["pending"] = filter.pending ? "1" : "0";
-    parameters["redeemed"] = filter.redeemed ? "1" : "0";
-    parameters["page"] = QString::number(page);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("canceled"), QLatin1StringView(filter.cancelled ? "1" : "0")),
+        std::pair(QLatin1StringView("completed"), QLatin1StringView(filter.completed ? "1" : "0")),
+        std::pair(QLatin1StringView("in_progress"), QLatin1StringView(filter.inProgress ? "1" : "0")),
+        std::pair(QLatin1StringView("not_redeemed"), QLatin1StringView(filter.notRedeemed ? "1" : "0")),
+        std::pair(QLatin1StringView("pending"), QLatin1StringView(filter.pending ? "1" : "0")),
+        std::pair(QLatin1StringView("redeemed"), QLatin1StringView(filter.redeemed ? "1" : "0")),
+        std::pair(QLatin1StringView("page"), QString::number(page)),
+    });
     if (!filter.query.isEmpty())
     {
-        parameters["search"] = filter.query;
+        parameters.addQueryItem(QLatin1StringView("search"), filter.query);
     }
-    return client.get(QUrl("https://embed.gog.com/account/settings/orders/data"), parameters);
+
+    QUrl url(QLatin1StringView("https://embed.gog.com/account/settings/orders/data"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getOwnedLicensesIds()
 {
-    return client.get(QUrl("https://menu.gog.com/v1/account/licences"));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://menu.gog.com/v1/account/licences")));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getOwnedProducts(const QString &query, const QString &order, unsigned short page)
 {
-    QVariantMap parameters;
-    parameters["hiddenFlag"] = "0";
-    parameters["mediaType"] = "1";
-    parameters["sortBy"] = order;
-    parameters["page"] = QString::number(page);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("hiddenFlag"), QLatin1StringView("0")),
+        std::pair(QLatin1StringView("mediaType"), QLatin1StringView("1")),
+        std::pair(QLatin1StringView("sortBy"), order),
+        std::pair(QLatin1StringView("page"), QString::number(page)),
+    });
     if (!query.isEmpty())
     {
-        parameters["search"] = query;
+        parameters.addQueryItem(QLatin1StringView("search"), query);
     }
-    return client.get(QUrl("https://embed.gog.com/account/getFilteredProducts"), parameters);
+    QUrl url(QLatin1StringView("https://embed.gog.com/account/getFilteredProducts"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getPlatformRelease(const QString &platformId, const QString &platformReleaseId)
 {
-    return client.get(QStringLiteral("https://gamesdb.gog.com/platforms/%1/external_releases/%2").arg(platformId, platformReleaseId));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gamesdb.gog.com/platforms/%1/external_releases/%2").arg(platformId, platformReleaseId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getPlatformReleaseAchievements(const QString &platformId, const QString &platformReleaseId,
                                                                  const QString &locale)
 {
-    QUrl url(QStringLiteral("https://gameplay.gog.com/external_releases/%1_%2/achievements").arg(platformId, platformReleaseId));
-    url.setQuery(QUrlQuery({
-                               std::pair("locale", locale)
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("locale"), locale)
+    });
+    QUrl url(QLatin1StringView("https://gameplay.gog.com/external_releases/%1_%2/achievements").arg(platformId, platformReleaseId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductAchievements(const QString &productId)
 {
-    return client.get(QUrl(QStringLiteral("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(productId, userId)));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gameplay.gog.com/clients/%1/users/%2/sessions").arg(productId, userId)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductAverageRating(const QString &productId, const QString &reviewer)
 {
-    QVariantMap parameters;
+    QUrl url(QLatin1StringView("https://reviews.gog.com/v1/products/%1/averageRating").arg(productId));
     if (!reviewer.isEmpty())
     {
-        parameters["reviewer"] = reviewer;
+        QUrlQuery parameters(
+        {
+            std::pair(QLatin1StringView("reviewer"), reviewer),
+        });
+        url.setQuery(parameters);
     }
-    return client.get(QUrl(QStringLiteral("https://reviews.gog.com/v1/products/%1/averageRating").arg(productId)), parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductPrices(const QString &productId, const QString &countryCode)
 {
-    QVariantMap parameters;
-    parameters["countryCode"] = countryCode;
-    return client.get(QStringLiteral("https://api.gog.com/products/%1/prices").arg(productId), parameters);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("countryCode"), countryCode),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/products/%1/prices").arg(productId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(const QString &productId,
@@ -287,13 +375,17 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsPurchasedTogether(con
                                                                             const QString &currency,
                                                                             unsigned char limit)
 {
-    QUrl url(QStringLiteral("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(productId));
-    url.setQuery(QUrlQuery({
-                               std::pair("country_code", countryCode),
-                               std::pair("currency", currency),
-                               std::pair("limit", QString::number(limit)),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("country_code"), countryCode),
+        std::pair(QLatin1StringView("currency"), currency),
+        std::pair(QLatin1StringView("limit"), QString::number(limit)),
+    });
+    QUrl url(QLatin1StringView("https://recommendations-api.gog.com/v1/recommendations/purchased_together/%1").arg(productId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(const QString &productId,
@@ -301,13 +393,17 @@ QNetworkReply *api::GogApiClient::getProductRecommendationsSimilar(const QString
                                                                   const QString &currency,
                                                                   unsigned char limit)
 {
-    QUrl url(QStringLiteral("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(productId));
-    url.setQuery(QUrlQuery({
-                               std::pair("country_code", countryCode),
-                               std::pair("currency", currency),
-                               std::pair("limit", QString::number(limit)),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("country_code"), countryCode),
+        std::pair(QLatin1StringView("currency"), currency),
+        std::pair(QLatin1StringView("limit"), QString::number(limit)),
+    });
+    QUrl url(QLatin1StringView("https://recommendations-api.gog.com/v1/recommendations/similar/%1").arg(productId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
@@ -315,16 +411,16 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
                                                     const SortOrder &order,
                                                     unsigned short limit, unsigned short page)
 {
-    QUrl url(QStringLiteral("https://reviews.gog.com/v1/products/%1/reviews").arg(productId));
-    QUrlQuery query({
-                        std::pair("limit", QString::number(limit)),
-                        std::pair("order", QStringLiteral("%1:%2").arg(order.ascending ? "asc" : "desc", order.field)),
-                        std::pair("page", QString::number(page)),
-                    });
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("limit"), QString::number(limit)),
+        std::pair(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field)),
+        std::pair(QLatin1StringView("page"), QString::number(page)),
+    });
     if (filters.lastDays.has_value())
     {
         QDateTime searchStart = QDateTime::currentDateTime().addDays(-1 * filters.lastDays.value());
-        query.addQueryItem("date", QStringLiteral("gte:%1").arg(searchStart.toString(Qt::DateFormat::ISODate)));
+        parameters.addQueryItem(QLatin1StringView("date"), QLatin1StringView("gte:%1").arg(searchStart.toString(Qt::DateFormat::ISODate)));
     }
     QStringList selectedLanguages;
     if (filters.otherLanguages)
@@ -347,107 +443,146 @@ QNetworkReply *api::GogApiClient::getProductReviews(const QString &productId,
     }
     if (!selectedLanguages.isEmpty())
     {
-        query.addQueryItem("language",
-                           QStringLiteral("%1:%2")
-                            .arg(filters.otherLanguages ? "not_in" : "in", selectedLanguages.join(',')));
+        parameters.addQueryItem(QLatin1StringView("language"),
+                           QLatin1StringView("%1:%2")
+                            .arg(QLatin1StringView(filters.otherLanguages ? "not_in" : "in"), selectedLanguages.join(',')));
     }
     if (filters.reviewedByOwner.has_value())
     {
-        query.addQueryItem("reviewer",
-                           filters.reviewedByOwner.value()
+        parameters.addQueryItem(QLatin1StringView("reviewer"),
+                           QLatin1StringView(filters.reviewedByOwner.value()
                             ? "in:verified_owner"
-                            : "not_in:verified_owner");
+                            : "not_in:verified_owner"));
     }
     if (filters.reviewedDuringDevelopment.has_value())
     {
-        query.addQueryItem("version",
-                           filters.reviewedDuringDevelopment.value()
+        parameters.addQueryItem(QLatin1StringView("version"),
+                           QLatin1StringView(filters.reviewedDuringDevelopment.value()
                             ? "in:in_development"
-                            : "not_in:in_development");
+                            : "not_in:in_development"));
     }
-    url.setQuery(query);
-    return client.get(url);
+
+    QUrl url(QLatin1StringView("https://reviews.gog.com/v1/products/%1/reviews").arg(productId));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getSeriesGames(unsigned long long seriesId)
 {
-    QUrl url("https://api.gog.com/v2/games");
-    url.setQuery(QUrlQuery({
-                               std::pair("seriesId", QString::number(seriesId)),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("seriesId"), QString::number(seriesId)),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/v2/games"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getRelease(const QString &id)
 {
-    return client.get(QStringLiteral("https://gamesdb.gog.com/releases/%1").arg(id));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://gamesdb.gog.com/releases/%1").arg(id)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
                                                   const QString &countryCode,
                                                   const QString &currencyCode)
 {
-    QUrl url("https://api.gog.com/products/prices");
-    url.setQuery(QUrlQuery({
-                               std::pair("seriesId", QString::number(seriesId)),
-                               std::pair("countryCode", countryCode),
-                               std::pair("currency", currencyCode),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("seriesId"), QString::number(seriesId)),
+        std::pair(QLatin1StringView("countryCode"), countryCode),
+        std::pair(QLatin1StringView("currency"), currencyCode),
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/products/prices"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
-    QUrl url(QStringLiteral("https://sections.gog.com/v1/pages/2f/sections/%1").arg(id));
-    url.setQuery(QUrlQuery({
-                               std::pair("locale", locale),
-                               std::pair("countryCode", countryCode),
-                               std::pair("currencyCode", currencyCode),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("locale"), locale),
+        std::pair(QLatin1StringView("countryCode"), countryCode),
+        std::pair(QLatin1StringView("currencyCode"), currencyCode),
+    });
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f/sections/%1").arg(id));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
-    QUrl url("https://sections.gog.com/v1/pages/2f");
-    url.setQuery(QUrlQuery({
-                               std::pair("locale", locale),
-                               std::pair("countryCode", countryCode),
-                               std::pair("currencyCode", currencyCode),
-                           }));
-    return client.get(url);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("locale"), locale),
+        std::pair(QLatin1StringView("countryCode"), countryCode),
+        std::pair(QLatin1StringView("currencyCode"), currencyCode),
+    });
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getStoreProductInfo(const QString &id, const QString &locale)
 {
-    QVariantMap parameters;
-    parameters["expand"] = "downloads,expanded_dlcs,related_products,changelog";
-    parameters["locale"] = locale;
-    return client.get(QUrl(QStringLiteral("https://api.gog.com/products/%1").arg(id)), parameters);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("expand"), QLatin1StringView("downloads,expanded_dlcs,related_products,changelog")),
+        std::pair(QLatin1StringView("locale"), locale)
+    });
+    QUrl url(QLatin1StringView("https://api.gog.com/products/%1").arg(id));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getUser(const QString &id)
 {
-    return client.get(QStringLiteral("https://users.gog.com/users/%1").arg(id));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://users.gog.com/users/%1").arg(id)));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getWishlist(const QString &query, const QString &order, unsigned short page)
 {
-    QVariantMap parameters;
-    parameters["hiddenFlag"] = "0";
-    parameters["mediaType"] = "1";
-    parameters["sortBy"] = order;
-    parameters["page"] = QString::number(page);
+    QUrlQuery parameters(
+    {
+        std::pair(QLatin1StringView("hiddenFlag"), QLatin1StringView("0")),
+        std::pair(QLatin1StringView("mediaType"), QLatin1StringView("1")),
+        std::pair(QLatin1StringView("sortBy"), order),
+        std::pair(QLatin1StringView("page"), QString::number(page))
+    });
     if (!query.isEmpty())
     {
-        parameters["search"] = query;
+        parameters.addQueryItem(QLatin1StringView("search"), query);
     }
-    return client.get(QUrl("https://embed.gog.com/account/wishlist/search"), parameters);
+
+    QUrl url(QLatin1StringView("https://embed.gog.com/account/wishlist/search"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::getWishlistIds()
 {
-    return client.get(QUrl("https://embed.gog.com/user/wishlist.json"));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://embed.gog.com/user/wishlist.json")));
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
@@ -457,115 +592,114 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
                                                 QString currencyCode,
                                                 unsigned short page, unsigned int limit)
 {
-    QUrlQuery query;
-    query.addQueryItem("limit", QString::number(limit));
+    QUrlQuery parameters;
+    parameters.addQueryItem(QLatin1StringView("limit"), QString::number(limit));
     if (!filter.query.isEmpty())
     {
-        query.addQueryItem("query", "like:" + filter.query);
+        parameters.addQueryItem(QLatin1StringView("query"), QLatin1StringView("like:") + filter.query);
     }
     if (filter.free)
     {
-        query.addQueryItem("price", "between:0,0");
+        parameters.addQueryItem(QLatin1StringView("price"), QLatin1StringView("between:0,0"));
     }
     if (!filter.developers.isEmpty())
     {
-        query.addQueryItem("developers", "in:" + filter.developers.join(','));
+        parameters.addQueryItem(QLatin1StringView("developers"), QLatin1StringView("in:") + filter.developers.join(','));
     }
     if (!filter.publishers.isEmpty())
     {
-        query.addQueryItem("publishers", "in:" + filter.publishers.join(','));
+        parameters.addQueryItem(QLatin1StringView("publishers"), QLatin1StringView("in:") + filter.publishers.join(','));
     }
-    query.addQueryItem("order", QStringLiteral("%1:%2").arg(order.ascending ? "asc" : "desc", order.field));
+    parameters.addQueryItem(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field));
     if (!filter.genres.isEmpty())
     {
-        query.addQueryItem("genres", "in:" + filter.genres.join(','));
+        parameters.addQueryItem(QLatin1StringView("genres"), QLatin1StringView("in:") + filter.genres.join(','));
     }
     if (!filter.excludeGenres.isEmpty())
     {
-        query.addQueryItem("excludeGenres", "in:" + filter.excludeGenres.join(','));
+        parameters.addQueryItem(QLatin1StringView("excludeGenres"), QLatin1StringView("in:") + filter.excludeGenres.join(','));
     }
     if (!filter.languages.isEmpty())
     {
-        query.addQueryItem("languages", "in:" + filter.languages.join(','));
+        parameters.addQueryItem(QLatin1StringView("languages"), QLatin1StringView("in:") + filter.languages.join(','));
     }
     if (!filter.systems.isEmpty())
     {
-        query.addQueryItem("systems", "in:" + filter.systems.join(','));
+        parameters.addQueryItem(QLatin1StringView("systems"), QLatin1StringView("in:") + filter.systems.join(','));
     }
     if (!filter.tags.isEmpty())
     {
-        query.addQueryItem("tags", "in:" + filter.tags.join(','));
+        parameters.addQueryItem(QLatin1StringView("tags"), QLatin1StringView("in:") + filter.tags.join(','));
     }
     if (!filter.excludeTags.isEmpty())
     {
-        query.addQueryItem("excludeTags", "in:" + filter.excludeTags.join(','));
+        parameters.addQueryItem(QLatin1StringView("excludeTags"), QLatin1StringView("in:") + filter.excludeTags.join(','));
     }
     if (!filter.features.isEmpty())
     {
-        query.addQueryItem("features", "in:" + filter.features.join(','));
+        parameters.addQueryItem(QLatin1StringView("features"), QLatin1StringView("in:") + filter.features.join(','));
     }
     if (!filter.excludeFeatures.isEmpty())
     {
-        query.addQueryItem("excludeFeatures", "in:" + filter.excludeFeatures.join(','));
+        parameters.addQueryItem(QLatin1StringView("excludeFeatures"), QLatin1StringView("in:") + filter.excludeFeatures.join(','));
     }
     if (!filter.releaseStatuses.isEmpty())
     {
-        query.addQueryItem("releaseStatuses", "in:" + filter.releaseStatuses.join(','));
+        parameters.addQueryItem(QLatin1StringView("releaseStatuses"), QLatin1StringView("in:") + filter.releaseStatuses.join(','));
     }
     if (!filter.excludeReleaseStatuses.isEmpty())
     {
-        query.addQueryItem("excludeReleaseStatuses", "in:" + filter.excludeReleaseStatuses.join(','));
+        parameters.addQueryItem(QLatin1StringView("excludeReleaseStatuses"), QLatin1StringView("in:") + filter.excludeReleaseStatuses.join(','));
     }
     if (!filter.productTypes.isEmpty())
     {
-        query.addQueryItem("productType", "in:" + filter.productTypes.join(','));
+        parameters.addQueryItem(QLatin1StringView("productType"), QLatin1StringView("in:") + filter.productTypes.join(','));
     }
     if(filter.discounted)
     {
-        query.addQueryItem("discounted", "eq:true");
+        parameters.addQueryItem(QLatin1StringView("discounted"), QLatin1StringView("eq:true"));
     }
     if(filter.hideOwned)
     {
-        query.addQueryItem("hideOwned", "true");
+        parameters.addQueryItem(QLatin1StringView("hideOwned"), QLatin1StringView("true"));
     }
     if(filter.onlyDlcForOwned)
     {
-        query.addQueryItem("onlyDlcForOwned", "true");
+        parameters.addQueryItem(QLatin1StringView("onlyDlcForOwned"), QLatin1StringView("true"));
     }
     if (filter.onlyWishlisted)
     {
-        query.addQueryItem("wishlist", "eq:true");
+        parameters.addQueryItem(QLatin1StringView("wishlist"), QLatin1StringView("eq:true"));
     }
-    query.addQueryItem("page", QString::number(page));
-    query.addQueryItem("countryCode", countryCode);
-    query.addQueryItem("locale", locale);
-    query.addQueryItem("currencyCode", currencyCode);
+    parameters.addQueryItem(QLatin1StringView("page"), QString::number(page));
+    parameters.addQueryItem(QLatin1StringView("countryCode"), countryCode);
+    parameters.addQueryItem(QLatin1StringView("locale"), locale);
+    parameters.addQueryItem(QLatin1StringView("currencyCode"), currencyCode);
 
-    QUrl url("https://catalog.gog.com/v1/catalog");
-    url.setQuery(query);
-
-    return client.token().isEmpty()
-            // This is needed to circumvent strict bearer token validation on catalog endpoints.
-            // QAbstractOAuth2::prepareRequest sets empty token to Authorization header,
-            // and this causes request to fail.
-            ? client.networkAccessManager()->get(QNetworkRequest(url))
-            : client.get(url);
+    QUrl url(QLatin1StringView("https://catalog.gog.com/v1/catalog"));
+    url.setQuery(parameters);
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(url);
+    return client.get(request);
 }
 
 QNetworkReply *api::GogApiClient::setWishlistVisibility(int visibility)
 {
-    return client.get(QStringLiteral("https://embed.gog.com/account/save_sharing_wishlist/%1").arg(QString::number(visibility)));
+    QNetworkRequest request = api.createRequest();
+    request.setUrl(QUrl(QLatin1StringView("https://embed.gog.com/account/save_sharing_wishlist/%1").arg(QString::number(visibility))));
+    return client.get(request);
 }
 
 void api::GogApiClient::grant()
 {
-    client.grant();
+    oauth.grant();
 }
 
 void api::GogApiClient::logout()
 {
-    client.setToken(QString());
-    client.setRefreshToken(QString());
-    userId = {};
+    api.clearBearerToken();
+    oauth.setToken(QString());
+    oauth.setRefreshToken(QString());
+    userId = QString();
     emit authenticated(false);
 }

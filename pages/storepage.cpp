@@ -195,7 +195,7 @@ void StorePage::getNowOnSale()
                 connect(dealCard, &StoreSaleCard::navigateToItem,
                         this, [this]()
                 {
-                    emit navigate({Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) })});
+                    emit navigate({Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair(QLatin1StringView("discounted"), true) })});
                 });
                 nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
 
@@ -283,7 +283,7 @@ void StorePage::getNowOnSale()
             connect(browseAllCard, &StoreSaleBrowseAllCard::navigateToItem,
                     this, [this]()
             {
-                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) }) });
+                emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair(QLatin1StringView("discounted"), true) }) });
             });
             nowOnSaleDealsScrollAreaContentsLayout->addWidget(browseAllCard, row, column, 2, 1);
 
