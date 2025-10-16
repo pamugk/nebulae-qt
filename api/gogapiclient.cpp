@@ -28,11 +28,13 @@ api::GogApiClient::GogApiClient(AuthDataStorage *tokenStorage, QObject *parent)
     connect(replyHandler, &QOAuthHttpServerReplyHandler::tokensReceived,
             this, [this, tokenStorage](const QVariantMap &data)
     {
+        QString token = data[QLatin1StringView("access_token")].toString();
+        api.setBearerToken(token.toLatin1());
         refreshingToken = false;
         userId = data[QLatin1StringView("user_id")].toString();
         QVariantMap savedData(
         {
-            std::pair(QLatin1StringView("access_token"), data[QLatin1StringView("access_token")]),
+            std::pair(QLatin1StringView("access_token"), token),
             std::pair(QLatin1StringView("refresh_token"), data[QLatin1StringView("refresh_token")]),
             std::pair(QLatin1StringView("user_id"), userId),
         });
