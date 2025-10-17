@@ -1,6 +1,7 @@
 #include "storepage.h"
 #include "ui_storepage.h"
 
+#include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -10,6 +11,7 @@
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
+#include "../widgets/storehighlightsitem.h"
 #include "../widgets/storesalebrowseallcard.h"
 #include "../widgets/storesalecard.h"
 #include "../widgets/newsitemtile.h"
@@ -383,6 +385,109 @@ void StorePage::getSection(const QString &id, const QString &type)
                     }
                 }
             }
+            else if (type == QLatin1StringView("BIG_SPOT_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStoreHighlightsSectionResponse data;
+                parseGetStoreHighlightsSectionResponse(resultJson, data);
+
+                if (data.items.isEmpty())
+                {
+                    ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+                    sectionWidget->setLayout(new QVBoxLayout());
+                    auto sectionScrollArea = new QScrollArea(sectionWidget);
+                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                    sectionScrollArea->setMinimumHeight(532);
+                    sectionScrollArea->setMinimumWidth(1108);
+                    auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
+                    auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
+                    sectionScrollAreaContentsLayout->setContentsMargins(6, 13, 6, 35);
+                    sectionScrollAreaContentsLayout->setSpacing(16);
+                    for (const api::StoreBannerItem &item : std::as_const(data.items))
+                    {
+                        auto itemWidget = new StoreHighlightsItem(sectionScrollArea);
+                        if (!item.background.isEmpty())
+                        {
+                            QString url = item.background;
+                            QNetworkReply *backgroundReply = apiClient->getAnything(url.replace(".jpg", "_big_spot_background_1096x460.webp"));
+                            connect(itemWidget, &StoreHighlightsItem::destroyed, backgroundReply, &QNetworkReply::abort);
+                            connect(backgroundReply, &QNetworkReply::finished, itemWidget, [itemWidget, backgroundReply]()
+                            {
+                                if (backgroundReply->error() == QNetworkReply::NoError)
+                                {
+                                    QPixmap image;
+                                    image.loadFromData(backgroundReply->readAll());
+                                    itemWidget->setBackgroundImage(image);
+                                }
+                                backgroundReply->deleteLater();
+                            });
+                        }
+                        if (!item.logo.isEmpty())
+                        {
+                            QString url = item.logo;
+                            QNetworkReply *logoReply = apiClient->getAnything(url.replace(".jpg", "_big_spot_logo_460x285.webp"));
+                            connect(itemWidget, &StoreHighlightsItem::destroyed, logoReply, &QNetworkReply::abort);
+                            connect(logoReply, &QNetworkReply::finished, itemWidget, [itemWidget, logoReply]()
+                            {
+                                if (logoReply->error() == QNetworkReply::NoError)
+                                {
+                                    QPixmap image;
+                                    image.loadFromData(logoReply->readAll());
+                                    itemWidget->setLogoImage(image);
+                                }
+                                logoReply->deleteLater();
+                            });
+                        }
+                        itemWidget->setTitle(item.title);
+                        if (item.product.has_value())
+                        {
+                            itemWidget->setSubtitle(item.product->title);
+                            if (item.product->price.has_value())
+                            {
+                                itemWidget->setPrice(item.product->price->baseMoney.amount, item.product->price->finalMoney.amount,
+                                                     100 - std::round((item.product->price->finalMoney.amount / item.product->price->baseMoney.amount) * 100));
+                            }
+                            connect(this, &StorePage::wishlistChanged,
+                                    itemWidget, [itemWidget, productId = item.product->id](const QSet<const QString> &ids)
+                            {
+                                itemWidget->setWishlisted(ids.contains(productId));
+                            });
+                            itemWidget->setWishlisted(wishlist.contains(item.product->id));
+                            connect(itemWidget, &StoreHighlightsItem::clicked, this, [this, productId = item.product->id]()
+                            {
+                                emit navigate({Page::CATALOG_PRODUCT, productId});
+                            });
+                        }
+                        else
+                        {
+                            itemWidget->setSubtitle(item.subtitle);
+                            if (!item.customProperties.buttonText.isEmpty())
+                            {
+                                itemWidget->setCustomButton(item.customProperties.buttonText);
+                            }
+                            if (!item.customProperties.url.isEmpty())
+                            {
+                                connect(itemWidget, &StoreHighlightsItem::customInfoClicked, this, [url = item.customProperties.url]()
+                                {
+                                    QDesktopServices::openUrl(QUrl(url));
+                                });
+                            }
+                        }
+                        sectionScrollAreaContentsLayout->addWidget(itemWidget);
+                    }
+                    sectionScrollAreaContentsLayout->addStretch();
+                    sectionScrollArea->setWidget(sectionScrollAreaContents);
+                    sectionWidget->layout()->addWidget(sectionScrollArea);
+
+                    auto titleLabel = new QLabel(tr("Highlights"), ui->landingScrollAreaContents);
+                    titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                    ui->landingScrollAreaContentsLayout->insertWidget(ui->landingScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
+                }
+            }
             else if (type == QLatin1StringView("DISCOVER_GAMES_SECTION"))
             {
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
@@ -548,6 +653,7 @@ void StorePage::getSections()
             for (const auto &section: std::as_const(data.sections))
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
+                    || section.sectionType == QLatin1StringView("BIG_SPOT_SECTION")
                     || section.sectionType == QLatin1StringView("DISCOVER_GAMES_SECTION")
                     || section.sectionType == QLatin1StringView("NEWS_SECTION"))
                 {

@@ -18,7 +18,7 @@ public:
     ~StoreDiscoverItem();
 
     void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
-    void setOwned(bool owned);;
+    void setOwned(bool owned);
     void setPrice(double basePrice, double finalPrice,
                   unsigned char discount, bool free, const QString &currency);
     void setTitle(const QString &title);
@@ -34,7 +34,6 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QNetworkReply *imageReply;
     Ui::StoreDiscoverItem *ui;
 };
 

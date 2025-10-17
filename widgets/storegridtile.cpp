@@ -33,26 +33,21 @@ StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
         ui->oldPriceLabel->setVisible(false);
         ui->priceLabel->setVisible(false);
     }
-    imageReply = apiClient->getAnything(data.coverHorizontal);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(data.coverHorizontal);
+    connect(this, &StoreGridTile::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size()));
         }
-        networkReply->deleteLater();
+        imageReply->deleteLater();
     });
 }
 
 StoreGridTile::~StoreGridTile()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

@@ -3,7 +3,6 @@
 
 SimpleProductItem::SimpleProductItem(QWidget *parent) :
     QWidget(parent),
-    imageReply(nullptr),
     ui(new Ui::SimpleProductItem)
 {
     ui->setupUi(this);
@@ -19,23 +18,18 @@ SimpleProductItem::SimpleProductItem(QWidget *parent) :
 
 SimpleProductItem::~SimpleProductItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 
 void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *apiClient)
 {
-    imageReply = apiClient->getAnything(coverUrl);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(coverUrl);
+    connect(this, &SimpleProductItem::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             this->setMinimumWidth(image.width());
             this->setMaximumWidth(this->minimumWidth());
             this->setMinimumHeight(image.height() + 97);
@@ -49,7 +43,7 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
             ui->dealLabel->setMaximumWidth(this->minimumWidth());
             ui->coverLabel->setPixmap(image);
         }
-        networkReply->deleteLater();
+        imageReply->deleteLater();
     });
 }
 
@@ -77,7 +71,7 @@ void SimpleProductItem::setPrice(double basePrice, double finalPrice,
     }
     ui->newPriceLabel->setText(
                 free
-                ? "Free"
+                ? tr("Free")
                 : systemLocale.toCurrencyString(finalPrice, currency));
     ui->newPriceLabel->setVisible(true);
 }

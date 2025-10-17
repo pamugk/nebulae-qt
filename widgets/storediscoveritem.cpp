@@ -5,7 +5,6 @@
 
 StoreDiscoverItem::StoreDiscoverItem(QWidget *parent) :
     QWidget(parent),
-    imageReply(nullptr),
     ui(new Ui::StoreDiscoverItem)
 {
     ui->setupUi(this);
@@ -19,26 +18,21 @@ StoreDiscoverItem::StoreDiscoverItem(QWidget *parent) :
 
 StoreDiscoverItem::~StoreDiscoverItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 
 void StoreDiscoverItem::setCover(const QString &coverUrl, api::GogApiClient *apiClient)
 {
-    imageReply = apiClient->getAnything(coverUrl);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(coverUrl);
+    connect(this, &StoreDiscoverItem::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size(), Qt::KeepAspectRatioByExpanding));
         }
-        networkReply->deleteLater();
+        imageReply->deleteLater();
     });
 }
 
@@ -71,7 +65,7 @@ void StoreDiscoverItem::setPrice(double basePrice, double finalPrice,
     ui->newPriceLabel->setVisible(true);
     ui->newPriceLabel->setText(
                 free
-                ? "Free"
+                ? tr("Free")
                 : systemLocale.toCurrencyString(finalPrice, currency));
 }
 

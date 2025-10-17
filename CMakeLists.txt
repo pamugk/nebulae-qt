@@ -113,8 +113,9 @@ set(PROJECT_SOURCES
         widgets/ownedproductgriditem.h widgets/ownedproductgriditem.cpp widgets/ownedproductgriditem.ui
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
-        widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
+        widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
+        widgets/storehighlightsitem.h widgets/storehighlightsitem.cpp widgets/storehighlightsitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui
         widgets/storesalebrowseallcard.h widgets/storesalebrowseallcard.cpp widgets/storesalebrowseallcard.ui
