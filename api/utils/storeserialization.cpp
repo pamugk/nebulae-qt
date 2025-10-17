@@ -127,7 +127,24 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data)
 {
     const auto properties = json["properties"];
-    parseBannerItem(properties, data.data);
+    data.data.id = properties["id"].toString();
+    if (properties["product"].isObject() && !properties["product"].isNull())
+    {
+        api::CatalogProduct product;
+        parseCatalogProduct(properties["product"], product, "_product_tile_256.webp");
+        data.data.product = product;
+    }
+    data.data.background = properties["background"]["desktop"].toString();
+    data.data.logo = properties["logo"]["desktop"].toString();
+    data.data.gradientBaseColor = properties["gradientBaseColor"]["desktop"].toString();
+    data.data.title = properties["info"].toString();
+    data.data.subtitle = properties["headline"].toString();
+    data.data.visibleFrom = QDateTime::fromString(properties["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.data.visibleTo = QDateTime::fromString(properties["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.data.customProperties.url = properties["url"].toString();
+    data.data.customProperties.buttonText = properties["buttonText"].toString();
+    data.data.customProperties.discountText = properties["discountText"].toString();
+    data.data.useDarkColorFont = properties["useDarkColorFont"].toBool();
 }
 
 void parseGetStoreDiscoverSectionResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data)

@@ -385,6 +385,93 @@ void StorePage::getSection(const QString &id, const QString &type)
                     }
                 }
             }
+            else if (type == QLatin1StringView("TAKEOVER_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStoreAnnouncementSectionResponse data;
+                parseGetStoreAnnouncementSectionResponse(resultJson, data);
+
+                if (!data.data.product.has_value() && data.data.customProperties.url.isEmpty())
+                {
+                    ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+                    sectionWidget->setLayout(new QHBoxLayout());
+                    sectionWidget->setMinimumHeight(472);
+                    auto announcementWidget = new StoreHighlightsItem(sectionWidget);
+                    sectionWidget->layout()->addWidget(announcementWidget);
+                    sectionWidget->layout()->setAlignment(announcementWidget, Qt::AlignHCenter);
+
+                    if (!data.data.background.isEmpty())
+                    {
+                        QNetworkReply *backgroundReply = apiClient->getAnything(data.data.background);
+                        connect(announcementWidget, &StoreHighlightsItem::destroyed, backgroundReply, &QNetworkReply::abort);
+                        connect(backgroundReply, &QNetworkReply::finished, announcementWidget, [announcementWidget, backgroundReply]()
+                        {
+                            if (backgroundReply->error() == QNetworkReply::NoError)
+                            {
+                                QPixmap image;
+                                image.loadFromData(backgroundReply->readAll());
+                                announcementWidget->setBackgroundImage(image.copy((image.width() - 1096) / 2, (image.height() - 460) / 2, 1096, 460));
+                            }
+                            backgroundReply->deleteLater();
+                        });
+                    }
+                    if (!data.data.logo.isEmpty())
+                    {
+                        QString url = data.data.logo;
+                        QNetworkReply *logoReply = apiClient->getAnything(url.replace(".jpg", "_big_spot_logo_460x285.webp"));
+                        connect(announcementWidget, &StoreHighlightsItem::destroyed, logoReply, &QNetworkReply::abort);
+                        connect(logoReply, &QNetworkReply::finished, announcementWidget, [announcementWidget, logoReply]()
+                        {
+                            if (logoReply->error() == QNetworkReply::NoError)
+                            {
+                                QPixmap image;
+                                image.loadFromData(logoReply->readAll());
+                                announcementWidget->setLogoImage(image);
+                            }
+                            logoReply->deleteLater();
+                        });
+                    }
+                    announcementWidget->setTitle(data.data.title);
+                    if (data.data.product.has_value())
+                    {
+                        announcementWidget->setSubtitle(data.data.product->title);
+                        if (data.data.product->price.has_value())
+                        {
+                            announcementWidget->setPrice(data.data.product->price->baseMoney.amount, data.data.product->price->finalMoney.amount,
+                                                 100 - std::round((data.data.product->price->finalMoney.amount / data.data.product->price->baseMoney.amount) * 100));
+                        }
+                        connect(this, &StorePage::wishlistChanged,
+                                announcementWidget, [announcementWidget, productId = data.data.product->id](const QSet<const QString> &ids)
+                        {
+                            announcementWidget->setWishlisted(ids.contains(productId));
+                        });
+                        announcementWidget->setWishlisted(wishlist.contains(data.data.product->id));
+                        connect(announcementWidget, &StoreHighlightsItem::clicked, this, [this, productId = data.data.product->id]()
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                    }
+                    else
+                    {
+                        announcementWidget->setSubtitle(data.data.subtitle);
+                        if (!data.data.customProperties.buttonText.isEmpty())
+                        {
+                            announcementWidget->setCustomButton(data.data.customProperties.buttonText);
+                        }
+                        if (!data.data.customProperties.url.isEmpty())
+                        {
+                            connect(announcementWidget, &StoreHighlightsItem::customInfoClicked, this, [url = data.data.customProperties.url]()
+                            {
+                                QDesktopServices::openUrl(QUrl(url));
+                            });
+                        }
+                    }
+                }
+            }
             else if (type == QLatin1StringView("BIG_SPOT_SECTION"))
             {
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
@@ -653,6 +740,7 @@ void StorePage::getSections()
             for (const auto &section: std::as_const(data.sections))
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
+                    || section.sectionType == QLatin1StringView("TAKEOVER_SECTION")
                     || section.sectionType == QLatin1StringView("BIG_SPOT_SECTION")
                     || section.sectionType == QLatin1StringView("DISCOVER_GAMES_SECTION")
                     || section.sectionType == QLatin1StringView("NEWS_SECTION"))
