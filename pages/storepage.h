@@ -19,6 +19,9 @@ public:
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
     QVector<QString> nowOnSaleSectionsIds;
@@ -33,6 +36,7 @@ private:
 
     Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void resized(bool widthChanged, bool heightChanged);
     Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:

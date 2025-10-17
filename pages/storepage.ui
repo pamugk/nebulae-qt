@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1136</width>
     <height>600</height>
    </rect>
   </property>
@@ -52,6 +52,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="landingResultPage">
+      <property name="minimumSize">
+       <size>
+        <width>1160</width>
+        <height>0</height>
+       </size>
+      </property>
       <layout class="QVBoxLayout" name="landingResultPageLayout">
        <property name="spacing">
         <number>0</number>
@@ -78,8 +84,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>1160</width>
+            <height>600</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="landingScrollAreaContentsLayout">
@@ -90,7 +96,7 @@
             <number>8</number>
            </property>
            <property name="topMargin">
-            <number>8</number>
+            <number>0</number>
            </property>
            <property name="rightMargin">
             <number>8</number>

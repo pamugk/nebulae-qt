@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QNetworkReply>
+#include <QResizeEvent>
 #include <QTabWidget>
 
 #include "../api/utils/storeserialization.h"
@@ -325,6 +326,7 @@ void StorePage::getSection(const QString &id, const QString &type)
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
                 api::GetStoreProductsSectionResponse data;
                 parseGetStoreProductsSectionResponse(resultJson, data);
+
                 if (data.items.isEmpty())
                 {
                     ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
@@ -398,23 +400,51 @@ void StorePage::getSection(const QString &id, const QString &type)
                 }
                 else
                 {
-                    sectionWidget->setLayout(new QHBoxLayout());
-                    sectionWidget->setMinimumHeight(472);
+                    sectionWidget->setMinimumHeight(460);
                     auto announcementWidget = new StoreHighlightsItem(sectionWidget);
-                    sectionWidget->layout()->addWidget(announcementWidget);
-                    sectionWidget->layout()->setAlignment(announcementWidget, Qt::AlignHCenter);
+                    announcementWidget->move((sectionWidget->width() - announcementWidget->width()) / 2, 0);
+                    connect(this, &StorePage::resized, announcementWidget, [sectionWidget, announcementWidget](bool widthChanged, bool heightChanged)
+                            {
+                                if (widthChanged)
+                                {
+                                    announcementWidget->move((sectionWidget->width() - announcementWidget->width()) / 2, 0);
+                                }
+                            });
 
                     if (!data.data.background.isEmpty())
                     {
                         QNetworkReply *backgroundReply = apiClient->getAnything(data.data.background);
                         connect(announcementWidget, &StoreHighlightsItem::destroyed, backgroundReply, &QNetworkReply::abort);
-                        connect(backgroundReply, &QNetworkReply::finished, announcementWidget, [announcementWidget, backgroundReply]()
+                        connect(backgroundReply, &QNetworkReply::finished, announcementWidget, [this, sectionWidget, announcementWidget, backgroundReply]()
                         {
                             if (backgroundReply->error() == QNetworkReply::NoError)
                             {
                                 QPixmap image;
                                 image.loadFromData(backgroundReply->readAll());
-                                announcementWidget->setBackgroundImage(image.copy((image.width() - 1096) / 2, (image.height() - 460) / 2, 1096, 460));
+                                QLabel *backgroundLabel = new QLabel(sectionWidget);
+                                backgroundLabel->setFixedSize(sectionWidget->size());
+                                backgroundLabel->setScaledContents(true);
+                                QPixmap usedImage = image;
+                                if (sectionWidget->width() < image.width())
+                                {
+                                    usedImage = image.copy((image.width() - sectionWidget->width()) / 2, (image.height() - sectionWidget->height()) / 2, sectionWidget->width(), sectionWidget->height());
+                                }
+                                backgroundLabel->setPixmap(usedImage.scaled(sectionWidget->size(), Qt::AspectRatioMode::KeepAspectRatioByExpanding));
+                                backgroundLabel->show();
+                                backgroundLabel->stackUnder(announcementWidget);
+                                connect(this, &StorePage::resized, backgroundLabel, [sectionWidget, backgroundLabel, image](bool widthChanged, bool heightChanged)
+                                        {
+                                            if (widthChanged)
+                                            {
+                                                backgroundLabel->setFixedWidth(sectionWidget->width());
+                                                QPixmap usedImage = image;
+                                                if (sectionWidget->width() < image.width())
+                                                {
+                                                    usedImage = image.copy((image.width() - sectionWidget->width()) / 2, 0, sectionWidget->width(), sectionWidget->height());
+                                                }
+                                                backgroundLabel->setPixmap(usedImage);
+                                            }
+                                        });
                             }
                             backgroundReply->deleteLater();
                         });
@@ -470,6 +500,7 @@ void StorePage::getSection(const QString &id, const QString &type)
                             });
                         }
                     }
+                    announcementWidget->show();
                 }
             }
             else if (type == QLatin1StringView("BIG_SPOT_SECTION"))
@@ -661,6 +692,78 @@ void StorePage::getSection(const QString &id, const QString &type)
                     sectionLayout->addWidget(itemWidget, i + 1, 1);
                 }
             }
+            else if (type == QLatin1StringView("RANKING_SECTION"))
+            {
+
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStoreRankingSectionResponse data;
+                parseGetStoreRankingSectionResponse(resultJson, data);
+
+                if (data.items.isEmpty())
+                {
+                    ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+                    sectionWidget->setLayout(new QVBoxLayout());
+                    auto sectionScrollArea = new QScrollArea(sectionWidget);
+                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                    sectionScrollArea->setMinimumHeight(296);
+                    auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
+                    auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
+                    sectionScrollAreaContentsLayout->setContentsMargins(6, 0, 6, 6);
+                    sectionScrollAreaContentsLayout->setSpacing(24);
+                    unsigned int rank = 1;
+                    for (const api::CatalogProduct &item : std::as_const(data.items))
+                    {
+                        auto itemWidget = new SimpleProductItem(sectionScrollArea);
+                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        itemWidget->setTitle(item.title);
+                        if (item.price.has_value())
+                        {
+                            itemWidget->setPrice(item.price->baseMoney.amount, item.price->finalMoney.amount,
+                                                 100 - std::round((item.price->finalMoney.amount / item.price->baseMoney.amount) * 100),
+                                                 item.price->finalMoney.amount == 0, "");
+                        }
+                        connect(this, &StorePage::ownedProductsChanged,
+                                itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                                {
+                                    itemWidget->setOwned(ids.contains(productId));
+                                });
+                        itemWidget->setOwned(ownedProducts.contains(item.id));
+                        connect(this, &StorePage::wishlistChanged,
+                                itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                                {
+                                    itemWidget->setWishlisted(ids.contains(productId));
+                                });
+                        itemWidget->setWishlisted(wishlist.contains(item.id));
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                        itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                        connect(itemWidget, &SimpleProductItem::clicked,
+                                this, [this, productId = item.id]()
+                                {
+                                    emit navigate({Page::CATALOG_PRODUCT, productId});
+                                });
+                        auto rankLabel = new QLabel(QString::number(rank), sectionScrollArea);
+                        rankLabel->setStyleSheet(QStringLiteral("color: rgb(184, 184, 184); font: 700 144pt;"));
+                        sectionScrollAreaContentsLayout->addWidget(rankLabel);
+                        sectionScrollAreaContentsLayout->addWidget(itemWidget);
+                        rank++;
+                    }
+                    sectionScrollAreaContentsLayout->addStretch();
+                    sectionScrollArea->setWidget(sectionScrollAreaContents);
+                    sectionWidget->layout()->addWidget(sectionScrollArea);
+
+                    if (!data.title.isEmpty())
+                    {
+                        auto titleLabel = new QLabel(data.title, ui->landingScrollAreaContents);
+                        titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                        ui->landingScrollAreaContentsLayout->insertWidget(ui->landingScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
+                    }
+                }
+            }
             else if (type == QLatin1StringView("NEWS_SECTION"))
             {
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
@@ -743,6 +846,7 @@ void StorePage::getSections()
                     || section.sectionType == QLatin1StringView("TAKEOVER_SECTION")
                     || section.sectionType == QLatin1StringView("BIG_SPOT_SECTION")
                     || section.sectionType == QLatin1StringView("DISCOVER_GAMES_SECTION")
+                    || section.sectionType == QLatin1StringView("RANKING_SECTION")
                     || section.sectionType == QLatin1StringView("NEWS_SECTION"))
                 {
                     getSection(section.id, section.sectionType);
@@ -770,6 +874,17 @@ void StorePage::getSections()
 void StorePage::initialize(const QVariant &data)
 {
     getSections();
+}
+
+void StorePage::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    bool widthChanged = event->oldSize().width() != event->size().width();
+    bool heightChanged = event->oldSize().height() != event->size().height();
+    if (widthChanged || heightChanged)
+    {
+        emit resized(widthChanged, heightChanged);
+    }
 }
 
 void StorePage::switchUiAuthenticatedState(bool authenticated)
