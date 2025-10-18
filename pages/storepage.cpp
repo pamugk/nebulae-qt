@@ -13,6 +13,7 @@
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storediscoveritem.h"
 #include "../widgets/storehighlightsitem.h"
+#include "../widgets/storepromobanner.h"
 #include "../widgets/storesalebrowseallcard.h"
 #include "../widgets/storesalecard.h"
 #include "../widgets/newsitemtile.h"
@@ -387,6 +388,49 @@ void StorePage::getSection(const QString &id, const QString &type)
                     }
                 }
             }
+            else if (type == QLatin1StringView("PROMO_BANNER_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStorePromoBannerSectionResponse data;
+                parseGetStorePromoBannerSectionResponse(resultJson, data);
+
+                if (data.image.isEmpty() || data.buttonText.isEmpty() || data.link.isEmpty())
+                {
+                    ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+                    sectionWidget->setLayout(new QHBoxLayout());
+                    auto promoBannerWidget = new StorePromoBanner(sectionWidget);
+                    promoBannerWidget->setCustomButton(data.buttonText);
+                    connect(promoBannerWidget, &StorePromoBanner::customInfoClicked, this, [url = data.link]()
+                    {
+                        QDesktopServices::openUrl(QUrl(url));
+                    });
+                    QString url = data.image;
+                    QNetworkReply *backgroundReply = apiClient->getAnything(url.replace(".jpg", "_promo_banner_background_1096x215.webp"));
+                    connect(promoBannerWidget, &StorePromoBanner::destroyed, backgroundReply, &QNetworkReply::abort);
+                    connect(backgroundReply, &QNetworkReply::finished, promoBannerWidget, [promoBannerWidget, backgroundReply]()
+                    {
+                        if (backgroundReply->error() == QNetworkReply::NoError)
+                        {
+                            QPixmap image;
+                            image.loadFromData(backgroundReply->readAll());
+                            promoBannerWidget->setBackgroundImage(image);
+                        }
+                        else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                        {
+                            qDebug() << backgroundReply->error()
+                                     << backgroundReply->errorString()
+                                     << QString(backgroundReply->readAll()).toUtf8();
+                        }
+                        backgroundReply->deleteLater();
+                    });
+                    sectionWidget->layout()->addWidget(promoBannerWidget);
+                    sectionWidget->layout()->setAlignment(promoBannerWidget, Qt::AlignHCenter);
+                }
+            }
             else if (type == QLatin1StringView("TAKEOVER_SECTION"))
             {
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
@@ -445,6 +489,12 @@ void StorePage::getSection(const QString &id, const QString &type)
                                                 backgroundLabel->setPixmap(usedImage);
                                             }
                                         });
+                            }
+                            else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                            {
+                                qDebug() << backgroundReply->error()
+                                         << backgroundReply->errorString()
+                                         << QString(backgroundReply->readAll()).toUtf8();
                             }
                             backgroundReply->deleteLater();
                         });
@@ -540,6 +590,12 @@ void StorePage::getSection(const QString &id, const QString &type)
                                     QPixmap image;
                                     image.loadFromData(backgroundReply->readAll());
                                     itemWidget->setBackgroundImage(image);
+                                }
+                                else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                                {
+                                    qDebug() << backgroundReply->error()
+                                             << backgroundReply->errorString()
+                                             << QString(backgroundReply->readAll()).toUtf8();
                                 }
                                 backgroundReply->deleteLater();
                             });
@@ -843,6 +899,7 @@ void StorePage::getSections()
             for (const auto &section: std::as_const(data.sections))
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
+                    || section.sectionType == QLatin1StringView("PROMO_BANNER_SECTION")
                     || section.sectionType == QLatin1StringView("TAKEOVER_SECTION")
                     || section.sectionType == QLatin1StringView("BIG_SPOT_SECTION")
                     || section.sectionType == QLatin1StringView("DISCOVER_GAMES_SECTION")

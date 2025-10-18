@@ -237,7 +237,7 @@ void parseGetStorePromoBannerSectionResponse(const QJsonValue &json, api::GetSto
     const auto properties = json["properties"];
     data.sectionId = properties["sectionId"].toString();
     data.hideOnLoad = properties["hideOnLoad"].toBool();
-    data.buttonText = properties["hideOnLoad"].toString();
+    data.buttonText = properties["buttonText"].toString();
     data.link = properties["link"].toString();
     data.image = properties["images"]["desktop"]["link"].toString();
     data.logo = properties["images"]["logo"].toString();
