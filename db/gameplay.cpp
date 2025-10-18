@@ -4,7 +4,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-const auto INSERT_PLATFORM_RELEASE_ACHIEVEMENT = QLatin1String(R"(
+const auto INSERT_PLATFORM_RELEASE_ACHIEVEMENT = QLatin1StringView(R"(
 INSERT INTO achievement(
     platform, platform_release_id, api_key, id,
     image_unlocked_url, image_locked_url, visible, rarity, rarity_slug)
@@ -14,27 +14,27 @@ INSERT INTO achievement(
         visible = excluded.visible, rarity = excluded.rarity, rarity_slug = excluded.rarity_slug;
 )");
 
-const auto INSERT_PLATFORM_RELEASE_ACHIEVEMENT_LOCALIZED_DESCRIPTION = QLatin1String(R"(
+const auto INSERT_PLATFORM_RELEASE_ACHIEVEMENT_LOCALIZED_DESCRIPTION = QLatin1StringView(R"(
 INSERT INTO achievement_localized_description(platform, platform_release_id, api_key, locale_code, name, description, localized)
     VALUES(?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(platform, platform_release_id, api_key, locale_code) DO UPDATE
     SET name = excluded.name, description = excluded.description, localized = excluded.localized;
 )");
 
-const auto INSERT_PLATFORM_RELEASE_LAST_ACHIEVEMENTS_UPDATE = QLatin1String(R"(
+const auto INSERT_PLATFORM_RELEASE_LAST_ACHIEVEMENTS_UPDATE = QLatin1StringView(R"(
 INSERT INTO platform_release_last_achievements_update(platform, platform_release_id, last_updated_at)
     VALUES(?, ?, ?)
     ON CONFLICT(platform, platform_release_id) DO UPDATE
     SET last_updated_at = excluded.last_updated_at;
 )");
 
-const auto INSERT_USER_RELEASE_ACHIEVEMENT = QLatin1String(R"(
+const auto INSERT_USER_RELEASE_ACHIEVEMENT = QLatin1StringView(R"(
 INSERT INTO user_release_achievement(user_id, platform, platform_release_id, api_key, unlocked_at)
     VALUES(?, ?, ?, ?, ?)
     ON CONFLICT(user_id, platform, platform_release_id, api_key) DO NOTHING;
 )");
 
-const auto INSERT_USER_RELEASE_GAME_TIME_STAT = QLatin1String(R"(
+const auto INSERT_USER_RELEASE_GAME_TIME_STAT = QLatin1StringView(R"(
 INSERT INTO user_release_game_time_stats(user_id, platform, platform_release_id, time_sum, last_session_at)
     VALUES(?, ?, ?, ?, ?)
     ON CONFLICT(user_id, platform, platform_release_id) DO UPDATE
@@ -47,7 +47,7 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     QSqlDatabase db = QSqlDatabase::database();
     if (!db.transaction())
     {
-        qDebug() << "Failed to start DB transaction" << db.lastError();
+        qDebug() << QLatin1StringView("Failed to start DB transaction") << db.lastError();
         return;
     }
 
@@ -55,7 +55,7 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     if (!insertPlatformReleaseAchievementUpdateQuery.prepare(INSERT_PLATFORM_RELEASE_LAST_ACHIEVEMENTS_UPDATE))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save platform release achievements update status" << insertPlatformReleaseAchievementUpdateQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save platform release achievements update status") << insertPlatformReleaseAchievementUpdateQuery.lastError();
         return;
     }
     insertPlatformReleaseAchievementUpdateQuery.addBindValue(platformId);
@@ -65,7 +65,7 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     if (!insertPlatformReleaseAchievementUpdateQuery.exec())
     {
         db.rollback();
-        qDebug() << "Failed to update platform release achievements update status" << insertPlatformReleaseAchievementUpdateQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to update platform release achievements update status") << insertPlatformReleaseAchievementUpdateQuery.lastError();
         return;
     }
 
@@ -73,14 +73,14 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     if (!insertPlatformReleaseAchievementsQuery.prepare(INSERT_PLATFORM_RELEASE_ACHIEVEMENT))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save platform release achievements" << insertPlatformReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save platform release achievements") << insertPlatformReleaseAchievementsQuery.lastError();
         return;
     }
     QSqlQuery insertPlatformReleaseAchievementsDescriptionsQuery;
     if (!insertPlatformReleaseAchievementsDescriptionsQuery.prepare(INSERT_PLATFORM_RELEASE_ACHIEVEMENT_LOCALIZED_DESCRIPTION))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save platform release achievements descriptions" << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save platform release achievements descriptions") << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
         return;
     }
 
@@ -126,7 +126,7 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     if (!insertPlatformReleaseAchievementsQuery.execBatch())
     {
         db.rollback();
-        qDebug() << "Failed to save platform release achievements" << insertPlatformReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save platform release achievements") << insertPlatformReleaseAchievementsQuery.lastError();
         return;
     }
 
@@ -140,7 +140,7 @@ void db::savePlatformReleaseAchievements(const QString &platformId, const QStrin
     if (!insertPlatformReleaseAchievementsDescriptionsQuery.execBatch())
     {
         db.rollback();
-        qDebug() << "Failed to save platform release achievements descriptions" << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save platform release achievements descriptions") << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
         return;
     }
 
@@ -152,7 +152,7 @@ void db::saveUserGameTimeStatistics(const QString &userId, const QVector<api::Pl
     QSqlQuery insertUserGameStatsQuery;
     if (!insertUserGameStatsQuery.prepare(INSERT_USER_RELEASE_GAME_TIME_STAT))
     {
-        qDebug() << "Failed to prepare query to save user's gameplay statistics" << insertUserGameStatsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save user's gameplay statistics") << insertUserGameStatsQuery.lastError();
         return;
     }
 
@@ -167,9 +167,9 @@ void db::saveUserGameTimeStatistics(const QString &userId, const QVector<api::Pl
         const auto releaseKeySeparatorIdx = releaseStatistic.releasePerPlatformId.indexOf('_');
         if (releaseKeySeparatorIdx == -1)
         {
-            qDebug() << "Platform release key with an unknown separator: " << releaseStatistic.releasePerPlatformId;
-            platformIds[i] = "";
-            platformReleaseIds[i] = "";
+            qDebug() << QLatin1StringView("Platform release key with an unknown separator: ") << releaseStatistic.releasePerPlatformId;
+            platformIds[i] = QLatin1StringView("");
+            platformReleaseIds[i] = QLatin1StringView("");
         }
         else
         {
@@ -188,7 +188,7 @@ void db::saveUserGameTimeStatistics(const QString &userId, const QVector<api::Pl
     insertUserGameStatsQuery.addBindValue(lastPlayedAt);
     if (!insertUserGameStatsQuery.execBatch())
     {
-        qDebug() << "Failed to save user's gameplay statistics" << insertUserGameStatsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save user's gameplay statistics") << insertUserGameStatsQuery.lastError();
     }
 }
 
@@ -197,7 +197,7 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
     QSqlDatabase db = QSqlDatabase::database();
     if (!db.transaction())
     {
-        qDebug() << "Failed to start DB transaction" << db.lastError();
+        qDebug() << QLatin1StringView("Failed to start DB transaction") << db.lastError();
         return;
     }
 
@@ -205,21 +205,21 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
     if (!insertPlatformReleaseAchievementsQuery.prepare(INSERT_PLATFORM_RELEASE_ACHIEVEMENT))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save platform release achievements" << insertPlatformReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save platform release achievements") << insertPlatformReleaseAchievementsQuery.lastError();
         return;
     }
     QSqlQuery insertPlatformReleaseAchievementsDescriptionsQuery;
     if (!insertPlatformReleaseAchievementsDescriptionsQuery.prepare(INSERT_PLATFORM_RELEASE_ACHIEVEMENT_LOCALIZED_DESCRIPTION))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save platform release achievements descriptions" << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save platform release achievements descriptions") << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
         return;
     }
     QSqlQuery insertUserReleaseAchievementsQuery;
     if (!insertUserReleaseAchievementsQuery.prepare(INSERT_USER_RELEASE_ACHIEVEMENT))
     {
         db.rollback();
-        qDebug() << "Failed to prepare query to save user release achievements" << insertUserReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to prepare query to save user release achievements") << insertUserReleaseAchievementsQuery.lastError();
         return;
     }
 
@@ -245,9 +245,9 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
         const auto releaseKeySeparatorIdx = achievement.platformReleaseId.indexOf('_');
         if (releaseKeySeparatorIdx == -1)
         {
-            qDebug() << "Platform release key with an unknown separator: " << achievement.platformReleaseId;
-            platformIds[i] = "";
-            platformReleaseIds[i] = "";
+            qDebug() << QLatin1StringView("Platform release key with an unknown separator: ") << achievement.platformReleaseId;
+            platformIds[i] = QLatin1StringView("");
+            platformReleaseIds[i] = QLatin1StringView("");
         }
         else
         {
@@ -280,7 +280,7 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
     if (!insertPlatformReleaseAchievementsQuery.execBatch())
     {
         db.rollback();
-        qDebug() << "Failed to save platform release achievements" << insertPlatformReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save platform release achievements") << insertPlatformReleaseAchievementsQuery.lastError();
         return;
     }
 
@@ -294,7 +294,7 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
     if (!insertPlatformReleaseAchievementsDescriptionsQuery.execBatch())
     {
         db.rollback();
-        qDebug() << "Failed to save platform release achievements descriptions" << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save platform release achievements descriptions") << insertPlatformReleaseAchievementsDescriptionsQuery.lastError();
         return;
     }
 
@@ -306,7 +306,7 @@ void db::saveUserPlatformAchievements(const QString &userId, const QVector<api::
     if (!insertUserReleaseAchievementsQuery.execBatch())
     {
         db.rollback();
-        qDebug() << "Failed to save user release achievements" << insertUserReleaseAchievementsQuery.lastError();
+        qDebug() << QLatin1StringView("Failed to save user release achievements") << insertUserReleaseAchievementsQuery.lastError();
         return;
     }
 

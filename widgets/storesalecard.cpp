@@ -23,29 +23,24 @@ StoreSaleCard::StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
     shadowPalette.setBrush(ui->content->backgroundRole(), QColor::fromRgba64(data.colorRgbArray[0], data.colorRgbArray[1], data.colorRgbArray[2], 191));
     ui->content->setAutoFillBackground(true);
     ui->content->setPalette(shadowPalette);*/
-    imageReply = apiClient->getAnything(data.background);
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(data.background);
+    connect(this, &StoreSaleCard::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             QPalette backgroundPalette;
             backgroundPalette.setBrush(this->backgroundRole(), QBrush(image.scaled(this->size(), Qt::KeepAspectRatioByExpanding)));
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        networkReply->deleteLater();
+        imageReply->deleteLater();
     });
 }
 
 StoreSaleCard::~StoreSaleCard()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

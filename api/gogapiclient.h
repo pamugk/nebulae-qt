@@ -1,6 +1,8 @@
 #ifndef GOGAPICLIENT_H
 #define GOGAPICLIENT_H
 
+#include <QNetworkAccessManager>
+#include <QNetworkRequestFactory>
 #include <QOAuth2AuthorizationCodeFlow>
 #include <QObject>
 
@@ -58,16 +60,13 @@ namespace api
                                          const ReviewFilters &filters,
                                          const SortOrder &order,
                                          unsigned short limit, unsigned short page);
-        QNetworkReply *getRecommendedDlcs();
         QNetworkReply *getRelease(const QString &id);
         QNetworkReply *getSeriesGames(unsigned long long seriesId);
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
-        QNetworkReply *getStoreCustomSection(const QString &id);
-        QNetworkReply *getStoreDiscoverGamesForYou();
-        QNetworkReply *getStoreDiscoverNewGames();
-        QNetworkReply *getStoreDiscoverUpcomingGames();
+        QNetworkReply *getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode);
+        QNetworkReply *getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),
@@ -91,7 +90,9 @@ namespace api
         void authenticated(bool authenticated);
 
     private:
-        QOAuth2AuthorizationCodeFlow client;
+        QNetworkRequestFactory api;
+        QNetworkAccessManager client;
+        QOAuth2AuthorizationCodeFlow oauth;
         bool refreshingToken;
         QString userId;
     };

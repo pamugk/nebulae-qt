@@ -26,7 +26,7 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
     }
     ui->subheaderLabel->setText(subheader.join(" • "));
     ui->descriptionLabel->setText(data.contentDescription);
-    ui->helpfulInfoLabel->setText(QString("(%1 of %2 users found this helpful))")
+    ui->helpfulInfoLabel->setText(QString("(%1 of %2 users found this helpful)")
                                   .arg(QString::number(data.upvotes), QString::number(data.upvotes + data.downvotes)));
 
     ui->userLayout->setAlignment(Qt::AlignTop);

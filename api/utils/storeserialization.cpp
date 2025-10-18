@@ -5,6 +5,90 @@
 
 #include "catalogserialization.h"
 
+void parseBannerItem(const QJsonValue &json, api::StoreBannerItem &data)
+{
+    data.id = json["id"].toString();
+    if (json["product"].isObject() && !json["product"].isNull())
+    {
+        api::CatalogProduct product;
+        parseCatalogProduct(json["product"], product, "_product_tile_256.webp");
+        data.product = product;
+    }
+    data.background = json["background"]["desktop"].toString();
+    data.logo = json["logo"]["desktop"].toString();
+    data.gradientBaseColor = json["gradientBaseColor"]["desktop"].toString();
+    data.title = json["text"]["title"].toString();
+    data.subtitle = json["text"]["subtitle"].toString();
+    data.visibleFrom = QDateTime::fromString(json["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.visibleTo = QDateTime::fromString(json["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.customProperties.url = json["customProperties"]["url"].toString();
+    data.customProperties.buttonText = json["customProperties"]["buttonText"].toString();
+    data.customProperties.discountText = json["customProperties"]["discountText"].toString();
+    data.useDarkColorFont = json["useDarkColorFont"].toBool();
+}
+
+void parseDiscoverColumn(const QJsonValue &json, api::StoreDiscoverColumn &data)
+{
+    const auto items = json["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
+    {
+        parseCatalogProduct(items[i], data.items[i], "_product_tile_256.webp");
+    }
+    data.title = json["title"].toString();
+    data.seeMoreLink = json["seeMoreLink"].toString();
+}
+
+void parseStoreNewsItem(const QJsonValue &json, api::NewsItem &data)
+{
+    data.id = json["id"].toInteger();
+    data.title = json["title"].toString();
+    data.slug = json["slug"].toString();
+    data.link = json["links"]["website"].toString();
+    data.body = json["body"].toString();
+    data.publishDate = QDateTime::fromString(json["publishDate"].toString(), Qt::ISODate);
+    data.language = json["language"].toString();
+    data.commentsCount = json["commentsCount"].toInt();
+    data.forumThreadLink = json["forum_thread_link"].toString();
+
+    data.imageSmall = json["images"]["small"].toString().replace(".jpg", "_news_tile.jpg");
+    if (!data.imageSmall.isNull())
+    {
+        data.imageSmall.prepend("https:");
+    }
+    data.imageLarge = json["images"]["big"].toString();
+    if (!data.imageLarge.isNull())
+    {
+        data.imageLarge.prepend("https:");
+    }
+}
+
+void parseStoreNowOnSaleTabCard(const QJsonValue &json, api::StoreNowOnSaleTabCard &data)
+{
+    auto colorRgbArray = json["color_as_rgb_array"].toArray();
+    data.background = json["background"].toString().prepend("https:");
+    data.color = json["color"].toString();
+    data.colorRgbArray =
+    {
+        static_cast<unsigned char>(colorRgbArray[0].toInt()),
+        static_cast<unsigned char>(colorRgbArray[1].toInt()),
+        static_cast<unsigned char>(colorRgbArray[2].toInt()),
+    };
+    data.text = json["text"].toString();
+    data.textSlug = json["textSlug"].toString();
+    data.discountValue = json["discountValue"].toInt();
+    data.discountUpTo = json["discountUpTo"].toBool();
+    data.url = json["url"].toString();
+    data.countdownDate = QDateTime::fromMSecsSinceEpoch(json["countdownDate"].toInteger());
+}
+
+void parseStoreNowOnSaleTab(const QJsonValue &json, api::StoreNowOnSaleTab &data)
+{
+    data.id = json["id"].toString();
+    data.title = json["title"].toString();
+    parseStoreNowOnSaleTabCard(json["bigThingy"], data.bigThingy);
+}
+
 void parsePrice(const QJsonValue &json, api::StoreProductPrice &data)
 {
     data.baseAmount = json["baseAmount"].toString().toDouble();
@@ -40,65 +124,54 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
     data.preorder = json["isPreorder"].toBool();
 }
 
-void parseCustomSectionItem(const QJsonValue &json, api::StoreCustomSectionItem &data,
-                            const QString &coverFormat)
+void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data)
 {
-    data.dealActiveFrom = QDateTime::fromString(json["dealActiveFrom"].toString(), Qt::ISODate);
-    data.dealActiveTo = QDateTime::fromString(json["dealActiveTo"].toString(), Qt::ISODate);
-    parseProduct(json["product"], data.product, coverFormat);
+    const auto properties = json["properties"];
+    data.data.id = properties["id"].toString();
+    if (properties["product"].isObject() && !properties["product"].isNull())
+    {
+        api::CatalogProduct product;
+        parseCatalogProduct(properties["product"], product, "_product_tile_256.webp");
+        data.data.product = product;
+    }
+    data.data.background = properties["background"]["desktop"].toString();
+    data.data.logo = properties["logo"]["desktop"].toString();
+    data.data.gradientBaseColor = properties["gradientBaseColor"]["desktop"].toString();
+    data.data.title = properties["info"].toString();
+    data.data.subtitle = properties["headline"].toString();
+    data.data.visibleFrom = QDateTime::fromString(properties["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.data.visibleTo = QDateTime::fromString(properties["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    data.data.customProperties.url = properties["url"].toString();
+    data.data.customProperties.buttonText = properties["buttonText"].toString();
+    data.data.customProperties.discountText = properties["discountText"].toString();
+    data.data.useDarkColorFont = properties["useDarkColorFont"].toBool();
 }
 
-void parseGetStoreCustomSectionResponse(const QJsonValue &json, api::GetStoreCustomSectionResponse &data,
-                                        const QString &coverFormat)
+void parseGetStoreDiscoverSectionResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data)
 {
-    data.id = json["id"].toString();
+    const auto properties = json["properties"];
+    parseDiscoverColumn(properties["columnLeft"], data.columnLeft);
+    parseDiscoverColumn(properties["columnRight"], data.columnRight);
+}
 
-    auto items = json["products"]["items"].toArray();
+void parseGetStoreHighlightsSectionResponse(const QJsonValue &json, api::GetStoreHighlightsSectionResponse &data)
+{
+    const auto items = json["properties"].toArray();
     data.items.resize(items.count());
     for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseCustomSectionItem(items[i], data.items[i], coverFormat);
-    }
-
-    data.visibleFrom = QDateTime::fromString(json["products"]["currentServerTime"].toString(), Qt::ISODate);
-    data.visibleFrom = QDateTime::fromString(json["visibleFrom"].toString(), Qt::ISODate);
-    data.visibleTo = QDateTime::fromString(json["visibleTo"].toString(), Qt::ISODate);
-}
-
-void parseGetStoreDiscoverGamesResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data)
-{
-    auto personalizedProducts = json["personalizedProducts"].toArray();
-    data.personalizedProducts.resize(personalizedProducts.count());
-    for (std::size_t i = 0; i < personalizedProducts.count(); i++)
-    {
-        parseProduct(personalizedProducts[i], data.personalizedProducts[i], "_product_tile_136.webp");
+        parseBannerItem(items[i], data.items[i]);
     }
 }
 
-void parseStoreNowOnSaleTabCard(const QJsonValue &json, api::StoreNowOnSaleTabCard &data)
+void parseGetStoreNewsSectionResponse(const QJsonValue &json, api::GetStoreNewsSectionResponse &data)
 {
-    auto colorRgbArray = json["color_as_rgb_array"].toArray();
-    data.background = json["background"].toString().prepend("https:");
-    data.color = json["color"].toString();
-    data.colorRgbArray =
+    auto items = json["properties"]["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        static_cast<unsigned char>(colorRgbArray[0].toInt()),
-        static_cast<unsigned char>(colorRgbArray[1].toInt()),
-        static_cast<unsigned char>(colorRgbArray[2].toInt()),
-    };
-    data.text = json["text"].toString();
-    data.textSlug = json["textSlug"].toString();
-    data.discountValue = json["discountValue"].toInt();
-    data.discountUpTo = json["discountUpTo"].toBool();
-    data.url = json["url"].toString();
-    data.countdownDate = QDateTime::fromMSecsSinceEpoch(json["countdownDate"].toInteger());
-}
-
-void parseStoreNowOnSaleTab(const QJsonValue &json, api::StoreNowOnSaleTab &data)
-{
-    data.id = json["id"].toString();
-    data.title = json["title"].toString();
-    parseStoreNowOnSaleTabCard(json["bigThingy"], data.bigThingy);
+        parseStoreNewsItem(items[i], data.items[i]);
+    }
 }
 
 void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data)
@@ -143,13 +216,65 @@ void parseGetStoreNowOnSaleSectionResponse(const QJsonValue &json, api::GetStore
     parseStoreNowOnSaleTabCard(json["bigThingy"], data.bigThingy);
 }
 
-void parseGetStoreRecommendedDlcsResponse(const QJsonValue &json, api::GetStoreRecommendedDlcsResponse &data)
+void parseGetStoreProductsSectionResponse(const QJsonValue &json, api::GetStoreProductsSectionResponse &data)
 {
-    data.hasRecommendations = json["hasRecommendations"].toBool();
-    auto recommendations = json["recommendations"].toArray();
-    data.recommendations.resize(recommendations.count());
-    for (std::size_t i = 0; i < recommendations.count(); i++)
+    const auto properties = json["properties"];
+    data.sectionId = properties["sectionId"].toString();
+    data.contentSourceType = properties["contentSourceType"].toString();
+    data.title = properties["title"].toString();
+    data.description = properties["description"].toString();
+    auto items = properties["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
     {
-        parseProduct(recommendations[i], data.recommendations[i], "_product_tile_256.webp");
+        parseCatalogProduct(items[i], data.items[i], "_product_tile_256.webp");
+    }
+    data.seeMoreLink = properties["seeMoreLink"].toString();
+}
+
+void parseGetStorePromoBannerSectionResponse(const QJsonValue &json, api::GetStorePromoBannerSectionResponse &data)
+{
+    const auto properties = json["properties"];
+    data.sectionId = properties["sectionId"].toString();
+    data.hideOnLoad = properties["hideOnLoad"].toBool();
+    data.buttonText = properties["buttonText"].toString();
+    data.link = properties["link"].toString();
+    data.image = properties["images"]["desktop"]["link"].toString();
+    data.logo = properties["images"]["logo"].toString();
+    data.compact = properties["isCompact"].toBool();
+}
+
+void parseGetStoreRankingSectionResponse(const QJsonValue &json, api::GetStoreRankingSectionResponse &data)
+{
+    const auto properties = json["properties"];
+    data.sectionId = properties["sectionId"].toString();
+    data.contentSourceType = properties["contentSourceType"].toString();
+    data.title = properties["title"].toString();
+    data.description = properties["description"].toString();
+    auto items = properties["items"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
+    {
+        parseCatalogProduct(items[i], data.items[i], "_product_tile_256.webp");
+    }
+}
+
+void parseSection(const QJsonValue &json, api::StoreSection &data)
+{
+    data.id = json["sectionId"].toString();
+    data.sectionType = json["sectionType"].toString();
+    data.personalized = json["isPersonalized"].toBool();
+    data.hideOnLoad = json["hideOnLoad"].toBool();
+    data.loadOnEmbed = json["loadOnEmbed"].toBool();
+    data.contentSourceType = json["contentSourceType"].toString();
+}
+
+void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data)
+{
+    auto sections = json["sections"].toArray();
+    data.sections.resize(sections.count());
+    for (std::size_t i = 0; i < sections.count(); i++)
+    {
+        parseSection(sections[i], data.sections[i]);
     }
 }

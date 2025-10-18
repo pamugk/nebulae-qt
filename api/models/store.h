@@ -6,9 +6,37 @@
 #include <QVector>
 
 #include "catalog.h"
+#include "news.h"
 
 namespace api
 {
+    struct StoreBannerItem
+    {
+        QString id;
+        std::optional<CatalogProduct> product;
+        QString background;
+        QString logo;
+        QString gradientBaseColor;
+        QString title;
+        QString subtitle;
+        QDateTime visibleFrom;
+        QDateTime visibleTo;
+        struct
+        {
+            QString url;
+            QString buttonText;
+            QString discountText;
+        } customProperties;
+        bool useDarkColorFont;
+    };
+
+    struct StoreDiscoverColumn
+    {
+        QVector<CatalogProduct> items;
+        QString title;
+        QString seeMoreLink;
+    };
+
     struct StoreNowOnSaleTabCard
     {
         QString background;
@@ -55,27 +83,45 @@ namespace api
         bool preorder;
     };
 
-    struct StoreCustomSectionItem
-    {
-        QDateTime dealActiveFrom;
-        QDateTime dealActiveTo;
-        StoreProduct product;
-    };
-
-    struct GetStoreCustomSectionResponse
+    struct StoreSection
     {
         QString id;
-        QString title;
-        QVector<StoreCustomSectionItem> items;
+        QString sectionType;
+        bool personalized;
+        bool hideOnLoad;
+        bool loadOnEmbed;
+        QString contentSourceType;
+    };
 
-        QDateTime currentServerTime;
-        QDateTime visibleFrom;
-        QDateTime visibleTo;
+    struct GetStoreAnnouncementSectionResponse
+    {
+        StoreBannerItem data;
     };
 
     struct GetStoreDiscoverGamesSectionResponse
     {
-        QVector<StoreProduct> personalizedProducts;
+        StoreDiscoverColumn columnLeft;
+        StoreDiscoverColumn columnRight;
+    };
+
+    struct GetStoreHighlightsSectionResponse
+    {
+        QVector<StoreBannerItem> items;
+    };
+
+    struct GetStoreProductsSectionResponse
+    {
+        QString sectionId;
+        QString contentSourceType;
+        QString title;
+        QString description;
+        QVector<CatalogProduct> items;
+        QString seeMoreLink;
+    };
+
+    struct GetStoreNewsSectionResponse
+    {
+        QVector<NewsItem> items;
     };
 
     struct GetStoreNowOnSaleResponse
@@ -91,10 +137,29 @@ namespace api
         StoreNowOnSaleTabCard bigThingy;
     };
 
-    struct GetStoreRecommendedDlcsResponse
+    struct GetStorePromoBannerSectionResponse
     {
-        bool hasRecommendations;
-        QVector<StoreProduct> recommendations;
+        QString sectionId;
+        bool hideOnLoad;
+        QString buttonText;
+        QString link;
+        QString image;
+        QString logo;
+        bool compact;
+    };
+
+    struct GetStoreRankingSectionResponse
+    {
+        QString sectionId;
+        QString contentSourceType;
+        QString title;
+        QString description;
+        QVector<CatalogProduct> items;
+    };
+
+    struct GetStoreSectionsResponse
+    {
+        QVector<StoreSection> sections;
     };
 }
 
