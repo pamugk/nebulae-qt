@@ -1,6 +1,7 @@
 #include "storedynamicpage.h"
 #include "ui_storedynamicpage.h"
 
+#include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -8,6 +9,7 @@
 
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
+#include "../widgets/storeherobanner.h"
 
 StoreDynamicPage::StoreDynamicPage(QWidget *parent) :
     StoreBasePage(Page::STORE_DYNAMIC_PAGE, parent),
@@ -112,6 +114,44 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                 auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
                 api::GetStoreHeroSectionResponse data;
                 parseGetStoreHeroSectionResponse(resultJson, data);
+                sectionWidget->setLayout(new QHBoxLayout());
+
+                auto heroBannerWidget = new StoreHeroBanner(sectionWidget);
+                heroBannerWidget->setUseDarkTheme(data.theme == QLatin1StringView("dark"));
+                heroBannerWidget->setTitle(data.title);
+                if (!data.imageHash.isEmpty())
+                {
+                    QNetworkReply *backgroundReply = apiClient->getAnything(QLatin1StringView("https://images.gog-statics.com/%1_hero_2560x423.webp").arg(data.imageHash));
+                    connect(heroBannerWidget, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                    connect(backgroundReply, &QNetworkReply::finished, heroBannerWidget, [heroBannerWidget, backgroundReply]()
+                    {
+                        if (backgroundReply->error() == QNetworkReply::NoError)
+                        {
+                            heroBannerWidget->setBackgroundImage(backgroundReply->readAll());
+                        }
+                        else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                        {
+                            qDebug() << backgroundReply->error()
+                                     << backgroundReply->errorString()
+                                     << QString(backgroundReply->readAll()).toUtf8();
+                        }
+                    });
+                }
+                heroBannerWidget->setDescription(data.description);
+                heroBannerWidget->setPrimaryButtonText(data.button.text);
+                connect(heroBannerWidget, &StoreHeroBanner::primaryButtonClicked, this, [url = data.button.link, anchor = data.button.anchor]()
+                {
+                    if (!url.isEmpty())
+                    {
+                        QDesktopServices::openUrl(QUrl(url));
+                    }
+                    else if (!anchor.isEmpty())
+                    {
+                        // TODO: jump to anchor
+                    }
+                });
+
+                sectionWidget->layout()->addWidget(heroBannerWidget);
             }
         }
         else if (sectionReply->error() != QNetworkReply::OperationCanceledError)
