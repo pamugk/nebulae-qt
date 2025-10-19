@@ -12,7 +12,6 @@
 
 OrdersPage::OrdersPage(QWidget *parent) :
     StoreBasePage(Page::ORDER_HISTORY, parent),
-    ordersReply(nullptr),
     ui(new Ui::OrdersPage)
 {
     ui->setupUi(this);
@@ -98,10 +97,6 @@ OrdersPage::OrdersPage(QWidget *parent) :
 
 OrdersPage::~OrdersPage()
 {
-    if (ordersReply != nullptr)
-    {
-        ordersReply->abort();
-    }
     delete ui;
 }
 
@@ -112,10 +107,7 @@ void OrdersPage::setApiClient(api::GogApiClient *apiClient)
 
 void OrdersPage::fetchData()
 {
-    if (ordersReply != nullptr)
-    {
-        ordersReply->abort();
-    }
+    emit updatingData();
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     paginator->setVisible(false);
     ui->resultsScrollArea->verticalScrollBar()->setValue(0);
@@ -127,15 +119,14 @@ void OrdersPage::fetchData()
         delete item;
     }
 
-    ordersReply = apiClient->getOrdersHistory(filter, page);
-    connect(ordersReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *ordersReply = apiClient->getOrdersHistory(filter, page);
+    connect(this, &QObject::destroyed, ordersReply, &QNetworkReply::abort);
+    connect(this, &OrdersPage::updatingData, ordersReply, &QNetworkReply::abort);
+    connect(ordersReply, &QNetworkReply::finished, this, [this, ordersReply]()
     {
-        auto networkReply = ordersReply;
-        ordersReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (ordersReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(ordersReply->readAll()).toUtf8()).object();
             api::GetOrdersHistoryResponse data;
             parseGetOrdersHistoryResponse(resultJson, data);
             if (data.orders.isEmpty())
@@ -156,16 +147,14 @@ void OrdersPage::fetchData()
                 paginator->changePages(page, data.totalPages);
                 ui->contentsStack->setCurrentWidget(ui->resultsPage);
             }
-            networkReply->deleteLater();
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (ordersReply->error() != QNetworkReply::OperationCanceledError)
         {
             ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << ordersReply->error() << ordersReply->errorString() << QString(ordersReply->readAll()).toUtf8();
         }
-
-        networkReply->deleteLater();
     });
+    connect(ordersReply, &QNetworkReply::finished, ordersReply, &QNetworkReply::deleteLater);
 }
 
 void OrdersPage::initialize(const QVariant &data)

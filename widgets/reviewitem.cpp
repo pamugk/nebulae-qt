@@ -1,6 +1,8 @@
 #include "reviewitem.h"
 #include "ui_reviewitem.h"
 
+#include <QNetworkReply>
+
 ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
                        api::GogApiClient *apiClient,
                        QWidget *parent) :
@@ -30,18 +32,24 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
                                   .arg(QString::number(data.upvotes), QString::number(data.upvotes + data.downvotes)));
 
     ui->userLayout->setAlignment(Qt::AlignTop);
-    avatarReply = apiClient->getAnything(data.reviewer.avatar["medium_2x"]);
-    connect(avatarReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = avatarReply;
-        avatarReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *avatarReply = apiClient->getAnything(data.reviewer.avatar["medium_2x"]);
+    connect(this, &QObject::destroyed, avatarReply, &QNetworkReply::abort);
+    connect(avatarReply, &QNetworkReply::finished, this, [this, avatarReply]() {
+        if (avatarReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(avatarReply->readAll());
             ui->userAvatarLabel->setPixmap(image.scaled(ui->userAvatarLabel->size()));
         }
-        networkReply->deleteLater();
+        else if (avatarReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << avatarReply->error()
+                     << avatarReply->errorString()
+                     << QString(avatarReply->readAll()).toUtf8();
+        }
     });
+    connect(avatarReply, &QNetworkReply::finished, avatarReply, &QNetworkReply::deleteLater);
+
     ui->userNameLabel->setText(data.reviewer.username);
     ui->userGamesLabel->setText("Games: " + QString::number(data.reviewer.counters.games));
     ui->userReviewsLabel->setText("Reviews: " + QString::number(data.reviewer.counters.games));
@@ -49,9 +57,5 @@ ReviewItem::ReviewItem(const api::Review &data, bool isMostHelpful,
 
 ReviewItem::~ReviewItem()
 {
-    if (avatarReply != nullptr)
-    {
-        avatarReply->abort();
-    }
     delete ui;
 }

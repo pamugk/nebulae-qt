@@ -24,7 +24,7 @@ SimpleProductItem::~SimpleProductItem()
 void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *apiClient)
 {
     QNetworkReply *imageReply = apiClient->getAnything(coverUrl);
-    connect(this, &SimpleProductItem::destroyed, imageReply, &QNetworkReply::abort);
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
     connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
         if (imageReply->error() == QNetworkReply::NoError)
         {
@@ -43,8 +43,14 @@ void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *api
             ui->dealLabel->setMaximumWidth(this->minimumWidth());
             ui->coverLabel->setPixmap(image);
         }
-        imageReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 void SimpleProductItem::setDeal(const QDateTime &dealEnd)

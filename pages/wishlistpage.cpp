@@ -12,8 +12,6 @@
 
 WishlistPage::WishlistPage(QWidget *parent) :
     StoreBasePage(Page::WISHLIST, parent),
-    getWishlistReply(nullptr),
-    setWishlistSharingReply(nullptr),
     ui(new Ui::WishlistPage)
 {
     ui->setupUi(this);
@@ -38,14 +36,6 @@ WishlistPage::WishlistPage(QWidget *parent) :
 
 WishlistPage::~WishlistPage()
 {
-    if (getWishlistReply != nullptr)
-    {
-        getWishlistReply->abort();
-    }
-    if (setWishlistSharingReply != nullptr)
-    {
-        setWishlistSharingReply->abort();
-    }
     delete ui;
 }
 
@@ -56,10 +46,7 @@ void WishlistPage::setApiClient(api::GogApiClient *apiClient)
 
 void WishlistPage::fetchData()
 {
-    if (getWishlistReply != nullptr)
-    {
-        getWishlistReply->abort();
-    }
+    emit updatingData();
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
     ui->resultsScrollArea->verticalScrollBar()->setValue(0);
     paginator->setVisible(false);
@@ -71,15 +58,14 @@ void WishlistPage::fetchData()
         delete item;
     }
 
-    getWishlistReply = apiClient->getWishlist(query, orders[currentOrder], page);
-    connect(getWishlistReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *wishlistReply = apiClient->getWishlist(query, orders[currentOrder], page);
+    connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
+    connect(this, &WishlistPage::updatingData, wishlistReply, &QNetworkReply::abort);
+    connect(wishlistReply, &QNetworkReply::finished, this, [this, wishlistReply]()
     {
-        auto networkReply = getWishlistReply;
-        getWishlistReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (wishlistReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(wishlistReply->readAll()).toUtf8()).object();
             api::GetWishlistResponse data;
             parseSearchWishlistResponse(resultJson, data);
             if (data.products.isEmpty())
@@ -102,16 +88,14 @@ void WishlistPage::fetchData()
                 ui->titleLabel->setText(QString("WISHLISTED TITLES (%1)").arg(data.totalProducts));
                 paginator->changePages(page, data.totalPages);
             }
-            networkReply->deleteLater();
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (wishlistReply->error() != QNetworkReply::OperationCanceledError)
         {
             ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << wishlistReply->error() << wishlistReply->errorString() << QString(wishlistReply->readAll()).toUtf8();
         }
-
-        networkReply->deleteLater();
     });
+    connect(wishlistReply, &QNetworkReply::finished, wishlistReply, &QNetworkReply::deleteLater);
 }
 
 void WishlistPage::initialize(const QVariant &data)
@@ -157,22 +141,21 @@ void WishlistPage::onCurrentVisibilityChanged(int index)
         wishlistVisibility = 0;
     }
 
-    setWishlistSharingReply = apiClient->setWishlistVisibility(wishlistVisibility);
-    connect(setWishlistSharingReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *setWishlistSharingReply = apiClient->setWishlistVisibility(wishlistVisibility);
+    connect(this, &QObject::destroyed, setWishlistSharingReply, &QNetworkReply::abort);
+    connect(setWishlistSharingReply, &QNetworkReply::finished, this, [this, setWishlistSharingReply]()
     {
-        auto networkReply = setWishlistSharingReply;
-        setWishlistSharingReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (setWishlistSharingReply->error() == QNetworkReply::NoError)
         {
             // TODO: show some kind of notification?
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (setWishlistSharingReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << setWishlistSharingReply->error() << setWishlistSharingReply->errorString() << QString(setWishlistSharingReply->readAll()).toUtf8();
         }
 
-        networkReply->deleteLater();
     });
+    connect(setWishlistSharingReply, &QNetworkReply::finished, setWishlistSharingReply, &QNetworkReply::deleteLater);
 }
 
 void WishlistPage::on_retryButton_clicked()

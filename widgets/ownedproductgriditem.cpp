@@ -61,27 +61,28 @@ OwnedProductGridItem::OwnedProductGridItem(const db::UserReleaseShortDetails &da
     ui->ratingLabel->setText(data.rating.has_value() ? (QString(data.rating.value(), u'★') + QString(5 - data.rating.value(), u'☆')) : "No rating");
     ui->additionalInfoLabel->setVisible(false);
 
-    imageReply = apiClient->getAnything(QString(data.verticalCover).replace("{formatter}", "_glx_vertical_cover").replace("{ext}", "webp"));
-    connect(imageReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *imageReply = apiClient->getAnything(QString(data.verticalCover).replace("{formatter}", "_glx_vertical_cover").replace("{ext}", "webp"));
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
     {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image);
         }
-        networkReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 OwnedProductGridItem::~OwnedProductGridItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

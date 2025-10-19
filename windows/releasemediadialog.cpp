@@ -9,7 +9,6 @@ ReleaseMediaDialog::ReleaseMediaDialog(const QVector<api::NamedVideo> &videos,
                                        QWidget *parent) :
     QDialog(parent),
     apiClient(apiClient),
-    imageReply(nullptr),
     screenshots(screenshots),
     videos(videos),
     ui(new Ui::ReleaseMediaDialog)
@@ -54,21 +53,19 @@ void ReleaseMediaDialog::viewMedia(std::size_t index)
         setWindowTitle("Gallery");
         const QString &currentImage = screenshots[index - videos.count()];
         QString imageUrl = QString(currentImage).replace("{formatter}", "_1600").replace("{ext}", "webp");
-        imageReply = apiClient->getAnything(imageUrl);
+        QNetworkReply *imageReply = apiClient->getAnything(imageUrl);
         ui->contentStackedWidget->setCurrentWidget(ui->loadingPage);
-        connect(imageReply, &QNetworkReply::finished, this, [this]()
+        connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
         {
-            auto networkReply = imageReply;
-            imageReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (imageReply->error() == QNetworkReply::NoError)
             {
                 QPixmap image;
-                image.loadFromData(networkReply->readAll());
+                image.loadFromData(imageReply->readAll());
                 ui->imageLabel->setPixmap(image);
                 ui->contentStackedWidget->setCurrentWidget(ui->imagePage);
             }
-            networkReply->deleteLater();
         });
+        connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
     }
 }
 

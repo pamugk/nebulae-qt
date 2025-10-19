@@ -36,13 +36,12 @@ private:
     Ui::AllGamesPage *ui;
     QSet<const QString> wishlist;
 
-    QNetworkReply *lastCatalogReply;
-    QNetworkReply *ownedProductsReply;
-    QNetworkReply *wishlistReply;
-
     void fetchData();
     void layoutResults();
+
+    Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void updatingData();
     Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:

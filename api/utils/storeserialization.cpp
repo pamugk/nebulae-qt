@@ -130,6 +130,18 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
     data.preorder = json["isPreorder"].toBool();
 }
 
+void parseVerticalBannerItem(const QJsonValue &json, api::StoreVerticalBannerItem &data)
+{
+    data.promoId = json["promoId"].toString();
+    data.title = json["title"].toString();
+    data.url = json["url"].toString();
+    data.backgroundImage = json["backgroundImage"].toString();
+    data.color = json["color"].toString();
+    data.discount = json["discount"].toString();
+    data.discountUpTo = json["discountIsUpTo"].toBool();
+    data.promoEndDate = QDateTime::fromMSecsSinceEpoch(json["promoEndDate"].toInteger());
+}
+
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data)
 {
     const auto properties = json["properties"];
@@ -312,5 +324,15 @@ void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSections
     for (std::size_t i = 0; i < sections.count(); i++)
     {
         parseSection(sections[i], data.sections[i]);
+    }
+}
+
+void parseGetStoreVerticalBannerSectionResponse(const QJsonValue &json, api::GetStoreVerticalBannerSectionResponse &data)
+{
+    const auto items = json["properties"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
+    {
+        parseVerticalBannerItem(items[i], data.items[i]);
     }
 }

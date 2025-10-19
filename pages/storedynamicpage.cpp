@@ -10,6 +10,7 @@
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storeherobanner.h"
+#include "../widgets/storesalecard.h"
 
 StoreDynamicPage::StoreDynamicPage(QWidget *parent) :
     StoreBasePage(Page::STORE_DYNAMIC_PAGE, parent),
@@ -136,6 +137,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                                      << QString(backgroundReply->readAll()).toUtf8();
                         }
                     });
+                    connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
                 }
                 heroBannerWidget->setDescription(data.description);
                 heroBannerWidget->setPrimaryButtonText(data.button.text);
@@ -153,6 +155,73 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
 
                 sectionWidget->layout()->addWidget(heroBannerWidget);
             }
+            else if (type == QLatin1StringView("VERTICAL_BANNER_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetStoreVerticalBannerSectionResponse data;
+                parseGetStoreVerticalBannerSectionResponse(resultJson, data);
+
+                if (data.items.isEmpty())
+                {
+                    ui->resultScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+                    sectionWidget->setLayout(new QVBoxLayout());
+                    QScrollArea *nowOnSaleDealsScrollArea = new QScrollArea(sectionWidget);
+                    nowOnSaleDealsScrollArea->setMinimumSize(548, 520);
+                    nowOnSaleDealsScrollArea->setWidgetResizable(true);
+                    QWidget *nowOnSaleDealsScrollAreaContents = new QWidget(nowOnSaleDealsScrollArea);
+                    nowOnSaleDealsScrollAreaContents->setLayout(new QHBoxLayout());
+                    nowOnSaleDealsScrollArea->setWidget(nowOnSaleDealsScrollAreaContents);
+                    sectionWidget->layout()->addWidget(nowOnSaleDealsScrollArea);
+
+                    auto systemLocale = QLocale::system();
+                    for (const api::StoreVerticalBannerItem &item : std::as_const(data.items))
+                    {
+                        auto dealCard = new StoreSaleCard(nowOnSaleDealsScrollAreaContents);
+                        dealCard->setTitle(item.title);
+                        dealCard->setDiscountUpTo(item.discountUpTo);
+                        dealCard->setDiscount(item.discount);
+                        dealCard->setCountdownValue(item.promoEndDate);
+                        dealCard->setColor(item.color);
+                        if (!item.backgroundImage.isEmpty())
+                        {
+                            QString url = item.backgroundImage;
+                            url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_vertical_banner_256x486.webp"));
+                            QNetworkReply *backgroundReply = apiClient->getAnything(url);
+                            connect(dealCard, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                            connect(backgroundReply, &QNetworkReply::finished, dealCard, [dealCard, backgroundReply]()
+                            {
+                                if (backgroundReply->error() == QNetworkReply::NoError)
+                                {
+                                    QPixmap image;
+                                    image.loadFromData(backgroundReply->readAll());
+                                    dealCard->setBackgroundImage(image);
+                                }
+                                else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                                {
+                                    qDebug() << backgroundReply->error()
+                                             << backgroundReply->errorString()
+                                             << QString(backgroundReply->readAll()).toUtf8();
+                                }
+                            });
+                            connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
+                        }
+                        connect(dealCard, &StoreSaleCard::navigateToItem,
+                                this, [this, url = QUrl(item.url)]()
+                        {
+                            emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                        });
+                        nowOnSaleDealsScrollAreaContents->layout()->addWidget(dealCard);
+                    }
+
+                    auto titleLabel = new QLabel(tr("Hurry up! There are even more sales!"), ui->resultScrollAreaContents);
+                    titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                    ui->resultScrollAreaContentsLayout->insertWidget(ui->resultScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
+                }
+            }
         }
         else if (sectionReply->error() != QNetworkReply::OperationCanceledError)
         {
@@ -162,9 +231,8 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
             ui->resultScrollAreaContentsLayout->removeWidget(sectionWidget);
             sectionWidget->deleteLater();
         }
-
-        sectionReply->deleteLater();
     });
+    connect(sectionReply, &QNetworkReply::finished, sectionReply, &QNetworkReply::deleteLater);
 }
 
 void StoreDynamicPage::getSections()
@@ -209,9 +277,8 @@ void StoreDynamicPage::getSections()
                      << QString(sectionsReply->readAll()).toUtf8();
             ui->pageStackedWidget->setCurrentWidget(ui->errorPage);
         }
-
-        sectionsReply->deleteLater();
     });
+    connect(sectionsReply, &QNetworkReply::finished, sectionsReply, &QNetworkReply::deleteLater);
 }
 
 void StoreDynamicPage::initialize(const QVariant &data)
@@ -248,9 +315,8 @@ void StoreDynamicPage::switchUiAuthenticatedState(bool authenticated)
                          << ownedProductsReply->errorString()
                          << QString(ownedProductsReply->readAll()).toUtf8();
             }
-
-            ownedProductsReply->deleteLater();
         });
+        connect(ownedProductsReply, &QNetworkReply::finished, ownedProductsReply, &QNetworkReply::deleteLater);
 
         const auto wishlistReply = apiClient->getWishlistIds();
         connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
@@ -276,9 +342,8 @@ void StoreDynamicPage::switchUiAuthenticatedState(bool authenticated)
                          << wishlistReply->errorString()
                          << QString(wishlistReply->readAll()).toUtf8();
             }
-
-            wishlistReply->deleteLater();
         });
+        connect(wishlistReply, &QNetworkReply::finished, wishlistReply, &QNetworkReply::deleteLater);
     }
     else
     {

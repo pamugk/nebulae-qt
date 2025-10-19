@@ -101,7 +101,36 @@ void StorePage::getNowOnSale()
                     row = (row + 1) % 2;
                 }
 
-                auto dealCard = new StoreSaleCard(data.bigThingy, apiClient, dealTabScrollAreaContents);
+                auto systemLocale = QLocale::system();
+                auto dealCard = new StoreSaleCard(dealTabScrollAreaContents);
+                dealCard->setTitle(data.bigThingy.text);
+                dealCard->setDiscountUpTo(data.bigThingy.discountUpTo);
+                dealCard->setDiscount(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(data.bigThingy.discountValue), systemLocale.percent()));
+                dealCard->setCountdownValue(data.bigThingy.countdownDate);
+                dealCard->setColor(data.bigThingy.colorRgbArray);
+                if (!data.bigThingy.background.isEmpty())
+                {
+                    QString url = data.bigThingy.background;
+                    url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_vertical_banner_256x486.webp"));
+                    QNetworkReply *backgroundReply = apiClient->getAnything(url);
+                    connect(dealCard, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                    connect(backgroundReply, &QNetworkReply::finished, dealCard, [dealCard, backgroundReply]()
+                    {
+                        if (backgroundReply->error() == QNetworkReply::NoError)
+                        {
+                            QPixmap image;
+                            image.loadFromData(backgroundReply->readAll());
+                            dealCard->setBackgroundImage(image);
+                        }
+                        else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                        {
+                            qDebug() << backgroundReply->error()
+                                     << backgroundReply->errorString()
+                                     << QString(backgroundReply->readAll()).toUtf8();
+                        }
+                    });
+                    connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
+                }
                 connect(dealCard, &StoreSaleCard::navigateToItem,
                         this, [this]()
                 {
@@ -153,9 +182,8 @@ void StorePage::getNowOnSale()
                          << nowOnSaleSectionReply->errorString()
                          << QString(nowOnSaleSectionReply->readAll()).toUtf8();
             }
-
-            nowOnSaleSectionReply->deleteLater();
         });
+        connect(nowOnSaleSectionReply, &QNetworkReply::finished, nowOnSaleSectionReply, &QNetworkReply::deleteLater);
     });
     nowOnSaleTabWidget->setVisible(false);
     ui->landingScrollAreaContentsLayout->addWidget(nowOnSaleTabWidget);
@@ -176,7 +204,7 @@ void StorePage::getNowOnSale()
             QWidget *nowOnSaleDealsTab = new QWidget();
             nowOnSaleDealsTab->setLayout(new QVBoxLayout());
             QScrollArea *nowOnSaleDealsScrollArea = new QScrollArea(nowOnSaleDealsTab);
-            nowOnSaleDealsScrollArea->setMinimumSize(548, 474);
+            nowOnSaleDealsScrollArea->setMinimumSize(548, 520);
             nowOnSaleDealsScrollArea->setWidgetResizable(true);
             QWidget *nowOnSaleDealsScrollAreaContents = new QWidget(nowOnSaleDealsScrollArea);
             QGridLayout *nowOnSaleDealsScrollAreaContentsLayout = new QGridLayout(nowOnSaleDealsScrollAreaContents);
@@ -193,9 +221,38 @@ void StorePage::getNowOnSale()
             nowOnSaleSectionsIds.resize(data.tabs.count());
             nowOnSaleSectionsRequested.resize(data.tabs.count());
 
+            auto systemLocale = QLocale::system();
             for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
             {
-                auto dealCard = new StoreSaleCard(dealTab.bigThingy, apiClient, nowOnSaleDealsScrollAreaContents);
+                auto dealCard = new StoreSaleCard(nowOnSaleDealsScrollAreaContents);
+                dealCard->setTitle(dealTab.bigThingy.text);
+                dealCard->setDiscountUpTo(dealTab.bigThingy.discountUpTo);
+                dealCard->setDiscount(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(dealTab.bigThingy.discountValue), systemLocale.percent()));
+                dealCard->setCountdownValue(dealTab.bigThingy.countdownDate);
+                dealCard->setColor(dealTab.bigThingy.colorRgbArray);
+                if (!dealTab.bigThingy.background.isEmpty())
+                {
+                    QString url = dealTab.bigThingy.background;
+                    url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_vertical_banner_256x486.webp"));
+                    QNetworkReply *backgroundReply = apiClient->getAnything(url);
+                    connect(dealCard, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                    connect(backgroundReply, &QNetworkReply::finished, dealCard, [dealCard, backgroundReply]()
+                    {
+                        if (backgroundReply->error() == QNetworkReply::NoError)
+                        {
+                            QPixmap image;
+                            image.loadFromData(backgroundReply->readAll());
+                            dealCard->setBackgroundImage(image);
+                        }
+                        else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                        {
+                            qDebug() << backgroundReply->error()
+                                     << backgroundReply->errorString()
+                                     << QString(backgroundReply->readAll()).toUtf8();
+                        }
+                    });
+                    connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
+                }
                 connect(dealCard, &StoreSaleCard::navigateToItem,
                         this, [this, url = QUrl(dealTab.bigThingy.url)]()
                 {
@@ -304,8 +361,8 @@ void StorePage::getNowOnSale()
             ui->landingScrollAreaContentsLayout->removeWidget(nowOnSaleTabWidget);
             nowOnSaleTabWidget->deleteLater();
         }
-        nowOnSaleReply->deleteLater();
     });
+    connect(nowOnSaleReply, &QNetworkReply::finished, nowOnSaleReply, &QNetworkReply::deleteLater);
 }
 
 void StorePage::getSection(const QString &id, const QString &type)
@@ -425,8 +482,8 @@ void StorePage::getSection(const QString &id, const QString &type)
                                      << backgroundReply->errorString()
                                      << QString(backgroundReply->readAll()).toUtf8();
                         }
-                        backgroundReply->deleteLater();
                     });
+                    connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
                     sectionWidget->layout()->addWidget(promoBannerWidget);
                     sectionWidget->layout()->setAlignment(promoBannerWidget, Qt::AlignHCenter);
                 }
@@ -496,8 +553,8 @@ void StorePage::getSection(const QString &id, const QString &type)
                                          << backgroundReply->errorString()
                                          << QString(backgroundReply->readAll()).toUtf8();
                             }
-                            backgroundReply->deleteLater();
                         });
+                        connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
                     }
                     if (!data.data.logo.isEmpty())
                     {
@@ -512,8 +569,14 @@ void StorePage::getSection(const QString &id, const QString &type)
                                 image.loadFromData(logoReply->readAll());
                                 announcementWidget->setLogoImage(image);
                             }
-                            logoReply->deleteLater();
+                            else if (logoReply->error() != QNetworkReply::OperationCanceledError)
+                            {
+                                qDebug() << logoReply->error()
+                                         << logoReply->errorString()
+                                         << QString(logoReply->readAll()).toUtf8();
+                            }
                         });
+                        connect(logoReply, &QNetworkReply::finished, logoReply, &QNetworkReply::deleteLater);
                     }
                     announcementWidget->setTitle(data.data.title);
                     if (data.data.product.has_value())
@@ -604,8 +667,8 @@ void StorePage::getSection(const QString &id, const QString &type)
                                              << backgroundReply->errorString()
                                              << QString(backgroundReply->readAll()).toUtf8();
                                 }
-                                backgroundReply->deleteLater();
                             });
+                            connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
                         }
                         if (!item.logo.isEmpty())
                         {
@@ -620,8 +683,14 @@ void StorePage::getSection(const QString &id, const QString &type)
                                     image.loadFromData(logoReply->readAll());
                                     itemWidget->setLogoImage(image);
                                 }
-                                logoReply->deleteLater();
+                                else if (logoReply->error() != QNetworkReply::OperationCanceledError)
+                                {
+                                    qDebug() << logoReply->error()
+                                             << logoReply->errorString()
+                                             << QString(logoReply->readAll()).toUtf8();
+                                }
                             });
+                            connect(logoReply, &QNetworkReply::finished, logoReply, &QNetworkReply::deleteLater);
                         }
                         itemWidget->setTitle(item.title);
                         if (item.product.has_value())
@@ -870,9 +939,8 @@ void StorePage::getSection(const QString &id, const QString &type)
             ui->landingScrollAreaContentsLayout->removeWidget(sectionWidget);
             sectionWidget->deleteLater();
         }
-
-        sectionReply->deleteLater();
     });
+    connect(sectionReply, &QNetworkReply::finished, sectionReply, &QNetworkReply::deleteLater);
 }
 
 void StorePage::getSections()
@@ -919,9 +987,8 @@ void StorePage::getSections()
                      << QString(sectionsReply->readAll()).toUtf8();
             ui->landingStackedWidget->setCurrentWidget(ui->landingErrorPage);
         }
-
-        sectionsReply->deleteLater();
     });
+    connect(sectionsReply, &QNetworkReply::finished, sectionsReply, &QNetworkReply::deleteLater);
 }
 
 void StorePage::initialize(const QVariant &data)
@@ -968,9 +1035,8 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                          << ownedProductsReply->errorString()
                          << QString(ownedProductsReply->readAll()).toUtf8();
             }
-
-            ownedProductsReply->deleteLater();
         });
+        connect(ownedProductsReply, &QNetworkReply::finished, ownedProductsReply, &QNetworkReply::deleteLater);
 
         const auto wishlistReply = apiClient->getWishlistIds();
         connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
@@ -996,9 +1062,8 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
                          << wishlistReply->errorString()
                          << QString(wishlistReply->readAll()).toUtf8();
             }
-
-            wishlistReply->deleteLater();
         });
+        connect(wishlistReply, &QNetworkReply::finished, wishlistReply, &QNetworkReply::deleteLater);
     }
     else
     {

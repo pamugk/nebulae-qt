@@ -27,9 +27,9 @@ private:
     Pagination *paginator;
     Ui::OrdersPage *ui;
 
-    QNetworkReply *ordersReply;
-
     void fetchData();
+
+    Q_SIGNAL void updatingData();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

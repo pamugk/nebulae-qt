@@ -24,9 +24,6 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
     activatedFilterCount(0),
     applyFilters(true),
     filter({}),
-    lastCatalogReply(nullptr),
-    ownedProductsReply(nullptr),
-    wishlistReply(nullptr),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);
@@ -71,18 +68,6 @@ AllGamesPage::AllGamesPage(QWidget *parent) :
 
 AllGamesPage::~AllGamesPage()
 {
-    if (lastCatalogReply != nullptr)
-    {
-        lastCatalogReply->abort();
-    }
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
-    }
     delete ui;
 }
 
@@ -112,23 +97,19 @@ void AllGamesPage::fetchData()
         delete item;
     }
 
-    if (lastCatalogReply != nullptr)
-    {
-        lastCatalogReply->abort();
-    }
+    emit updatingData();
 
     auto systemLocale = QLocale::system();
-    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
+    QNetworkReply *catalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
                                                 QLocale::territoryToCode(systemLocale.territory()),
                                                 systemLocale.name(QLocale::TagSeparator::Dash),
                                                 systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
-    connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
-        auto networkReply = lastCatalogReply;
-        lastCatalogReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+    connect(this, &QObject::destroyed, catalogReply, &QNetworkReply::abort);
+    connect(this, &AllGamesPage::updatingData, catalogReply, &QNetworkReply::abort);
+    connect(catalogReply, &QNetworkReply::finished, this, [this, catalogReply](){
+        if (catalogReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(catalogReply->readAll()).toUtf8()).object();
             parseSearchCatalogResponse(resultJson, data);
 
             ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(data.productCount)));
@@ -146,13 +127,12 @@ void AllGamesPage::fetchData()
                 layoutResults();
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (catalogReply->error() != QNetworkReply::OperationCanceledError)
         {   ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << catalogReply->error() << catalogReply->errorString() << QString(catalogReply->readAll()).toUtf8();
         }
-
-        networkReply->deleteLater();
     });
+    connect(catalogReply, &QNetworkReply::finished, catalogReply, &QNetworkReply::deleteLater);
 }
 
 void AllGamesPage::layoutResults()
@@ -249,19 +229,17 @@ void AllGamesPage::initialize(const QVariant &data)
         filter.releaseStatuses << initialFilters["releaseStatus"].toString();
     }
     auto systemLocale = QLocale::system();
-    lastCatalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
+    QNetworkReply *catalogReply = apiClient->searchCatalog(orders[currentSortOrder], filter,
                                                 QLocale::territoryToCode(systemLocale.territory()),
                                                 systemLocale.name(QLocale::TagSeparator::Dash),
                                                 systemLocale.currencySymbol(QLocale::CurrencyIsoCode), page);
+    connect(this, &QObject::destroyed, catalogReply, &QNetworkReply::abort);
     ui->filtersScrollArea->setVisible(false);
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    connect(lastCatalogReply, &QNetworkReply::finished, this, [this](){
-        auto networkReply = lastCatalogReply;
-        lastCatalogReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+    connect(catalogReply, &QNetworkReply::finished, this, [this, catalogReply](){
+        if (catalogReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(catalogReply->readAll()).toUtf8()).object();
             parseSearchCatalogResponse(resultJson, this->data);
 
             auto clearAllFiltersButton = new ClearFilterButton("Clear all filters", QString(), ui->appliedFiltersHolder);
@@ -1310,36 +1288,28 @@ void AllGamesPage::initialize(const QVariant &data)
                 layoutResults();
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (catalogReply->error() != QNetworkReply::OperationCanceledError)
         {   ui->contentsStack->setCurrentWidget(ui->errorPage);
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << catalogReply->error() << catalogReply->errorString() << QString(catalogReply->readAll()).toUtf8();
         }
-
-        networkReply->deleteLater();
     });
+    connect(catalogReply, &QNetworkReply::finished, catalogReply, &QNetworkReply::deleteLater);
 }
 
 void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
 {
     StoreBasePage::switchUiAuthenticatedState(authenticated);
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
-    }
+    emit authenticationStateChanged();
     if (authenticated)
     {
-        ownedProductsReply = apiClient->getOwnedLicensesIds();
-        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(this, &QObject::destroyed, ownedProductsReply, &QNetworkReply::abort);
+        connect(this, &AllGamesPage::authenticationStateChanged, ownedProductsReply, &QNetworkReply::abort);
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this, ownedProductsReply]()
         {
-            auto networkReply = ownedProductsReply;
-            ownedProductsReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (ownedProductsReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(ownedProductsReply->readAll()).toUtf8());
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
@@ -1347,23 +1317,23 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (ownedProductsReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << ownedProductsReply->error()
+                         << ownedProductsReply->errorString()
+                         << QString(ownedProductsReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
-        wishlistReply = apiClient->getWishlistIds();
-        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+        connect(ownedProductsReply, &QNetworkReply::finished, ownedProductsReply, &QNetworkReply::deleteLater);
+
+        QNetworkReply *wishlistReply = apiClient->getWishlistIds();
+        connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
+        connect(this, &AllGamesPage::authenticationStateChanged, wishlistReply, &QNetworkReply::abort);
+        connect(wishlistReply, &QNetworkReply::finished, this, [this, wishlistReply]()
         {
-            auto networkReply = wishlistReply;
-            wishlistReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (wishlistReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(wishlistReply->readAll()).toUtf8());
                 auto wishlistedItems = resultJson["wishlist"].toObject();
                 for (const QString &key : wishlistedItems.keys())
                 {
@@ -1374,15 +1344,14 @@ void AllGamesPage::switchUiAuthenticatedState(bool authenticated)
                 }
                 emit wishlistChanged(wishlist);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (wishlistReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << wishlistReply->error()
+                         << wishlistReply->errorString()
+                         << QString(wishlistReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(wishlistReply, &QNetworkReply::finished, wishlistReply, &QNetworkReply::deleteLater);
     }
     else
     {

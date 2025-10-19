@@ -33,10 +33,11 @@ private slots:
 private:
     api::GogApiClient *apiClient;
     std::size_t currentItem;
-    QNetworkReply *imageReply;
     const QVector<api::FormattedLink> &screenshots;
     const QVector<api::ThumbnailedVideo> &videos;
     Ui::CatalogProductMediaDialog *ui;
+
+    Q_SIGNAL void updatingImage();
 };
 
 #endif // CATALOGPRODUCTMEDIADIALOG_H

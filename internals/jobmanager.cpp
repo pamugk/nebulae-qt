@@ -18,9 +18,7 @@ JobManager::JobManager(api::GogApiClient *apiClient, QObject *parent)
     libraryReleaseReply(nullptr),
     libraryReleaseAchievementsReply(nullptr),
     libraryReleaseUserAchievementsReply(nullptr),
-    libraryTimerId(),
-    userGameplayReply(nullptr),
-    userLibraryReply(nullptr)
+    libraryTimerId()
 {
 
 }
@@ -39,34 +37,18 @@ JobManager::~JobManager()
     {
         libraryReleaseUserAchievementsReply->abort();
     }
-    for (auto item : std::as_const(userAchievementsByPlatformsReplies))
-    {
-        if (item != nullptr)
-        {
-            item->abort();
-        }
-    }
-    userAchievementsByPlatformsReplies.clear();
-    if (userGameplayReply != nullptr)
-    {
-        userGameplayReply->abort();
-    }
-    if (userLibraryReply != nullptr)
-    {
-        userLibraryReply->abort();
-    }
 }
 
 void JobManager::getUserPlatformAchievements(const QString &platform, const QString &pageToken)
 {
-    userAchievementsByPlatformsReplies[platform] = apiClient->getCurrentUserPlatformAchievements(platform, pageToken);
-    connect(userAchievementsByPlatformsReplies[platform], &QNetworkReply::finished, this, [this, platform, pageToken]()
+    QNetworkReply *userAchievementsByPlatformsReply = apiClient->getCurrentUserPlatformAchievements(platform, pageToken);
+    connect(this, &QObject::destroyed, userAchievementsByPlatformsReply, &QNetworkReply::abort);
+    connect(this, &JobManager::authenticationStateChanged, userAchievementsByPlatformsReply, &QNetworkReply::abort);
+    connect(userAchievementsByPlatformsReply, &QNetworkReply::finished, this, [this, platform, pageToken, userAchievementsByPlatformsReply]()
     {
-       auto networkReply = userAchievementsByPlatformsReplies[platform];
-       userAchievementsByPlatformsReplies[platform] = nullptr;
-       if (networkReply->error() == QNetworkReply::NoError)
+       if (userAchievementsByPlatformsReply->error() == QNetworkReply::NoError)
        {
-           auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+           auto resultJson = QJsonDocument::fromJson(QString(userAchievementsByPlatformsReply->readAll()).toUtf8()).object();
            api::GetUserPlatformAchievementsResponse data;
            parseGetUserPlatformAchievementsResponse(resultJson, data);
            qDebug() << "Received user achievements on platform " << platform;
@@ -76,76 +58,54 @@ void JobManager::getUserPlatformAchievements(const QString &platform, const QStr
                getUserPlatformAchievements(platform, data.nextPageToken);
            }
        }
-       else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+       else if (userAchievementsByPlatformsReply->error() != QNetworkReply::OperationCanceledError)
        {
            qDebug() << "Failed to get user's achievements on a platform, retrying: "
-                    << networkReply->error() << networkReply->errorString()
-                    << QString(networkReply->readAll()).toUtf8();
+                    << userAchievementsByPlatformsReply->error() << userAchievementsByPlatformsReply->errorString()
+                    << QString(userAchievementsByPlatformsReply->readAll()).toUtf8();
            getUserPlatformAchievements(platform, pageToken);
        }
-
-       networkReply->deleteLater();
     });
+    connect(userAchievementsByPlatformsReply, &QNetworkReply::finished, userAchievementsByPlatformsReply, &QNetworkReply::deleteLater);
 }
 
 void JobManager::setAuthenticated(bool authenticated)
 {
-    if (!userAchievementsByPlatformsReplies.empty())
-    {
-        for (auto item : std::as_const(userAchievementsByPlatformsReplies))
-        {
-            if (item != nullptr)
-            {
-                item->abort();
-            }
-        }
-        userAchievementsByPlatformsReplies.clear();
-    }
-    if (userGameplayReply != nullptr)
-    {
-        userGameplayReply->abort();
-    }
-    if (userLibraryReply != nullptr)
-    {
-        userLibraryReply->abort();
-    }
+    emit authenticationStateChanged();
 
     if (authenticated)
     {
-        userGameplayReply = apiClient->getCurrentUserGameTimeStatistics();
+        QNetworkReply *userGameplayReply = apiClient->getCurrentUserGameTimeStatistics();
+        connect(this, &QObject::destroyed, userGameplayReply, &QNetworkReply::abort);
+        connect(this, &JobManager::authenticationStateChanged, userGameplayReply, &QNetworkReply::abort);
         connect(userGameplayReply, &QNetworkReply::finished,
-                this, [this]()
+                this, [this, userGameplayReply]()
         {
-            auto networkReply = userGameplayReply;
-            userGameplayReply = nullptr;
-
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (userGameplayReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                auto resultJson = QJsonDocument::fromJson(QString(userGameplayReply->readAll()).toUtf8()).object();
                 api::GetUserGameTimeStatisticsResponse data;
                 parseGetUserGameTimeStatisticsResponse(resultJson, data);
                 db::saveUserGameTimeStatistics(this->apiClient->currentUserId(), data.items);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (userGameplayReply->error() != QNetworkReply::OperationCanceledError)
             {
                 qDebug() << "Failed to load user's game time statistics: "
-                         << networkReply->error() << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                         << userGameplayReply->error() << userGameplayReply->errorString()
+                         << QString(userGameplayReply->readAll()).toUtf8();
             }
-
-
-            networkReply->deleteLater();
         });
-        userLibraryReply = apiClient->getCurrentUserReleases();
-        connect(userLibraryReply, &QNetworkReply::finished,
-                this, [this]()
-        {
-            auto networkReply = userLibraryReply;
-            userLibraryReply = nullptr;
+        connect(userGameplayReply, &QNetworkReply::finished, userGameplayReply, &QNetworkReply::deleteLater);
 
-            if (networkReply->error() == QNetworkReply::NoError)
+        QNetworkReply *userLibraryReply = apiClient->getCurrentUserReleases();
+        connect(this, &QObject::destroyed, userLibraryReply, &QNetworkReply::abort);
+        connect(this, &JobManager::authenticationStateChanged, userLibraryReply, &QNetworkReply::abort);
+        connect(userLibraryReply, &QNetworkReply::finished,
+                this, [this, userLibraryReply]()
+        {
+            if (userLibraryReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                auto resultJson = QJsonDocument::fromJson(QString(userLibraryReply->readAll()).toUtf8()).object();
                 api::GetUserReleasesResponse data;
                 parseGetUserReleasesResponse(resultJson, data);
                 db::saveUserReleases(this->apiClient->currentUserId(), data.items);
@@ -164,16 +124,14 @@ void JobManager::setAuthenticated(bool authenticated)
                     }
                 }
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (userLibraryReply->error() != QNetworkReply::OperationCanceledError)
             {
                 qDebug() << "Failed to load user's library: "
-                         << networkReply->error() << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                         << userLibraryReply->error() << userLibraryReply->errorString()
+                         << QString(userLibraryReply->readAll()).toUtf8();
             }
-
-
-            networkReply->deleteLater();
         });
+        connect(userLibraryReply, &QNetworkReply::finished, userLibraryReply, &QNetworkReply::deleteLater);
 
         if (!libraryTimerId.has_value())
         {
@@ -242,9 +200,8 @@ void JobManager::timerEvent(QTimerEvent *event)
                                  << networkReply->error() << networkReply->errorString()
                                  << QString(networkReply->readAll()).toUtf8();
                     }
-
-                    networkReply->deleteLater();
                 });
+                connect(libraryReleaseReply, &QNetworkReply::finished, libraryReleaseReply, &QNetworkReply::deleteLater);
             }
         }
     }
@@ -278,9 +235,8 @@ void JobManager::timerEvent(QTimerEvent *event)
                                  << networkReply->error() << networkReply->errorString()
                                  << QString(networkReply->readAll()).toUtf8();
                     }
-
-                    networkReply->deleteLater();
                 });
+                connect(libraryReleaseAchievementsReply, &QNetworkReply::finished, libraryReleaseAchievementsReply, &QNetworkReply::deleteLater);
             }
         }
     }

@@ -35,13 +35,10 @@ private:
     Ui::ReleasePage *ui;
     QVector<QWidget *> uiActions;
 
-    QNetworkReply *releaseAchievementsReply;
-    QNetworkReply *releaseGametimeStatisticsReply;
-    QNetworkReply *releaseReply;
-    QNetworkReply *storeProductReply;
-
     void getAchievements();
     void updateUserReleaseInfo();
+
+    Q_SIGNAL void authenticationStateChanged();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

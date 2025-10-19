@@ -1,7 +1,6 @@
 #ifndef ORDERITEM_H
 #define ORDERITEM_H
 
-#include <QNetworkReply>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
@@ -28,7 +27,6 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QNetworkReply *imageReply;
     Ui::OrderItem *ui;
 };
 

@@ -16,5 +16,6 @@ void parseGetStoreProductsSectionResponse(const QJsonValue &json, api::GetStoreP
 void parseGetStorePromoBannerSectionResponse(const QJsonValue &json, api::GetStorePromoBannerSectionResponse &data);
 void parseGetStoreRankingSectionResponse(const QJsonValue &json, api::GetStoreRankingSectionResponse &data);
 void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data);
+void parseGetStoreVerticalBannerSectionResponse(const QJsonValue &json, api::GetStoreVerticalBannerSectionResponse &data);
 
 #endif // STORESERIALIZATION_H

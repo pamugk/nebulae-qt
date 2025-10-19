@@ -9,7 +9,6 @@ CatalogProductMediaDialog::CatalogProductMediaDialog(const QVector<api::Thumbnai
                                                      QWidget *parent) :
     QDialog(parent),
     apiClient(apiClient),
-    imageReply(nullptr),
     screenshots(screenshots),
     videos(videos),
     ui(new Ui::CatalogProductMediaDialog)
@@ -19,10 +18,6 @@ CatalogProductMediaDialog::CatalogProductMediaDialog(const QVector<api::Thumbnai
 
 CatalogProductMediaDialog::~CatalogProductMediaDialog()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 
@@ -32,10 +27,7 @@ void CatalogProductMediaDialog::viewMedia(std::size_t index)
     ui->showPreviousButton->setEnabled(index > 0);
     ui->showNextButton->setEnabled(index < (screenshots.count() + videos.count() - 1));
 
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
+    emit updatingImage();
     if (index < videos.count())
     {
         const api::ThumbnailedVideo &currentVideo = videos[index];
@@ -46,23 +38,29 @@ void CatalogProductMediaDialog::viewMedia(std::size_t index)
     {
         ui->videoView->setUrl(QUrl("about:blank"));
         const api::FormattedLink &currentImage = screenshots[index - videos.count()];
-        imageReply = apiClient->getAnything(currentImage.templated
+        QNetworkReply *imageReply = apiClient->getAnything(currentImage.templated
                                             ? QString(currentImage.href).replace("{formatter}", currentImage.formatters[2])
                                             : currentImage.href);
         ui->contentStackedWidget->setCurrentWidget(ui->loadingPage);
-        connect(imageReply, &QNetworkReply::finished, this, [this]()
+        connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+        connect(this, &CatalogProductMediaDialog::updatingImage, imageReply, &QNetworkReply::abort);
+        connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
         {
-            auto networkReply = imageReply;
-            imageReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (imageReply->error() == QNetworkReply::NoError)
             {
                 QPixmap image;
-                image.loadFromData(networkReply->readAll());
+                image.loadFromData(imageReply->readAll());
                 ui->imageLabel->setPixmap(image);
                 ui->contentStackedWidget->setCurrentWidget(ui->imagePage);
             }
-            networkReply->deleteLater();
+            else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << imageReply->error()
+                         << imageReply->errorString()
+                         << QString(imageReply->readAll()).toUtf8();
+            }
         });
+        connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
     }
 }
 

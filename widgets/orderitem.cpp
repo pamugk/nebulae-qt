@@ -2,6 +2,7 @@
 #include "ui_orderitem.h"
 
 #include <QLocale>
+#include <QNetworkReply>
 
 OrderItem::OrderItem(const api::OrderProduct &data,
                      api::GogApiClient *apiClient,
@@ -31,26 +32,27 @@ OrderItem::OrderItem(const api::OrderProduct &data,
         ui->priceLabel->setText(data.status.toUpper());
     }
 
-    imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image);
         }
-        networkReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 OrderItem::~OrderItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

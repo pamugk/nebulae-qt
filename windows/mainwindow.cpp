@@ -31,9 +31,7 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
     , ui(new Ui::MainWindow),
       apiClient(apiClient),
       initialized(false),
-      settingsManager(settingsManager),
-      userAvatarReply(nullptr),
-      userReply(nullptr)
+      settingsManager(settingsManager)
 {
     ui->setupUi(this);
 
@@ -147,14 +145,6 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
 
 MainWindow::~MainWindow()
 {
-    if (userAvatarReply != nullptr)
-    {
-        userAvatarReply->abort();
-    }
-    if (userReply != nullptr)
-    {
-        userReply->abort();
-    }
     delete ui;
 }
 
@@ -230,59 +220,56 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
 {
     ui->loginButton->setVisible(!authenticated);
     ui->userToolButton->setVisible(authenticated);
-    if (userAvatarReply != nullptr)
-    {
-        userAvatarReply->abort();
-    }
-    if (userReply != nullptr)
-    {
-        userReply->abort();
-    }
+    emit authenticationStateChanged();
     if (authenticated)
     {
-        userReply = apiClient->getCurrentUser();
-        connect(userReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *userReply = apiClient->getCurrentUser();
+        connect(this, &QObject::destroyed, userReply, &QNetworkReply::abort);
+        connect(this, &MainWindow::authenticationStateChanged, userReply, &QNetworkReply::abort);
+        connect(userReply, &QNetworkReply::finished, this, [this, userReply]()
         {
-            auto networkReply = userReply;
-            userReply = nullptr;
             auto userInfo = static_cast<QWidgetAction *>(ui->userToolButton->menu()->actions()[0])->defaultWidget();
             auto userInfoLayout = static_cast<QGridLayout *>(userInfo->layout());
             auto userNameLabel = static_cast<QLabel *>(userInfoLayout->itemAtPosition(0, 1)->widget());
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (userReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                auto resultJson = QJsonDocument::fromJson(QString(userReply->readAll()).toUtf8()).object();
                 api::UserFullData data;
                 parseUserFullData(resultJson, data);
 
                 userNameLabel->setText(data.username);
-                userAvatarReply = apiClient->getAnything(QString("https://images.gog.com/%1_avm.webp").arg(data.avatar.gogImageId));
-                connect(userAvatarReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *userAvatarReply = apiClient->getAnything(QString("https://images.gog.com/%1_avm.webp").arg(data.avatar.gogImageId));
+                connect(this, &QObject::destroyed, userAvatarReply, &QNetworkReply::abort);
+                connect(this, &MainWindow::authenticationStateChanged, userAvatarReply, &QNetworkReply::abort);
+                connect(userAvatarReply, &QNetworkReply::finished, this, [this, userAvatarReply]()
                 {
-                    auto networkReply = userAvatarReply;
-                    userAvatarReply = nullptr;
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (userAvatarReply->error() == QNetworkReply::NoError)
                     {
                         auto userInfo = static_cast<QWidgetAction *>(ui->userToolButton->menu()->actions()[0])->defaultWidget();
                         auto userInfoLayout = static_cast<QGridLayout *>(userInfo->layout());
                         auto userInfoAvatarLabel = static_cast<QLabel *>(userInfoLayout->itemAtPosition(0, 0)->widget());
 
                         QPixmap avatar;
-                        avatar.loadFromData(networkReply->readAll());
+                        avatar.loadFromData(userAvatarReply->readAll());
                         userInfoAvatarLabel->setPixmap(avatar.scaled(userInfoAvatarLabel->size()));
                         ui->userToolButton->setIcon(QIcon(avatar.scaled(ui->userToolButton->size())));
                     }
-
-                    networkReply->deleteLater();
+                    else if (userAvatarReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << userAvatarReply->error()
+                                 << userAvatarReply->errorString()
+                                 << QString(userAvatarReply->readAll()).toUtf8();
+                    }
                 });
+                connect(userAvatarReply, &QNetworkReply::finished, userAvatarReply, &QNetworkReply::deleteLater);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (userReply->error() != QNetworkReply::OperationCanceledError)
             {
                 userNameLabel->setText("User login not loaded");
-                qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+                qDebug() << userReply->error() << userReply->errorString() << QString(userReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(userReply, &QNetworkReply::finished, userReply, &QNetworkReply::deleteLater);
     }
     else if (initialized)
     {

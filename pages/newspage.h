@@ -23,10 +23,6 @@ private:
     api::GogApiClient *apiClient;
     Ui::NewsPage *ui;
 
-    QNetworkReply *bannerReply;
-    QNetworkReply *newsHeadlinesReply;
-    QNetworkReply *newsPageReply;
-
 public slots:
     virtual void initialize(const QVariant &data) override;
     virtual void switchUiAuthenticatedState(bool authenticated) override;

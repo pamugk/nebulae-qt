@@ -32,7 +32,6 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QNetworkReply *imageReply;
     Ui::DependentProductItem *ui;
 };
 

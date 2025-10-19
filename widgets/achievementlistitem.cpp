@@ -8,7 +8,6 @@ AchievementListItem::AchievementListItem(const api::PlatformAchievement &data,
                                          api::GogApiClient *apiClient,
                                          QWidget *parent) :
     QWidget(parent),
-    imageReply(nullptr),
     ui(new Ui::AchievementListItem)
 {
     ui->setupUi(this);
@@ -59,28 +58,29 @@ AchievementListItem::AchievementListItem(const api::PlatformAchievement &data,
     ui->statisticsLabel->setText(QString("%1%2").arg(systemLocale.toString(data.rarity), systemLocale.percent()));
     if (!imageUrl.isNull())
     {
-        imageReply = apiClient->getAnything(imageUrl);
-        connect(imageReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *imageReply = apiClient->getAnything(imageUrl);
+        connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+        connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
         {
-            auto networkReply = imageReply;
-            imageReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (imageReply->error() == QNetworkReply::NoError)
             {
                 QPixmap image;
-                image.loadFromData(networkReply->readAll());
+                image.loadFromData(imageReply->readAll());
                 ui->imageLabel->setPixmap(image.scaled(ui->imageLabel->size()));
             }
-            networkReply->deleteLater();
+            else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << imageReply->error()
+                         << imageReply->errorString()
+                         << QString(imageReply->readAll()).toUtf8();
+            }
         });
+        connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
     }
 }
 
 AchievementListItem::~AchievementListItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

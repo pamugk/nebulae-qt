@@ -28,10 +28,6 @@ ReleasePage::ReleasePage(QWidget *parent) :
     owned(false),
     platformId(),
     platformReleaseId(),
-    releaseAchievementsReply(nullptr),
-    releaseGametimeStatisticsReply(nullptr),
-    releaseReply(nullptr),
-    storeProductReply(nullptr),
     ui(new Ui::ReleasePage)
 {
     ui->setupUi(this);
@@ -112,22 +108,6 @@ ReleasePage::ReleasePage(QWidget *parent) :
 
 ReleasePage::~ReleasePage()
 {
-    if (releaseAchievementsReply != nullptr)
-    {
-        releaseAchievementsReply->abort();
-    }
-    if (releaseGametimeStatisticsReply != nullptr)
-    {
-        releaseGametimeStatisticsReply->abort();
-    }
-    if (releaseReply != nullptr)
-    {
-        releaseReply->abort();
-    }
-    if (storeProductReply != nullptr)
-    {
-        storeProductReply->abort();
-    }
     delete ui;
 }
 
@@ -144,14 +124,12 @@ void ReleasePage::setApiClient(api::GogApiClient *apiClient)
 void ReleasePage::initialize(const QVariant &data)
 {
     ui->contentsStack->setCurrentWidget(ui->loaderPage);
-    releaseReply = apiClient->getRelease(data.toString());
-    connect(releaseReply, &QNetworkReply::finished, this, [this](){
-        auto networkReply = releaseReply;
-        releaseReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *releaseReply = apiClient->getRelease(data.toString());
+    connect(this, &QObject::destroyed, releaseReply, &QNetworkReply::abort);
+    connect(releaseReply, &QNetworkReply::finished, this, [this, releaseReply](){
+        if (releaseReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(releaseReply->readAll()).toUtf8()).object();
             api::Release data;
             parseRelease(resultJson, data);
 
@@ -278,14 +256,13 @@ void ReleasePage::initialize(const QVariant &data)
 
             if (data.platformId == "gog")
             {
-                storeProductReply = apiClient->getStoreProductInfo(data.externalId, locale.bcp47Name());
-                connect(storeProductReply, &QNetworkReply::finished, this, [this, iconUrl = data.game.squareIcon]()
+                QNetworkReply *storeProductReply = apiClient->getStoreProductInfo(data.externalId, locale.bcp47Name());
+                connect(this, &QObject::destroyed, storeProductReply, &QNetworkReply::abort);
+                connect(storeProductReply, &QNetworkReply::finished, this, [this, storeProductReply, iconUrl = data.game.squareIcon]()
                 {
-                    auto networkReply = storeProductReply;
-                    storeProductReply = nullptr;
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (storeProductReply->error() == QNetworkReply::NoError)
                     {
-                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        auto resultJson = QJsonDocument::fromJson(QString(storeProductReply->readAll()).toUtf8()).object();
                         api::GetStoreProductInfoResponse data;
                         parseStoreOwnedProductInfoResponse(resultJson, data);
 
@@ -656,20 +633,20 @@ void ReleasePage::initialize(const QVariant &data)
                             ui->resultsExtrasPageScrollAreaContentsLayout->addStretch();
                         }
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (storeProductReply->error() != QNetworkReply::OperationCanceledError)
                     {
-                        qDebug() << networkReply->error()
-                                 << networkReply->errorString()
-                                 << QString(networkReply->readAll()).toUtf8();
+                        qDebug() << storeProductReply->error()
+                                 << storeProductReply->errorString()
+                                 << QString(storeProductReply->readAll()).toUtf8();
                     }
-
-                    networkReply->deleteLater();
                 });
+                connect(storeProductReply, &QNetworkReply::finished, storeProductReply, &QNetworkReply::deleteLater);
             }
 
             if (!data.game.horizontalArtwork.isEmpty())
             {
-                auto horizontalArtworkReply = apiClient->getAnything(QString(data.game.horizontalArtwork).replace("{formatter}", "_glx_bg_top_padding_7").replace("{ext}", "webp"));
+                QNetworkReply *horizontalArtworkReply = apiClient->getAnything(QString(data.game.horizontalArtwork).replace("{formatter}", "_glx_bg_top_padding_7").replace("{ext}", "webp"));
+                connect(this, &QObject::destroyed, horizontalArtworkReply, &QNetworkReply::abort);
                 connect(horizontalArtworkReply, &QNetworkReply::finished, this, [this, horizontalArtworkReply]()
                 {
                     if (horizontalArtworkReply->error() == QNetworkReply::NoError)
@@ -683,24 +660,22 @@ void ReleasePage::initialize(const QVariant &data)
                                  << horizontalArtworkReply->errorString()
                                  << QString(horizontalArtworkReply->readAll()).toUtf8();
                     }
-
-                    horizontalArtworkReply->deleteLater();
                 });
-                connect(this, &QObject::destroyed, horizontalArtworkReply, &QNetworkReply::abort);
+                connect(horizontalArtworkReply, &QNetworkReply::finished, horizontalArtworkReply, &QNetworkReply::deleteLater);
             }
         }
-        else if (networkReply->error() == QNetworkReply::ContentNotFoundError)
+        else if (releaseReply->error() == QNetworkReply::ContentNotFoundError)
         {
             ui->contentsStack->setCurrentWidget(ui->emptyPage);
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (releaseReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << releaseReply->error()
+                     << releaseReply->errorString()
+                     << QString(releaseReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(releaseReply, &QNetworkReply::finished, releaseReply, &QNetworkReply::deleteLater);
 }
 
 void ReleasePage::paintEvent(QPaintEvent *event)
@@ -724,14 +699,7 @@ void ReleasePage::paintEvent(QPaintEvent *event)
 
 void ReleasePage::switchUiAuthenticatedState(bool authenticated)
 {
-    if (releaseAchievementsReply != nullptr)
-    {
-        releaseAchievementsReply->abort();
-    }
-    if (releaseGametimeStatisticsReply != nullptr)
-    {
-        releaseGametimeStatisticsReply->abort();
-    }
+    emit authenticationStateChanged();
 
     ui->achievementsProgressLabel->setText("Achievements N/A");
     ui->gametimeLabel->setText("Game time N/A");
@@ -775,6 +743,7 @@ void ReleasePage::getAchievements()
             delete item;
         }
 
+        QNetworkReply *releaseAchievementsReply;
         if (apiClient->isAuthenticated())
         {
             releaseAchievementsReply = apiClient->getCurrentUserPlatformReleaseAchievements(platformId, platformReleaseId, QString());
@@ -784,14 +753,14 @@ void ReleasePage::getAchievements()
             releaseAchievementsReply = apiClient->getPlatformReleaseAchievements(platformId, platformReleaseId,
                                                                                  "en-US");
         }
-        connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this]()
+        connect(this, &QObject::destroyed, releaseAchievementsReply, &QNetworkReply::abort);
+        connect(this, &ReleasePage::authenticationStateChanged, releaseAchievementsReply, &QNetworkReply::abort);
+        connect(releaseAchievementsReply, &QNetworkReply::finished, this, [this, releaseAchievementsReply]()
         {
-            auto networkReply = releaseAchievementsReply;
-            releaseAchievementsReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (releaseAchievementsReply->error() == QNetworkReply::NoError)
             {
                 auto locale = QLocale::system();
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                auto resultJson = QJsonDocument::fromJson(QString(releaseAchievementsReply->readAll()).toUtf8()).object();
                 api::GetUserPlatformAchievementsResponse data;
                 parseGetUserPlatformAchievementsResponse(resultJson, data);
                 if (data.items.isEmpty())
@@ -817,15 +786,14 @@ void ReleasePage::getAchievements()
                                                            .arg(locale.toString(std::round(100. * unlockedAchievements / data.items.count())), locale.percent()));
                 }
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (releaseAchievementsReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << releaseAchievementsReply->error()
+                         << releaseAchievementsReply->errorString()
+                         << QString(releaseAchievementsReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(releaseAchievementsReply, &QNetworkReply::finished, releaseAchievementsReply, &QNetworkReply::deleteLater);
     }
 }
 
@@ -846,14 +814,14 @@ void ReleasePage::updateUserReleaseInfo()
         }
         ui->userTagsLabel->setText(QLocale::system().createSeparatedList(userReleaseData.tags));
 
-        releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(platformId, platformReleaseId);
-        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *releaseGametimeStatisticsReply = apiClient->getCurrentUserPlatformReleaseGameTimeStatistics(platformId, platformReleaseId);
+        connect(this, &QObject::destroyed, releaseGametimeStatisticsReply, &QNetworkReply::abort);
+        connect(this, &ReleasePage::authenticationStateChanged, releaseGametimeStatisticsReply, &QNetworkReply::abort);
+        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, this, [this, releaseGametimeStatisticsReply]()
         {
-            auto networkReply = releaseGametimeStatisticsReply;
-            releaseGametimeStatisticsReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (releaseGametimeStatisticsReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(releaseGametimeStatisticsReply->readAll()).toUtf8());
                 if (!resultJson["time_sum"].isNull())
                 {
                     int totalPlaytime = resultJson["time_sum"].toInt();
@@ -874,15 +842,14 @@ void ReleasePage::updateUserReleaseInfo()
                     lastPlayed = QDateTime::fromSecsSinceEpoch(resultJson["last_session_date"].toInteger());
                 }
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (releaseGametimeStatisticsReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << releaseGametimeStatisticsReply->error()
+                         << releaseGametimeStatisticsReply->errorString()
+                         << QString(releaseGametimeStatisticsReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(releaseGametimeStatisticsReply, &QNetworkReply::finished, releaseGametimeStatisticsReply, &QNetworkReply::deleteLater);
     }
     else
     {

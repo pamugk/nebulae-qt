@@ -93,6 +93,18 @@ namespace api
         QString contentSourceType;
     };
 
+    struct StoreVerticalBannerItem
+    {
+        QString promoId;
+        QString title;
+        QString url;
+        QString backgroundImage;
+        QString color;
+        QString discount;
+        bool discountUpTo;
+        QDateTime promoEndDate;
+    };
+
     struct GetStoreAnnouncementSectionResponse
     {
         StoreBannerItem data;
@@ -186,6 +198,11 @@ namespace api
     struct GetStoreSectionsResponse
     {
         QVector<StoreSection> sections;
+    };
+
+    struct GetStoreVerticalBannerSectionResponse
+    {
+        QVector<StoreVerticalBannerItem> items;
     };
 }
 

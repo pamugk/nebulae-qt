@@ -5,35 +5,35 @@ DependentProductItem::DependentProductItem(const api::GetCatalogProductInfoRespo
                                            api::GogApiClient *apiClient,
                                            QWidget *parent) :
     QWidget(parent),
-    imageReply(nullptr),
     ui(new Ui::DependentProductItem)
 {
     ui->setupUi(this);
 
     ui->titleLabel->setText(data.title);
-    imageReply = apiClient->getAnything(data.imageLink.templated
+    QNetworkReply *imageReply = apiClient->getAnything(data.imageLink.templated
                                         ? QString(data.imageLink.href).replace("{formatter}", "glx_logo")
                                         : data.imageLink.href);
-    connect(imageReply, &QNetworkReply::finished, this, [this]()
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
     {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size()));
         }
-        networkReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 DependentProductItem::~DependentProductItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

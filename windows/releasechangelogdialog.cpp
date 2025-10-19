@@ -18,7 +18,8 @@ ReleaseChangelogDialog::ReleaseChangelogDialog(const QString &changelog,
     ui->platformLabel->setText(platform);
     ui->changelogBrowser->setText(changelog);
 
-    auto imageReply = apiClient->getAnything(iconLink);
+    QNetworkReply *imageReply = apiClient->getAnything(iconLink);
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
     connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
     {
         if (imageReply->error() == QNetworkReply::NoError)
@@ -27,8 +28,14 @@ ReleaseChangelogDialog::ReleaseChangelogDialog(const QString &changelog,
             image.loadFromData(imageReply->readAll());
             ui->iconLabel->setPixmap(image);
         }
-        imageReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 ReleaseChangelogDialog::~ReleaseChangelogDialog()

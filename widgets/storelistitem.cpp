@@ -35,7 +35,7 @@ StoreListItem::StoreListItem(const api::CatalogProduct &data,
         ui->priceLabel->setVisible(false);
     }
     QNetworkReply *imageReply = apiClient->getAnything(data.coverVertical);
-    connect(this, &StoreListItem::destroyed, imageReply, &QNetworkReply::abort);
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
     connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
         if (imageReply->error() == QNetworkReply::NoError)
         {
@@ -43,8 +43,14 @@ StoreListItem::StoreListItem(const api::CatalogProduct &data,
             image.loadFromData(imageReply->readAll());
             ui->coverLabel->setPixmap(image.scaled(ui->coverLabel->size()));
         }
-        imageReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 StoreListItem::~StoreListItem()

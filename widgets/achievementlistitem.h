@@ -26,7 +26,6 @@ protected:
     virtual void leaveEvent(QEvent* event) override;
 
 private:
-    QNetworkReply *imageReply;
     Ui::AchievementListItem *ui;
 };
 
