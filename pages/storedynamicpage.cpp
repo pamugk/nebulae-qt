@@ -152,6 +152,18 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                         // TODO: jump to anchor
                     }
                 });
+                connect(this, &StoreDynamicPage::timeTicked, heroBannerWidget, [heroBannerWidget, endDateTime = data.endDate]()
+                {
+                    QDateTime currentDateTime = QDateTime::currentDateTime();
+                    if (endDateTime > currentDateTime)
+                    {
+                        // TODO: update timer
+                    }
+                    else
+                    {
+                        // TODO: hide page
+                    }
+                });
 
                 sectionWidget->layout()->addWidget(heroBannerWidget);
             }
@@ -213,6 +225,19 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                                 this, [this, url = QUrl(item.url)]()
                         {
                             emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                        });
+                        connect(this, &StoreDynamicPage::timeTicked, dealCard, [dealCard, promoEndDateTime = item.promoEndDate]()
+                        {
+                            QDateTime currentDateTime = QDateTime::currentDateTime();
+                            if (promoEndDateTime > currentDateTime)
+                            {
+                                // TODO: update timer
+                                dealCard->setVisible(true);
+                            }
+                            else
+                            {
+                                dealCard->setVisible(false);
+                            }
                         });
                         nowOnSaleDealsScrollAreaContents->layout()->addWidget(dealCard);
                     }
@@ -284,6 +309,7 @@ void StoreDynamicPage::getSections()
 void StoreDynamicPage::initialize(const QVariant &data)
 {
     pathHex = QString(data.toString().toLatin1().toHex());
+    timerId = startTimer(std::chrono::seconds(1));
     getSections();
 }
 
@@ -351,5 +377,13 @@ void StoreDynamicPage::switchUiAuthenticatedState(bool authenticated)
         emit ownedProductsChanged(ownedProducts);
         wishlist.clear();
         emit wishlistChanged(wishlist);
+    }
+}
+
+void StoreDynamicPage::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == timerId)
+    {
+        emit timeTicked();
     }
 }

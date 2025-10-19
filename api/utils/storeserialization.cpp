@@ -139,7 +139,7 @@ void parseVerticalBannerItem(const QJsonValue &json, api::StoreVerticalBannerIte
     data.color = json["color"].toString();
     data.discount = json["discount"].toString();
     data.discountUpTo = json["discountIsUpTo"].toBool();
-    data.promoEndDate = QDateTime::fromMSecsSinceEpoch(json["promoEndDate"].toInteger());
+    data.promoEndDate = QDateTime::fromSecsSinceEpoch(json["promoEndDate"].toString().toLongLong());
 }
 
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data)

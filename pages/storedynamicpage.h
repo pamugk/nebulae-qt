@@ -19,10 +19,14 @@ public:
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
 
+protected:
+    virtual void timerEvent(QTimerEvent *event) override;
+
 private:
     api::GogApiClient *apiClient;
     QSet<const QString> ownedProducts;
     QString pathHex;
+    std::optional<int> timerId;
     Ui::StoreDynamicPage *ui;
     QSet<const QString> wishlist;
 
@@ -31,6 +35,7 @@ private:
 
     Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
+    Q_SIGNAL void timeTicked();
     Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:
