@@ -10,6 +10,7 @@ StoreHeroBanner::StoreHeroBanner(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->countdownLabel->setVisible(false);
     connect(ui->primaryButton, &QPushButton::clicked, this, [this]()
     {
         emit primaryButtonClicked();
@@ -27,20 +28,34 @@ void StoreHeroBanner::setBackgroundImage(const QByteArray &data)
     setFixedHeight(backgroundImage.height());
 }
 
+void StoreHeroBanner::setCountdownValue(std::chrono::seconds countdownTimerValue)
+{
+    auto days = std::chrono::duration_cast<std::chrono::days>(countdownTimerValue);
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(countdownTimerValue - days);
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(countdownTimerValue - days - hours);
+    auto seconds = countdownTimerValue - days - hours - minutes;
+    if (days.count() > 0)
+    {
+        ui->countdownLabel->setText(tr("%1 days %2 hours %3 minutes %4 seconds left")
+                                  .arg(static_cast<int>(days.count()))
+                                  .arg(static_cast<int>(hours.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(minutes.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(seconds.count()), 2, 10, u'0'));;
+    }
+    else
+    {
+        ui->countdownLabel->setText(tr("%1 hours %2 minutes %3 seconds left")
+                                  .arg(static_cast<int>(hours.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(minutes.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(seconds.count()), 2, 10, u'0'));
+    }
+    ui->countdownLabel->setVisible(true);
+}
+
 void StoreHeroBanner::setDescription(const QString &description)
 {
     ui->descriptionLabel->setText(description);
     ui->descriptionLabel->setVisible(!description.isEmpty());
-}
-
-void StoreHeroBanner::setEndDateTime(const QDateTime &endDateTime)
-{
-    if (endDateTime.isValid())
-    {
-        auto systemLocale = QLocale::system();
-        ui->countdownLabel->setText(systemLocale.toString(endDateTime, QLocale::ShortFormat));
-    }
-    ui->countdownLabel->setVisible(endDateTime.isValid());
 }
 
 void StoreHeroBanner::setPrimaryButtonText(const QString &primaryButtonText)

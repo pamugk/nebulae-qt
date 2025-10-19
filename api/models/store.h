@@ -197,6 +197,14 @@ namespace api
 
     struct GetStoreSectionsResponse
     {
+        struct
+        {
+            QString type;
+            QDateTime endDate;
+            QString pageUrl;
+            QString promoId;
+            QDateTime startDate;
+        } config;
         QVector<StoreSection> sections;
     };
 

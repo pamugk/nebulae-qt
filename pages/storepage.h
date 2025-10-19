@@ -21,12 +21,14 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     api::GogApiClient *apiClient;
     QVector<QString> nowOnSaleSectionsIds;
     QVector<bool> nowOnSaleSectionsRequested;
     QSet<const QString> ownedProducts;
+    std::optional<int> timerId;
     Ui::StorePage *ui;
     QSet<const QString> wishlist;
 
@@ -37,6 +39,7 @@ private:
     Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
     Q_SIGNAL void resized(bool widthChanged, bool heightChanged);
+    Q_SIGNAL void timeTicked(const QDateTime &currentDateTime);
     Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:

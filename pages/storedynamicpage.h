@@ -26,6 +26,7 @@ private:
     api::GogApiClient *apiClient;
     QSet<const QString> ownedProducts;
     QString pathHex;
+    QString promoId;
     std::optional<int> timerId;
     Ui::StoreDynamicPage *ui;
     QSet<const QString> wishlist;
@@ -35,7 +36,7 @@ private:
 
     Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);
-    Q_SIGNAL void timeTicked();
+    Q_SIGNAL void timeTicked(const QDateTime &currentDateTime);
     Q_SIGNAL void wishlistChanged(const QSet<const QString> &ids);
 
 public slots:

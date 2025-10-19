@@ -18,7 +18,7 @@ public:
     void setBackgroundImage(const QPixmap &image);
     void setColor(std::array<unsigned char, 3> colorRgbArray);
     void setColor(const QString &colorDefinition);
-    void setCountdownValue(const QDateTime &countdownDate);
+    void setCountdownValue(std::chrono::seconds countdownTimerValue);
     void setDiscount(const QString &discount);
     void setDiscountUpTo(bool upTo);
     void setTitle(const QString &title);

@@ -319,6 +319,21 @@ void parseSection(const QJsonValue &json, api::StoreSection &data)
 
 void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data)
 {
+    if (json["config"].isObject())
+    {
+        auto config = json["config"];
+        data.config.type = config["type"].toString();
+        if (config["endDate"].isString())
+        {
+            data.config.endDate = QDateTime::fromString(config["endDate"].toString(), Qt::DateFormat::ISODateWithMs);
+        }
+        data.config.pageUrl = config["pageUrl"].toString();
+        data.config.promoId = config["promoId"].toString();
+        if (config["startDate"].isString())
+        {
+            data.config.startDate = QDateTime::fromString(config["startDate"].toString(), Qt::DateFormat::ISODateWithMs);
+        }
+    }
     auto sections = json["sections"].toArray();
     data.sections.resize(sections.count());
     for (std::size_t i = 0; i < sections.count(); i++)

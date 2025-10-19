@@ -21,6 +21,7 @@
 StorePage::StorePage(QWidget *parent) :
     StoreBasePage(Page::STORE, parent),
     apiClient(nullptr),
+    timerId(),
     ui(new Ui::StorePage)
 {
     ui->setupUi(this);
@@ -106,7 +107,6 @@ void StorePage::getNowOnSale()
                 dealCard->setTitle(data.bigThingy.text);
                 dealCard->setDiscountUpTo(data.bigThingy.discountUpTo);
                 dealCard->setDiscount(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(data.bigThingy.discountValue), systemLocale.percent()));
-                dealCard->setCountdownValue(data.bigThingy.countdownDate);
                 dealCard->setColor(data.bigThingy.colorRgbArray);
                 if (!data.bigThingy.background.isEmpty())
                 {
@@ -136,6 +136,18 @@ void StorePage::getNowOnSale()
                 {
                     emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) }) });
                 });
+                connect(this, &StorePage::timeTicked, dealCard, [dealCard, promoEndDateTime = data.bigThingy.countdownDate](const QDateTime &currentDateTime)
+                        {
+                            if (promoEndDateTime > currentDateTime)
+                            {
+                                dealCard->setCountdownValue(std::chrono::duration_cast<std::chrono::seconds>(promoEndDateTime - currentDateTime));
+                                dealCard->setVisible(true);
+                            }
+                            else
+                            {
+                                dealCard->setVisible(false);
+                            }
+                        });
                 dealTabScrollAreaContentsLayout->addWidget(dealCard, 0, column, 2, 1);
 
                 column++;
@@ -221,6 +233,11 @@ void StorePage::getNowOnSale()
             nowOnSaleSectionsIds.resize(data.tabs.count());
             nowOnSaleSectionsRequested.resize(data.tabs.count());
 
+            if (!timerId.has_value())
+            {
+                timerId = startTimer(std::chrono::seconds(1));
+            }
+
             auto systemLocale = QLocale::system();
             for (const api::StoreNowOnSaleTab &dealTab : std::as_const(data.tabs))
             {
@@ -228,7 +245,6 @@ void StorePage::getNowOnSale()
                 dealCard->setTitle(dealTab.bigThingy.text);
                 dealCard->setDiscountUpTo(dealTab.bigThingy.discountUpTo);
                 dealCard->setDiscount(QString("%1%2%3").arg(systemLocale.negativeSign(), QString::number(dealTab.bigThingy.discountValue), systemLocale.percent()));
-                dealCard->setCountdownValue(dealTab.bigThingy.countdownDate);
                 dealCard->setColor(dealTab.bigThingy.colorRgbArray);
                 if (!dealTab.bigThingy.background.isEmpty())
                 {
@@ -258,6 +274,18 @@ void StorePage::getNowOnSale()
                 {
                     emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
                 });
+                connect(this, &StorePage::timeTicked, dealCard, [dealCard, promoEndDateTime = dealTab.bigThingy.countdownDate](const QDateTime &currentDateTime)
+                        {
+                            if (promoEndDateTime > currentDateTime)
+                            {
+                                dealCard->setCountdownValue(std::chrono::duration_cast<std::chrono::seconds>(promoEndDateTime - currentDateTime));
+                                dealCard->setVisible(true);
+                            }
+                            else
+                            {
+                                dealCard->setVisible(false);
+                            }
+                        });
                 nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
 
                 auto dealLoadingPage = new QWidget();
@@ -1071,5 +1099,13 @@ void StorePage::switchUiAuthenticatedState(bool authenticated)
         emit ownedProductsChanged(ownedProducts);
         wishlist.clear();
         emit wishlistChanged(wishlist);
+    }
+}
+
+void StorePage::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == timerId)
+    {
+        emit timeTicked(QDateTime::currentDateTime());
     }
 }

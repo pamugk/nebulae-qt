@@ -17,7 +17,7 @@ public:
 
     void setBackgroundImage(const QByteArray &data);
     void setDescription(const QString &description);
-    void setEndDateTime(const QDateTime &endDateTime);
+    void setCountdownValue(std::chrono::seconds countdownTimerValue);
     void setPrimaryButtonText(const QString &primaryButtonText);
     void setTitle(const QString &title);
     void setUseDarkTheme(bool useDarkTheme);

@@ -14,6 +14,8 @@
 
 StoreDynamicPage::StoreDynamicPage(QWidget *parent) :
     StoreBasePage(Page::STORE_DYNAMIC_PAGE, parent),
+    promoId(),
+    timerId(),
     ui(new Ui::StoreDynamicPage)
 {
     ui->setupUi(this);
@@ -152,18 +154,26 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                         // TODO: jump to anchor
                     }
                 });
-                connect(this, &StoreDynamicPage::timeTicked, heroBannerWidget, [heroBannerWidget, endDateTime = data.endDate]()
+
+                if (data.endDate.isValid() && data.showCountdown)
                 {
-                    QDateTime currentDateTime = QDateTime::currentDateTime();
-                    if (endDateTime > currentDateTime)
+                    if (!timerId.has_value())
                     {
-                        // TODO: update timer
+                        timerId = startTimer(std::chrono::seconds(1));
                     }
-                    else
-                    {
-                        // TODO: hide page
-                    }
-                });
+                    connect(this, &StoreDynamicPage::timeTicked, heroBannerWidget, [sectionWidget, heroBannerWidget, endDateTime = data.endDate](const QDateTime &currentDateTime)
+                            {
+                                if (endDateTime > currentDateTime)
+                                {
+                                    heroBannerWidget->setCountdownValue(std::chrono::duration_cast<std::chrono::seconds>(endDateTime - currentDateTime));
+                                    sectionWidget->setVisible(true);
+                                }
+                                else
+                                {
+                                    sectionWidget->setVisible(false);
+                                }
+                            });
+                }
 
                 sectionWidget->layout()->addWidget(heroBannerWidget);
             }
@@ -189,57 +199,63 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     nowOnSaleDealsScrollArea->setWidget(nowOnSaleDealsScrollAreaContents);
                     sectionWidget->layout()->addWidget(nowOnSaleDealsScrollArea);
 
+                    if (!timerId.has_value())
+                    {
+                        timerId = startTimer(std::chrono::seconds(1));
+                    }
+
                     auto systemLocale = QLocale::system();
                     for (const api::StoreVerticalBannerItem &item : std::as_const(data.items))
                     {
-                        auto dealCard = new StoreSaleCard(nowOnSaleDealsScrollAreaContents);
-                        dealCard->setTitle(item.title);
-                        dealCard->setDiscountUpTo(item.discountUpTo);
-                        dealCard->setDiscount(item.discount);
-                        dealCard->setCountdownValue(item.promoEndDate);
-                        dealCard->setColor(item.color);
-                        if (!item.backgroundImage.isEmpty())
+                        if (item.promoId != promoId)
                         {
-                            QString url = item.backgroundImage;
-                            url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_vertical_banner_256x486.webp"));
-                            QNetworkReply *backgroundReply = apiClient->getAnything(url);
-                            connect(dealCard, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
-                            connect(backgroundReply, &QNetworkReply::finished, dealCard, [dealCard, backgroundReply]()
+                            auto dealCard = new StoreSaleCard(nowOnSaleDealsScrollAreaContents);
+                            dealCard->setTitle(item.title);
+                            dealCard->setDiscountUpTo(item.discountUpTo);
+                            dealCard->setDiscount(item.discount);
+                            dealCard->setColor(item.color);
+                            if (!item.backgroundImage.isEmpty())
                             {
-                                if (backgroundReply->error() == QNetworkReply::NoError)
-                                {
-                                    QPixmap image;
-                                    image.loadFromData(backgroundReply->readAll());
-                                    dealCard->setBackgroundImage(image);
-                                }
-                                else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
-                                {
-                                    qDebug() << backgroundReply->error()
-                                             << backgroundReply->errorString()
-                                             << QString(backgroundReply->readAll()).toUtf8();
-                                }
-                            });
-                            connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
+                                QString url = item.backgroundImage;
+                                url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_vertical_banner_256x486.webp"));
+                                QNetworkReply *backgroundReply = apiClient->getAnything(url);
+                                connect(dealCard, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                                connect(backgroundReply, &QNetworkReply::finished, dealCard, [dealCard, backgroundReply]()
+                                        {
+                                            if (backgroundReply->error() == QNetworkReply::NoError)
+                                            {
+                                                QPixmap image;
+                                                image.loadFromData(backgroundReply->readAll());
+                                                dealCard->setBackgroundImage(image);
+                                            }
+                                            else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
+                                            {
+                                                qDebug() << backgroundReply->error()
+                                                << backgroundReply->errorString()
+                                                << QString(backgroundReply->readAll()).toUtf8();
+                                            }
+                                        });
+                                connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
+                            }
+                            connect(dealCard, &StoreSaleCard::navigateToItem,
+                                    this, [this, url = QUrl(item.url)]()
+                                    {
+                                        emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                                    });
+                            connect(this, &StoreDynamicPage::timeTicked, dealCard, [dealCard, promoEndDateTime = item.promoEndDate](const QDateTime &currentDateTime)
+                                    {
+                                        if (promoEndDateTime > currentDateTime)
+                                        {
+                                            dealCard->setCountdownValue(std::chrono::duration_cast<std::chrono::seconds>(promoEndDateTime - currentDateTime));
+                                            dealCard->setVisible(true);
+                                        }
+                                        else
+                                        {
+                                            dealCard->setVisible(false);
+                                        }
+                                    });
+                            nowOnSaleDealsScrollAreaContents->layout()->addWidget(dealCard);
                         }
-                        connect(dealCard, &StoreSaleCard::navigateToItem,
-                                this, [this, url = QUrl(item.url)]()
-                        {
-                            emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
-                        });
-                        connect(this, &StoreDynamicPage::timeTicked, dealCard, [dealCard, promoEndDateTime = item.promoEndDate]()
-                        {
-                            QDateTime currentDateTime = QDateTime::currentDateTime();
-                            if (promoEndDateTime > currentDateTime)
-                            {
-                                // TODO: update timer
-                                dealCard->setVisible(true);
-                            }
-                            else
-                            {
-                                dealCard->setVisible(false);
-                            }
-                        });
-                        nowOnSaleDealsScrollAreaContents->layout()->addWidget(dealCard);
                     }
 
                     auto titleLabel = new QLabel(tr("Hurry up! There are even more sales!"), ui->resultScrollAreaContents);
@@ -277,6 +293,23 @@ void StoreDynamicPage::getSections()
             auto resultJson = QJsonDocument::fromJson(QString(sectionsReply->readAll()).toUtf8()).object();
             api::GetStoreSectionsResponse data;
             parseGetStoreSectionsResponse(resultJson, data);
+
+            promoId = data.config.promoId;
+            if (data.config.endDate.isValid())
+            {
+                if (!timerId.has_value())
+                {
+                    timerId = startTimer(std::chrono::seconds(1));
+                }
+                connect(this, &StoreDynamicPage::timeTicked, this, [this, endDateTime = data.config.endDate](const QDateTime &currentDateTime)
+                        {
+                            if (endDateTime <= currentDateTime)
+                            {
+                                // TODO: hide page
+                            }
+                        });
+            }
+
             for (const auto &section: std::as_const(data.sections))
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
@@ -309,7 +342,6 @@ void StoreDynamicPage::getSections()
 void StoreDynamicPage::initialize(const QVariant &data)
 {
     pathHex = QString(data.toString().toLatin1().toHex());
-    timerId = startTimer(std::chrono::seconds(1));
     getSections();
 }
 
@@ -384,6 +416,6 @@ void StoreDynamicPage::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == timerId)
     {
-        emit timeTicked();
+        emit timeTicked(QDateTime::currentDateTime());
     }
 }

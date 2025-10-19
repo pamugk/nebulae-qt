@@ -174,7 +174,7 @@
          <string notr="true">background: transparent;color: white;</string>
         </property>
         <property name="text">
-         <string notr="true">1D, 02H 41M 56S left </string>
+         <string notr="true"/>
         </property>
         <property name="textFormat">
          <enum>Qt::TextFormat::PlainText</enum>

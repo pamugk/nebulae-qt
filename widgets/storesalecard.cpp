@@ -45,10 +45,27 @@ void StoreSaleCard::setColor(const QString &colorDefinition)
     ui->content->setStyleSheet(QString("background: %1;").arg(usedColor));
 }
 
-void StoreSaleCard::setCountdownValue(const QDateTime &countdownDate)
+void StoreSaleCard::setCountdownValue(std::chrono::seconds countdownTimerValue)
 {
-    auto systemLocale = QLocale::system();
-    ui->endLabel->setText(systemLocale.toString(countdownDate, QLocale::ShortFormat));
+    auto days = std::chrono::duration_cast<std::chrono::days>(countdownTimerValue);
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(countdownTimerValue - days);
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(countdownTimerValue - days - hours);
+    auto seconds = countdownTimerValue - days - hours - minutes;
+    if (days.count() > 0)
+    {
+        ui->endLabel->setText(tr("%1 d %2h %3m %4s left")
+                                  .arg(static_cast<int>(days.count()))
+                                  .arg(static_cast<int>(hours.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(minutes.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(seconds.count()), 2, 10, u'0'));;
+    }
+    else
+    {
+        ui->endLabel->setText(tr("%1h %2m %3s left")
+                                  .arg(static_cast<int>(hours.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(minutes.count()), 2, 10, u'0')
+                                  .arg(static_cast<int>(seconds.count()), 2, 10, u'0'));
+    }
 }
 
 void StoreSaleCard::setDiscount(const QString &discount)
