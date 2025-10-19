@@ -197,9 +197,9 @@ void StorePage::getNowOnSale()
             {
                 auto dealCard = new StoreSaleCard(dealTab.bigThingy, apiClient, nowOnSaleDealsScrollAreaContents);
                 connect(dealCard, &StoreSaleCard::navigateToItem,
-                        this, [this]()
+                        this, [this, url = QUrl(dealTab.bigThingy.url)]()
                 {
-                    emit navigate({Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair(QLatin1StringView("discounted"), true) })});
+                    emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
                 });
                 nowOnSaleDealsScrollAreaContentsLayout->addWidget(dealCard, row, column, 2, 1);
 
@@ -314,9 +314,10 @@ void StorePage::getSection(const QString &id, const QString &type)
     ui->landingScrollAreaContentsLayout->addWidget(sectionWidget);
 
     const auto systemLocale = QLocale::system();
-    const auto sectionReply = apiClient->getStoreSection(id, systemLocale.name(QLocale::TagSeparator::Dash),
-                                                        QLocale::territoryToCode(systemLocale.territory()),
-                                                        systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
+    const auto sectionReply = apiClient->getStoreSection(QLatin1StringView("2f"), id,
+                                                         systemLocale.name(QLocale::TagSeparator::Dash),
+                                                         QLocale::territoryToCode(systemLocale.territory()),
+                                                         systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
     connect(this, &QObject::destroyed, sectionReply, &QNetworkReply::abort);
     connect(sectionReply, &QNetworkReply::finished, this, [this, sectionReply, sectionWidget, type]()
     {
@@ -337,7 +338,6 @@ void StorePage::getSection(const QString &id, const QString &type)
                 {
                     sectionWidget->setLayout(new QVBoxLayout());
                     auto sectionScrollArea = new QScrollArea(sectionWidget);
-                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                     sectionScrollArea->setMinimumHeight(273);
                     auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
                     auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
@@ -544,9 +544,17 @@ void StorePage::getSection(const QString &id, const QString &type)
                         }
                         if (!data.data.customProperties.url.isEmpty())
                         {
-                            connect(announcementWidget, &StoreHighlightsItem::customInfoClicked, this, [url = data.data.customProperties.url]()
+                            connect(announcementWidget, &StoreHighlightsItem::customInfoClicked, this, [this, url = QUrl(data.data.customProperties.url)]()
                             {
-                                QDesktopServices::openUrl(QUrl(url));
+                                // TODO: handle all possible
+                                if (url.path().startsWith(QLatin1StringView("/promo/")))
+                                {
+                                    emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                                }
+                                else
+                                {
+                                    QDesktopServices::openUrl(QUrl(url));
+                                }
                             });
                         }
                     }
@@ -568,7 +576,6 @@ void StorePage::getSection(const QString &id, const QString &type)
                 {
                     sectionWidget->setLayout(new QVBoxLayout());
                     auto sectionScrollArea = new QScrollArea(sectionWidget);
-                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                     sectionScrollArea->setMinimumHeight(532);
                     sectionScrollArea->setMinimumWidth(1108);
                     auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
@@ -764,7 +771,6 @@ void StorePage::getSection(const QString &id, const QString &type)
                 {
                     sectionWidget->setLayout(new QVBoxLayout());
                     auto sectionScrollArea = new QScrollArea(sectionWidget);
-                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                     sectionScrollArea->setMinimumHeight(296);
                     auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
                     auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
@@ -828,7 +834,6 @@ void StorePage::getSection(const QString &id, const QString &type)
 
                 sectionWidget->setLayout(new QVBoxLayout());
                 auto sectionScrollArea = new QScrollArea(sectionWidget);
-                sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
                 sectionScrollArea->setMinimumHeight(296);
                 auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
                 auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
@@ -873,19 +878,10 @@ void StorePage::getSection(const QString &id, const QString &type)
 void StorePage::getSections()
 {
     ui->landingStackedWidget->setCurrentWidget(ui->landingLoadingPage);
-    QLayoutItem *sectionItem;
-    while ((sectionItem = ui->landingScrollAreaContentsLayout->takeAt(0)))
-    {
-        auto widget = sectionItem->widget();
-        delete sectionItem;
-        if (widget != nullptr)
-        {
-            delete widget;
-        }
-    }
 
     const auto systemLocale = QLocale::system();
-    const auto sectionsReply = apiClient->getStoreSections(systemLocale.name(QLocale::TagSeparator::Dash),
+    const auto sectionsReply = apiClient->getStoreSections(QLatin1StringView("2f"),
+                                                           systemLocale.name(QLocale::TagSeparator::Dash),
                                                            QLocale::territoryToCode(systemLocale.territory()),
                                                            systemLocale.currencySymbol(QLocale::CurrencyIsoCode));
     connect(this, &QObject::destroyed, sectionsReply, &QNetworkReply::abort);

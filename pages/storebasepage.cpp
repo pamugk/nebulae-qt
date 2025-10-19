@@ -42,16 +42,16 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
     switch (page)
     {
     case Page::STORE:
-        storeNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        storeNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     case Page::ALL_GAMES:
-        allGamesNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        allGamesNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     case Page::WISHLIST:
-        wishlistNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        wishlistNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     case Page::ORDER_HISTORY:
-        ordersNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        ordersNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     default:
         break;

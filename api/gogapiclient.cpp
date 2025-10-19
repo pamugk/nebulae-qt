@@ -508,7 +508,7 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
     return client.get(request);
 }
 
-QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
+QNetworkReply *api::GogApiClient::getStoreSection(const QString &pageHex, const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
     QUrlQuery parameters(
     {
@@ -516,14 +516,14 @@ QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QStri
         std::pair(QLatin1StringView("countryCode"), countryCode),
         std::pair(QLatin1StringView("currencyCode"), currencyCode),
     });
-    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f/sections/%1").arg(id));
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/%1/sections/%2").arg(pageHex, id));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);
     return client.get(request);
 }
 
-QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode)
+QNetworkReply *api::GogApiClient::getStoreSections(const QString &pageHex, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
     QUrlQuery parameters(
     {
@@ -531,7 +531,7 @@ QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const 
         std::pair(QLatin1StringView("countryCode"), countryCode),
         std::pair(QLatin1StringView("currencyCode"), currencyCode),
     });
-    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f"));
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/%1").arg(pageHex));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);

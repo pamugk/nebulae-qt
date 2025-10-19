@@ -104,6 +104,32 @@ namespace api
         StoreDiscoverColumn columnRight;
     };
 
+    struct GetStoreHeroSectionResponse
+    {
+        QString theme;
+        QString title;
+        struct
+        {
+            QString link;
+            QString text;
+            QString anchor;
+        } button;
+        QString imageHash;
+        QDateTime endDate;
+        QString videoId;
+        QString subtitle;
+        QString sectionId;
+        QString description;
+        bool showCountdown;
+        struct
+        {
+            QString link;
+            QString text;
+            QString anchor;
+        } buttonSecondary;
+        bool showTopModLabel;
+    };
+
     struct GetStoreHighlightsSectionResponse
     {
         QVector<StoreBannerItem> items;

@@ -65,8 +65,8 @@ namespace api
         QNetworkReply *getSeriesPrices(unsigned long long seriesId,
                                        const QString &countryCode,
                                        const QString &currencyCode);
-        QNetworkReply *getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode);
-        QNetworkReply *getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode);
+        QNetworkReply *getStoreSection(const QString &pageHex, const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode);
+        QNetworkReply *getStoreSections(const QString &pageHex, const QString &locale, const QString &countryCode, const QString &currencyCode);
         QNetworkReply *getStoreProductInfo(const QString &id, const QString &locale);
         QNetworkReply *getUser(const QString &id);
         QNetworkReply *getWishlist(const QString &query = QString(),

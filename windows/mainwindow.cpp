@@ -20,6 +20,7 @@
 #include "../pages/orderspage.h"
 #include "../pages/releasepage.h"
 #include "../pages/ownedgamespage.h"
+#include "../pages/storedynamicpage.h"
 #include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
 
@@ -167,6 +168,9 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         break;
     case STORE:
         page = new StorePage(ui->scaffold);
+        break;
+    case STORE_DYNAMIC_PAGE:
+        page = new StoreDynamicPage(ui->scaffold);
         break;
     case ALL_GAMES:
         page = new AllGamesPage(ui->scaffold);

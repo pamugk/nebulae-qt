@@ -7,6 +7,7 @@
 
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data);
 void parseGetStoreDiscoverSectionResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data);
+void parseGetStoreHeroSectionResponse(const QJsonValue &json, api::GetStoreHeroSectionResponse &data);
 void parseGetStoreHighlightsSectionResponse(const QJsonValue &json, api::GetStoreHighlightsSectionResponse &data);
 void parseGetStoreNewsSectionResponse(const QJsonValue &json, api::GetStoreNewsSectionResponse &data);
 void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data);
