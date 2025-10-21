@@ -28,6 +28,8 @@ namespace api
         // Hidden filters available only via redirections
         QStringList developers;
         QStringList publishers;
+        QString pageId;
+        QString sectionId;
     };
 }
 

@@ -70,7 +70,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     sectionScrollAreaContentsLayout->setSpacing(24);
                     for (const api::CatalogProduct &item : std::as_const(data.items))
                     {
-                        auto itemWidget = new SimpleProductItem(sectionScrollArea);
+                        auto itemWidget = new SimpleProductItem(sectionScrollAreaContents);
                         itemWidget->setCover(item.coverHorizontal, apiClient);
                         itemWidget->setTitle(item.title);
                         if (item.price.has_value())
@@ -315,7 +315,6 @@ void StoreDynamicPage::getSections()
             {
                 if (section.sectionType == QLatin1StringView("PRODUCTS_SECTION")
                     || section.sectionType == QLatin1StringView("HERO_SECTION")
-                    || section.sectionType == QLatin1StringView("WISHLIST_SECTION")
                     || section.sectionType == QLatin1StringView("VERTICAL_BANNER_SECTION"))
                 {
                     getSection(section.id, section.sectionType);
@@ -326,18 +325,20 @@ void StoreDynamicPage::getSections()
                     auto titleLabel = new QLabel(tr("From your wishlist"), ui->resultScrollAreaContents);
                     titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
                     ui->resultScrollAreaContentsLayout->addWidget(titleLabel);
-                    auto sectionScrollArea = new QScrollArea(sectionWidget);
+                    auto sectionScrollArea = new QScrollArea(ui->resultScrollAreaContents);
                     sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
                     sectionScrollArea->setMinimumHeight(273);
                     auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
                     auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
                     sectionScrollAreaContentsLayout->setContentsMargins(6, 0, 6, 6);
                     sectionScrollAreaContentsLayout->setSpacing(24);
+                    sectionScrollAreaContents->setLayout(sectionScrollAreaContentsLayout);
+                    sectionScrollArea->setWidget(sectionScrollAreaContents);
                     ui->resultScrollAreaContentsLayout->addWidget(sectionScrollArea);
-                    updateWishlistSection(startIndex);
-                    connect(this, &StoreDynamicPage::authenticationStateChanged, sectionScrollArea, [this, startIndex]()
+                    updateWishlistSection(startIndex, section.id);
+                    connect(this, &StoreDynamicPage::authenticationStateChanged, sectionScrollArea, [this, startIndex, sectionId = section.id]()
                     {
-                        updateWishlistSection(startIndex);
+                        updateWishlistSection(startIndex, sectionId);
                     });
                 }
                 else if (section.sectionType == QLatin1StringView("CATALOG_SECTION"))
@@ -441,26 +442,81 @@ void StoreDynamicPage::timerEvent(QTimerEvent *event)
     }
 }
 
-void StoreDynamicPage::updateWishlistSection(int startIndex)
+void StoreDynamicPage::updateWishlistSection(int startIndex, const QString &sectionId)
 {
     QWidget *titleLabel = ui->resultScrollAreaContentsLayout->itemAt(startIndex)->widget();
     QScrollArea *sectionScrollArea = static_cast<QScrollArea *>(ui->resultScrollAreaContentsLayout->itemAt(startIndex + 1)->widget());
+    titleLabel->setVisible(false);
+    sectionScrollArea->setVisible(false);
+    while (!sectionScrollArea->widget()->layout()->isEmpty())
+    {
+        auto item = sectionScrollArea->widget()->layout()->itemAt(0);
+        sectionScrollArea->widget()->layout()->removeItem(item);
+        item->widget()->deleteLater();
+        delete item;
+    }
+
     if (apiClient->isAuthenticated())
     {
+        api::CatalogFilter request({});
+        request.onlyWishlisted = true;
+        request.pageId = pathHex;
+        request.sectionId = sectionId;
         const auto systemLocale = QLocale::system();
         QNetworkReply *wishlistedGamesReply = apiClient->searchCatalog(
-            systemLocale.name(QLocale::TagSeparator::Dash),
+            {}, request,
             QLocale::territoryToCode(systemLocale.territory()),
+            systemLocale.name(QLocale::TagSeparator::Dash),
             systemLocale.currencySymbol(QLocale::CurrencyIsoCode), 1, 8);
         connect(this, &QObject::destroyed, wishlistedGamesReply, &QNetworkReply::abort);
         connect(this, &StoreDynamicPage::authenticationStateChanged, wishlistedGamesReply, &QNetworkReply::abort);
-        connect(wishlistedGamesReply, &QNetworkReply::finished, this, [this, wishlistedGamesReply]()
+        connect(wishlistedGamesReply, &QNetworkReply::finished, this, [this, wishlistedGamesReply, titleLabel, sectionScrollArea]()
         {
             if (wishlistedGamesReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(sectionsReply->readAll()).toUtf8()).object();
-                api::GetStoreSectionsResponse data;
-                parseGetStoreSectionsResponse(resultJson, data);
+                auto resultJson = QJsonDocument::fromJson(QString(wishlistedGamesReply->readAll()).toUtf8()).object();
+                api::SearchCatalogResponse data;
+                parseSearchCatalogResponse(resultJson, data);
+
+                if (!data.products.isEmpty())
+                {
+                    for (const api::CatalogProduct &item : std::as_const(data.products))
+                    {
+                        auto itemWidget = new SimpleProductItem(sectionScrollArea->widget());
+                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        itemWidget->setTitle(item.title);
+                        if (item.price.has_value())
+                        {
+                            itemWidget->setPrice(item.price->baseMoney.amount, item.price->finalMoney.amount,
+                                                 100 - std::round((item.price->finalMoney.amount / item.price->baseMoney.amount) * 100),
+                                                 item.price->finalMoney.amount == 0, "");
+                        }
+                        connect(this, &StoreDynamicPage::ownedProductsChanged,
+                                itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                        {
+                            itemWidget->setOwned(ids.contains(productId));
+                        });
+                        itemWidget->setOwned(ownedProducts.contains(item.id));
+                        connect(this, &StoreDynamicPage::wishlistChanged,
+                                itemWidget, [itemWidget, productId = item.id](const QSet<const QString> &ids)
+                        {
+                            itemWidget->setWishlisted(ids.contains(productId));
+                        });
+                        itemWidget->setWishlisted(wishlist.contains(item.id));
+                        connect(apiClient, &api::GogApiClient::authenticated,
+                                itemWidget, &SimpleProductItem::switchUiAuthenticatedState);
+                        itemWidget->switchUiAuthenticatedState(apiClient->isAuthenticated());
+                        connect(itemWidget, &SimpleProductItem::clicked,
+                                this, [this, productId = item.id]()
+                        {
+                            emit navigate({Page::CATALOG_PRODUCT, productId});
+                        });
+                        sectionScrollArea->widget()->layout()->addWidget(itemWidget);
+                    }
+                    sectionScrollArea->widget()->resize(sectionScrollArea->widget()->sizeHint());
+                    titleLabel->setVisible(true);
+                    sectionScrollArea->setVisible(true);
+                }
             }
             else if (wishlistedGamesReply->error() != QNetworkReply::OperationCanceledError)
             {
@@ -470,10 +526,5 @@ void StoreDynamicPage::updateWishlistSection(int startIndex)
             }
         });
         connect(wishlistedGamesReply, &QNetworkReply::finished, wishlistedGamesReply, &QNetworkReply::deleteLater);
-    }
-    else
-    {
-        titleLabel->setVisible(false);
-        sectionScrollArea->setVisible(false);
     }
 }
