@@ -33,6 +33,7 @@ private:
 
     void getSection(const QString &id, const QString &type);
     void getSections();
+    void updateWishlistSection(int startIndex);
 
     Q_SIGNAL void authenticationStateChanged();
     Q_SIGNAL void ownedProductsChanged(const QSet<const QString> &ids);

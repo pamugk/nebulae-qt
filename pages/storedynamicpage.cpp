@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QNetworkReply>
 
+#include "../api/utils/catalogserialization.h"
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storeherobanner.h"
@@ -319,6 +320,26 @@ void StoreDynamicPage::getSections()
                 {
                     getSection(section.id, section.sectionType);
                 }
+                else if (section.sectionType == QLatin1StringView("WISHLIST_SECTION"))
+                {
+                    int startIndex = ui->resultScrollAreaContentsLayout->count();
+                    auto titleLabel = new QLabel(tr("From your wishlist"), ui->resultScrollAreaContents);
+                    titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                    ui->resultScrollAreaContentsLayout->addWidget(titleLabel);
+                    auto sectionScrollArea = new QScrollArea(sectionWidget);
+                    sectionScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+                    sectionScrollArea->setMinimumHeight(273);
+                    auto sectionScrollAreaContents = new QWidget(sectionScrollArea);
+                    auto sectionScrollAreaContentsLayout = new QHBoxLayout(sectionScrollAreaContents);
+                    sectionScrollAreaContentsLayout->setContentsMargins(6, 0, 6, 6);
+                    sectionScrollAreaContentsLayout->setSpacing(24);
+                    ui->resultScrollAreaContentsLayout->addWidget(sectionScrollArea);
+                    updateWishlistSection(startIndex);
+                    connect(this, &StoreDynamicPage::authenticationStateChanged, sectionScrollArea, [this, startIndex]()
+                    {
+                        updateWishlistSection(startIndex);
+                    });
+                }
                 else if (section.sectionType == QLatin1StringView("CATALOG_SECTION"))
                 {
 
@@ -417,5 +438,42 @@ void StoreDynamicPage::timerEvent(QTimerEvent *event)
     if (event->timerId() == timerId)
     {
         emit timeTicked(QDateTime::currentDateTime());
+    }
+}
+
+void StoreDynamicPage::updateWishlistSection(int startIndex)
+{
+    QWidget *titleLabel = ui->resultScrollAreaContentsLayout->itemAt(startIndex)->widget();
+    QScrollArea *sectionScrollArea = static_cast<QScrollArea *>(ui->resultScrollAreaContentsLayout->itemAt(startIndex + 1)->widget());
+    if (apiClient->isAuthenticated())
+    {
+        const auto systemLocale = QLocale::system();
+        QNetworkReply *wishlistedGamesReply = apiClient->searchCatalog(
+            systemLocale.name(QLocale::TagSeparator::Dash),
+            QLocale::territoryToCode(systemLocale.territory()),
+            systemLocale.currencySymbol(QLocale::CurrencyIsoCode), 1, 8);
+        connect(this, &QObject::destroyed, wishlistedGamesReply, &QNetworkReply::abort);
+        connect(this, &StoreDynamicPage::authenticationStateChanged, wishlistedGamesReply, &QNetworkReply::abort);
+        connect(wishlistedGamesReply, &QNetworkReply::finished, this, [this, wishlistedGamesReply]()
+        {
+            if (wishlistedGamesReply->error() == QNetworkReply::NoError)
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionsReply->readAll()).toUtf8()).object();
+                api::GetStoreSectionsResponse data;
+                parseGetStoreSectionsResponse(resultJson, data);
+            }
+            else if (wishlistedGamesReply->error() != QNetworkReply::OperationCanceledError)
+            {
+                qDebug() << wishlistedGamesReply->error()
+                    << wishlistedGamesReply->errorString()
+                    << QString(wishlistedGamesReply->readAll()).toUtf8();
+            }
+        });
+        connect(wishlistedGamesReply, &QNetworkReply::finished, wishlistedGamesReply, &QNetworkReply::deleteLater);
+    }
+    else
+    {
+        titleLabel->setVisible(false);
+        sectionScrollArea->setVisible(false);
     }
 }
