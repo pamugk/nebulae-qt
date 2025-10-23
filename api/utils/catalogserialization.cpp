@@ -119,7 +119,7 @@ void parseFilters(const QJsonValue &json, api::StoreFilters &data)
     parseMetaTagArray(json["fullTagsList"].toArray(), data.fullTagsList);
 }
 
-void parseSearchCatalogResponse(const QJsonValue &json, api::SearchCatalogResponse &data)
+void parseSearchCatalogResponse(const QJsonValue &json, api::SearchCatalogResponse &data, const QString &horizontalCoverFormat)
 {
     data.pages = json["pages"].toInt();
     data.productCount = json["productCount"].toInt();
@@ -127,7 +127,7 @@ void parseSearchCatalogResponse(const QJsonValue &json, api::SearchCatalogRespon
     data.products.resize(products.count());
     for (std::size_t i = 0; i < products.count(); i++)
     {
-        parseCatalogProduct(products[i], data.products[i], "_product_tile_extended_432x243.webp");
+        parseCatalogProduct(products[i], data.products[i], horizontalCoverFormat);
     }
     parseFilters(json["filters"], data.filters);
 }

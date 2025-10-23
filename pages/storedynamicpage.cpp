@@ -476,7 +476,7 @@ void StoreDynamicPage::updateWishlistSection(int startIndex, const QString &sect
             {
                 auto resultJson = QJsonDocument::fromJson(QString(wishlistedGamesReply->readAll()).toUtf8()).object();
                 api::SearchCatalogResponse data;
-                parseSearchCatalogResponse(resultJson, data);
+                parseSearchCatalogResponse(resultJson, data, QLatin1StringView("_product_tile_256.webp"));
 
                 if (!data.products.isEmpty())
                 {

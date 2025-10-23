@@ -110,7 +110,7 @@ void AllGamesPage::fetchData()
         if (catalogReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(catalogReply->readAll()).toUtf8()).object();
-            parseSearchCatalogResponse(resultJson, data);
+            parseSearchCatalogResponse(resultJson, data, QLatin1StringView("_product_tile_extended_432x243.webp"));
 
             ui->totalLabel->setText(QString("Showing %1 games").arg(QString::number(data.productCount)));
             ui->pagesLabel->setText(QString("%1 of %2").arg(QString::number(1), QString::number(data.pages)));
@@ -240,7 +240,7 @@ void AllGamesPage::initialize(const QVariant &data)
         if (catalogReply->error() == QNetworkReply::NoError)
         {
             auto resultJson = QJsonDocument::fromJson(QString(catalogReply->readAll()).toUtf8()).object();
-            parseSearchCatalogResponse(resultJson, this->data);
+            parseSearchCatalogResponse(resultJson, this->data, QLatin1StringView("_product_tile_extended_432x243.webp"));
 
             auto clearAllFiltersButton = new ClearFilterButton("Clear all filters", QString(), ui->appliedFiltersHolder);
             clearAllFiltersButton->setVisible(false);
