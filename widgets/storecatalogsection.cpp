@@ -21,6 +21,9 @@
 
 StoreCatalogSection::StoreCatalogSection(QWidget *parent) :
     QWidget(parent),
+    activatedFilterCount(0),
+    applyFilters(true),
+    filter({}),
     ui(new Ui::StoreCatalogSection)
 {
     ui->setupUi(this);
@@ -285,6 +288,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
     else
     {
         auto resultsGridScrollArea = new QScrollArea(ui->resultsGridPage);
+        resultsGridScrollArea->setWidgetResizable(true);
         connect(this, &StoreCatalogSection::updatingData, resultsGridScrollArea, [resultsGridScrollArea]()
         {
             resultsGridScrollArea->verticalScrollBar()->setValue(0);
@@ -297,6 +301,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
         ui->resultsGridPage->layout()->addWidget(resultsGridScrollArea);
 
         auto resultsListScrollArea = new QScrollArea(ui->resultsListPage);
+        resultsListScrollArea->setWidgetResizable(true);
         connect(this, &StoreCatalogSection::updatingData, resultsListScrollArea, [resultsListScrollArea]()
         {
             resultsListScrollArea->verticalScrollBar()->setValue(0);
@@ -306,7 +311,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
         listResultsPage->layout()->setContentsMargins(24, 0, 8, 0);
         listResultsPage->layout()->setSpacing(1);
         listResultsPage->layout()->setAlignment(Qt::AlignTop);
-        resultsListScrollArea->setWidget(resultsListScrollArea);
+        resultsListScrollArea->setWidget(listResultsPage);
         ui->resultsListPage->setLayout(new QVBoxLayout(ui->resultsListPage));
         ui->resultsListPage->layout()->setContentsMargins(0, 0, 0, 0);
         ui->resultsListPage->layout()->addWidget(resultsListScrollArea);
