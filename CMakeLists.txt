@@ -115,6 +115,7 @@ set(PROJECT_SOURCES
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
+        widgets/storecatalogsection.h widgets/storecatalogsection.cpp widgets/storecatalogsection.ui
         widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
         widgets/storeherobanner.h widgets/storeherobanner.cpp widgets/storeherobanner.ui
         widgets/storehighlightsitem.h widgets/storehighlightsitem.cpp widgets/storehighlightsitem.ui

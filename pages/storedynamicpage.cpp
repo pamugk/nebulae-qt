@@ -10,6 +10,7 @@
 #include "../api/utils/catalogserialization.h"
 #include "../api/utils/storeserialization.h"
 #include "../widgets/simpleproductitem.h"
+#include "../widgets/storecatalogsection.h"
 #include "../widgets/storeherobanner.h"
 #include "../widgets/storesalecard.h"
 
@@ -343,7 +344,14 @@ void StoreDynamicPage::getSections()
                 }
                 else if (section.sectionType == QLatin1StringView("CATALOG_SECTION"))
                 {
+                    auto catalogSection = new StoreCatalogSection(ui->resultScrollAreaContents);
+                    connect(catalogSection, &StoreCatalogSection::navigate, this, [this](NavigationDestination destination)
+                    {
+                        emit navigate(destination);
+                    });
+                    ui->resultScrollAreaContentsLayout->addWidget(catalogSection);
 
+                    catalogSection->initialize(QMap<QString, QVariant>({ std::pair(QLatin1StringView("pageId"), pathHex), std::pair(QLatin1StringView("sectionId"), section.id) }), apiClient, true);
                 }
             }
             ui->resultScrollAreaContentsLayout->addStretch();
