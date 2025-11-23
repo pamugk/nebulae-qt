@@ -612,7 +612,18 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         parameters.addQueryItem(QLatin1StringView("publishers"), QLatin1StringView("in:") + filter.publishers.join(','));
     }
-    parameters.addQueryItem(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field));
+    if (!filter.pageId.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("pageId"), filter.pageId);
+    }
+    if (!filter.sectionId.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("sectionId"), filter.sectionId);
+    }
+    if (!order.field.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field));
+    }
     if (!filter.genres.isEmpty())
     {
         parameters.addQueryItem(QLatin1StringView("genres"), QLatin1StringView("in:") + filter.genres.join(','));
@@ -678,7 +689,7 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     parameters.addQueryItem(QLatin1StringView("locale"), locale);
     parameters.addQueryItem(QLatin1StringView("currencyCode"), currencyCode);
 
-    QUrl url(QLatin1StringView("https://catalog.gog.com/v1/catalog"));
+    QUrl url(QLatin1StringView(filter.pageId.isEmpty() ? "https://catalog.gog.com/v1/catalog" : "https://catalog.gog.com/v1/filtered-catalog"));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);
