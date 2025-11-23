@@ -1,7 +1,6 @@
 #ifndef STOREGRIDTILE_H
 #define STOREGRIDTILE_H
 
-#include <QNetworkReply>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"

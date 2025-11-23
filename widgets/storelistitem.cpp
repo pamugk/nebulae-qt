@@ -1,6 +1,8 @@
 #include "storelistitem.h"
 #include "ui_storelistitem.h"
 
+#include <QNetworkReply>
+
 StoreListItem::StoreListItem(const api::CatalogProduct &data,
                              api::GogApiClient *apiClient,
                              QWidget *parent) :

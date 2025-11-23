@@ -23,6 +23,7 @@ protected:
     virtual void timerEvent(QTimerEvent *event) override;
 
 private:
+    QMap<const QString, const QWidget *> anchors;
     api::GogApiClient *apiClient;
     QSet<const QString> ownedProducts;
     QString pathHex;

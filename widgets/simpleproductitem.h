@@ -1,10 +1,7 @@
 #ifndef SIMPLEPRODUCTITEM_H
 #define SIMPLEPRODUCTITEM_H
 
-#include <QNetworkReply>
 #include <QWidget>
-
-#include "../api/gogapiclient.h"
 
 namespace Ui {
 class SimpleProductItem;
@@ -18,7 +15,7 @@ public:
     explicit SimpleProductItem(QWidget *parent = nullptr);
     ~SimpleProductItem();
 
-    void setCover(const QString &coverUrl, api::GogApiClient *apiClient);
+    void setCover(const QPixmap &image);
     void setDeal(const QDateTime &dealEnd);
     void setOwned(bool owned);
     void setTitle(const QString &title);

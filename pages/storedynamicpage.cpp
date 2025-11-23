@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QNetworkReply>
+#include <QScrollBar>
 
 #include "../api/utils/catalogserialization.h"
 #include "../api/utils/storeserialization.h"
@@ -16,6 +17,7 @@
 
 StoreDynamicPage::StoreDynamicPage(QWidget *parent) :
     StoreBasePage(Page::STORE_DYNAMIC_PAGE, parent),
+    anchors({}),
     promoId(),
     timerId(),
     ui(new Ui::StoreDynamicPage)
@@ -72,7 +74,25 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     for (const api::CatalogProduct &item : std::as_const(data.items))
                     {
                         auto itemWidget = new SimpleProductItem(sectionScrollAreaContents);
-                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(item.coverHorizontal);
+                        connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        itemWidget->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         itemWidget->setTitle(item.title);
                         if (item.price.has_value())
                         {
@@ -145,7 +165,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                 }
                 heroBannerWidget->setDescription(data.description);
                 heroBannerWidget->setPrimaryButtonText(data.button.text);
-                connect(heroBannerWidget, &StoreHeroBanner::primaryButtonClicked, this, [url = data.button.link, anchor = data.button.anchor]()
+                connect(heroBannerWidget, &StoreHeroBanner::primaryButtonClicked, this, [this, url = data.button.link, anchor = data.button.anchor]()
                 {
                     if (!url.isEmpty())
                     {
@@ -153,7 +173,10 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     }
                     else if (!anchor.isEmpty())
                     {
-                        // TODO: jump to anchor
+                        if (anchors.contains(anchor))
+                        {
+                            ui->resultScrollArea->verticalScrollBar()->setValue(anchors[anchor]->pos().y());
+                        }
                     }
                 });
 
@@ -307,7 +330,7 @@ void StoreDynamicPage::getSections()
                         {
                             if (endDateTime <= currentDateTime)
                             {
-                                // TODO: hide page
+                                ui->pageStackedWidget->setCurrentWidget(ui->expiredPage);
                             }
                         });
             }
@@ -349,6 +372,7 @@ void StoreDynamicPage::getSections()
                     {
                         emit navigate(destination);
                     });
+                    anchors[QLatin1StringView("Catalog")] = catalogSection;
                     ui->resultScrollAreaContentsLayout->addWidget(catalogSection);
 
                     catalogSection->initialize(QMap<QString, QVariant>({ std::pair(QLatin1StringView("pageId"), pathHex), std::pair(QLatin1StringView("sectionId"), section.id) }), apiClient, true);
@@ -491,7 +515,25 @@ void StoreDynamicPage::updateWishlistSection(int startIndex, const QString &sect
                     for (const api::CatalogProduct &item : std::as_const(data.products))
                     {
                         auto itemWidget = new SimpleProductItem(sectionScrollArea->widget());
-                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(item.coverHorizontal);
+                        connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        itemWidget->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         itemWidget->setTitle(item.title);
                         if (item.price.has_value())
                         {

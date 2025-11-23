@@ -111,6 +111,23 @@
       </layout>
      </widget>
      <widget class="QWidget" name="errorPage"/>
+     <widget class="QWidget" name="expiredPage">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item alignment="Qt::AlignmentFlag::AlignVCenter">
+        <widget class="QLabel" name="expiredLabel">
+         <property name="text">
+          <string>Looks like this page is no more available. Please, go somewhere else.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

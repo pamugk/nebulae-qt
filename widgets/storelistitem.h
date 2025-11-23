@@ -2,7 +2,6 @@
 #define STORELISTITEM_H
 
 #include <QMouseEvent>
-#include <QNetworkReply>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"

@@ -1,6 +1,8 @@
 #include "storegridtile.h"
 #include "ui_storegridtile.h"
 
+#include <QNetworkReply>
+
 StoreGridTile::StoreGridTile(const api::CatalogProduct &data,
                              api::GogApiClient *apiClient,
                              QWidget *parent) :

@@ -72,7 +72,25 @@ void StorePage::getNowOnSale()
                 {
                     const api::StoreProduct &item = data.personalizedProducts[i];
                     auto itemWidget = new SimpleProductItem(dealTabScrollAreaContents);
-                    itemWidget->setCover(item.image, apiClient);
+                    QNetworkReply *coverReply = apiClient->getAnything(item.image);
+                    connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                    connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                            {
+                                if (coverReply->error() == QNetworkReply::NoError)
+                                {
+                                    QPixmap image;
+                                    image.loadFromData(coverReply->readAll());
+                                    itemWidget->setCover(image);
+                                }
+                                else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                {
+                                    qDebug() << coverReply->error()
+                                    << coverReply->errorString()
+                                    << QString(coverReply->readAll()).toUtf8();
+                                }
+                            });
+                    connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                     itemWidget->setTitle(item.title);
                     itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
                                          item.price.discountPercentage, item.price.free,
@@ -157,7 +175,25 @@ void StorePage::getNowOnSale()
                 {
                     const api::StoreProduct &item = data.personalizedProducts[i];
                     auto itemWidget = new SimpleProductItem(dealTabScrollAreaContents);
-                    itemWidget->setCover(item.image, apiClient);
+                    QNetworkReply *coverReply = apiClient->getAnything(item.image);
+                    connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                    connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                            {
+                                if (coverReply->error() == QNetworkReply::NoError)
+                                {
+                                    QPixmap image;
+                                    image.loadFromData(coverReply->readAll());
+                                    itemWidget->setCover(image);
+                                }
+                                else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                {
+                                    qDebug() << coverReply->error()
+                                    << coverReply->errorString()
+                                    << QString(coverReply->readAll()).toUtf8();
+                                }
+                            });
+                    connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                     itemWidget->setTitle(item.title);
                     itemWidget->setPrice(item.price.baseAmount, item.price.finalAmount,
                                          item.price.discountPercentage, item.price.free,
@@ -328,7 +364,25 @@ void StorePage::getNowOnSale()
                 }
 
                 auto discountedProductItem = new SimpleProductItem(nowOnSaleDealsScrollAreaContents);
-                discountedProductItem->setCover(discountedProduct.coverHorizontal, apiClient);
+                QNetworkReply *coverReply = apiClient->getAnything(discountedProduct.coverHorizontal);
+                connect(discountedProductItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                connect(coverReply, &QNetworkReply::finished, discountedProductItem, [discountedProductItem, coverReply]()
+                        {
+                            if (coverReply->error() == QNetworkReply::NoError)
+                            {
+                                QPixmap image;
+                                image.loadFromData(coverReply->readAll());
+                                discountedProductItem->setCover(image);
+                            }
+                            else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                            {
+                                qDebug() << coverReply->error()
+                                << coverReply->errorString()
+                                << QString(coverReply->readAll()).toUtf8();
+                            }
+                        });
+                connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                 discountedProductItem->setTitle(discountedProduct.title);
                 if (discountedProduct.price.has_value())
                 {
@@ -431,7 +485,25 @@ void StorePage::getSection(const QString &id, const QString &type)
                     for (const api::CatalogProduct &item : std::as_const(data.items))
                     {
                         auto itemWidget = new SimpleProductItem(sectionScrollArea);
-                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(item.coverHorizontal);
+                        connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        itemWidget->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         itemWidget->setTitle(item.title);
                         if (item.price.has_value())
                         {
@@ -877,7 +949,25 @@ void StorePage::getSection(const QString &id, const QString &type)
                     for (const api::CatalogProduct &item : std::as_const(data.items))
                     {
                         auto itemWidget = new SimpleProductItem(sectionScrollArea);
-                        itemWidget->setCover(item.coverHorizontal, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(item.coverHorizontal);
+                        connect(itemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, itemWidget, [itemWidget, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        itemWidget->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         itemWidget->setTitle(item.title);
                         if (item.price.has_value())
                         {

@@ -21,36 +21,20 @@ SimpleProductItem::~SimpleProductItem()
     delete ui;
 }
 
-void SimpleProductItem::setCover(const QString &coverUrl, api::GogApiClient *apiClient)
+void SimpleProductItem::setCover(const QPixmap &image)
 {
-    QNetworkReply *imageReply = apiClient->getAnything(coverUrl);
-    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
-    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
-        if (imageReply->error() == QNetworkReply::NoError)
-        {
-            QPixmap image;
-            image.loadFromData(imageReply->readAll());
-            this->setMinimumWidth(image.width());
-            this->setMaximumWidth(this->minimumWidth());
-            this->setMinimumHeight(image.height() + 97);
-            this->setMaximumHeight(this->minimumHeight());
+    this->setMinimumWidth(image.width());
+    this->setMaximumWidth(this->minimumWidth());
+    this->setMinimumHeight(image.height() + 97);
+    this->setMaximumHeight(this->minimumHeight());
 
-            ui->coverWidget->setMinimumSize(image.size());
-            ui->coverWidget->setMaximumSize(image.size());
-            ui->coverLabel->setMinimumSize(image.size());
-            ui->coverLabel->setMaximumSize(image.size());
-            ui->dealLabel->setMinimumWidth(this->minimumWidth());
-            ui->dealLabel->setMaximumWidth(this->minimumWidth());
-            ui->coverLabel->setPixmap(image);
-        }
-        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
-        {
-            qDebug() << imageReply->error()
-                     << imageReply->errorString()
-                     << QString(imageReply->readAll()).toUtf8();
-        }
-    });
-    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
+    ui->coverWidget->setMinimumSize(image.size());
+    ui->coverWidget->setMaximumSize(image.size());
+    ui->coverLabel->setMinimumSize(image.size());
+    ui->coverLabel->setMaximumSize(image.size());
+    ui->dealLabel->setMinimumWidth(this->minimumWidth());
+    ui->dealLabel->setMaximumWidth(this->minimumWidth());
+    ui->coverLabel->setPixmap(image);
 }
 
 void SimpleProductItem::setDeal(const QDateTime &dealEnd)

@@ -798,7 +798,24 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             {
                                 count++;
                                 auto productItem = new SimpleProductItem(ui->seriesResultPage);
-                                productItem->setCover(item.imageLink, apiClient);
+                                QNetworkReply *coverReply = apiClient->getAnything(item.imageLink);
+                                connect(productItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                                connect(coverReply, &QNetworkReply::finished, productItem, [productItem, coverReply]()
+                                        {
+                                            if (coverReply->error() == QNetworkReply::NoError)
+                                            {
+                                                QPixmap image;
+                                                image.loadFromData(coverReply->readAll());
+                                                productItem->setCover(image);
+                                            }
+                                            else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                            {
+                                                qDebug() << coverReply->error()
+                                                << coverReply->errorString()
+                                                << QString(coverReply->readAll()).toUtf8();
+                                            }
+                                        });
+                                connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
                                 productItem->setTitle(item.title);
 
                                 connect(this, &CatalogProductPage::ownedProductsChanged,
@@ -884,7 +901,25 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
                         auto recommendationItem = new SimpleProductItem(ui->purchasedTogetherResultPage);
-                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(recommendation.details.imageHorizontalUrl);
+                        connect(recommendationItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, recommendationItem, [recommendationItem, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        recommendationItem->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
                         {
@@ -942,7 +977,25 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
                         auto recommendationItem = new SimpleProductItem(ui->similarProductsResultPage);
-                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(recommendation.details.imageHorizontalUrl);
+                        connect(recommendationItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, recommendationItem, [recommendationItem, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        recommendationItem->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
                         {
