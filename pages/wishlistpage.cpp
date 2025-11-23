@@ -10,8 +10,8 @@
 #include "../api/utils/serialization.h"
 #include "../widgets/wishlistitem.h"
 
-WishlistPage::WishlistPage(QWidget *parent) :
-    StoreBasePage(Page::WISHLIST, parent),
+WishlistPage::WishlistPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     ui(new Ui::WishlistPage)
 {
     ui->setupUi(this);

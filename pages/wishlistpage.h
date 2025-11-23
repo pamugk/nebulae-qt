@@ -15,7 +15,7 @@ class WishlistPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit WishlistPage(QWidget *parent = nullptr);
+    explicit WishlistPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~WishlistPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;

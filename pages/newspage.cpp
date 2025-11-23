@@ -10,8 +10,8 @@
 #include "../api/utils/newsserialization.h"
 #include "../widgets/clickablelabel.h"
 
-NewsPage::NewsPage(QWidget *parent) :
-    StoreBasePage(Page::NEWS, parent),
+NewsPage::NewsPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     ui(new Ui::NewsPage)
 {
     ui->setupUi(this);

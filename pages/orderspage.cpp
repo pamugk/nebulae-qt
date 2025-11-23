@@ -10,8 +10,8 @@
 #include "../api/utils/orderserialization.h"
 #include "../widgets/ordergroup.h"
 
-OrdersPage::OrdersPage(QWidget *parent) :
-    StoreBasePage(Page::ORDER_HISTORY, parent),
+OrdersPage::OrdersPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     ui(new Ui::OrdersPage)
 {
     ui->setupUi(this);

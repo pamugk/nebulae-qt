@@ -8,8 +8,8 @@
 
 #include "../widgets/storecatalogsection.h"
 
-AllGamesPage::AllGamesPage(QWidget *parent) :
-    StoreBasePage(Page::ALL_GAMES, parent),
+AllGamesPage::AllGamesPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     ui(new Ui::AllGamesPage)
 {
     ui->setupUi(this);

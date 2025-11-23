@@ -14,7 +14,7 @@ class AllGamesPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit AllGamesPage(QWidget *parent = nullptr);
+    explicit AllGamesPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~AllGamesPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;

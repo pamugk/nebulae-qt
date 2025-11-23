@@ -21,7 +21,6 @@
 #include "../pages/releasepage.h"
 #include "../pages/ownedgamespage.h"
 #include "../pages/storedynamicpage.h"
-#include "../pages/storepage.h"
 #include "../pages/wishlistpage.h"
 
 MainWindow::MainWindow(api::GogApiClient *apiClient,
@@ -136,10 +135,10 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
     connect(logoutAction, &QAction::triggered, apiClient, &api::GogApiClient::logout);
     ui->userToolButton->setMenu(userMenu);
 
-    NavigationDestination startDestination = NavigationDestination { Page::STORE };
+    NavigationDestination startDestination = NavigationDestination { Page::STORE_DYNAMIC_PAGE, QLatin1StringView("/") };
     QWidget *startPage = initializePage(startDestination);
     navigationHistory.push(startDestination);
-    updateCheckedDrawerDestination(startDestination.page);
+    updateCheckedDrawerDestination(startDestination);
     ui->scaffoldLayout->addWidget(startPage, 1, 1);
 }
 
@@ -156,20 +155,17 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         break;
     case RECENT:
         break;
-    case STORE:
-        page = new StorePage(ui->scaffold);
-        break;
     case STORE_DYNAMIC_PAGE:
-        page = new StoreDynamicPage(ui->scaffold);
+        page = new StoreDynamicPage(destination, ui->scaffold);
         break;
     case ALL_GAMES:
-        page = new AllGamesPage(ui->scaffold);
+        page = new AllGamesPage(destination, ui->scaffold);
         break;
     case WISHLIST:
-        page = new WishlistPage(ui->scaffold);
+        page = new WishlistPage(destination, ui->scaffold);
         break;
     case ORDER_HISTORY:
-        page = new OrdersPage(ui->scaffold);
+        page = new OrdersPage(destination, ui->scaffold);
         break;
     case OWNED_GAMES:
         page = new OwnedGamesPage(ui->scaffold);
@@ -179,13 +175,13 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
     case FRIENDS:
         break;
     case CATALOG_PRODUCT:
-        page = new CatalogProductPage(ui->scaffold);
+        page = new CatalogProductPage(destination, ui->scaffold);
         break;
     case RELEASE:
         page = new ReleasePage(ui->scaffold);
         break;
     case NEWS:
-        page = new NewsPage(ui->scaffold);
+        page = new NewsPage(destination, ui->scaffold);
     case DEALS:
         break;
     case CART:
@@ -296,19 +292,20 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
     initialized = true;
 }
 
-void MainWindow::updateCheckedDrawerDestination(Page currentPage)
+void MainWindow::updateCheckedDrawerDestination(const NavigationDestination &destination)
 {
-    ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
-    ui->recentButton->setChecked(currentPage == Page::RECENT);
-    ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::NEWS);
-    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES);
-    ui->dealsButton->setChecked(currentPage == Page::DEALS);
-    ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
-    ui->cartButton->setChecked(currentPage == Page::DEALS);
-    ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
-    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES);
-    ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
-    ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
+    ui->discoverButton->setChecked(destination.page == Page::DISCOVER);
+    ui->recentButton->setChecked(destination.page == Page::RECENT);
+    ui->storeButton->setChecked(destination.page == Page::STORE_DYNAMIC_PAGE && destination.parameters == QLatin1StringView("/")
+                                || destination.page == Page::NEWS);
+    ui->allGamesButton->setChecked(destination.page == Page::ALL_GAMES);
+    ui->dealsButton->setChecked(destination.page == Page::DEALS);
+    ui->wishlistButton->setChecked(destination.page == Page::WISHLIST);
+    ui->cartButton->setChecked(destination.page == Page::DEALS);
+    ui->ordersButton->setChecked(destination.page == Page::ORDER_HISTORY);
+    ui->libraryButton->setChecked(destination.page == Page::OWNED_GAMES);
+    ui->installedButton->setChecked(destination.page == Page::INSTALLED_GAMES);
+    ui->friendsButton->setChecked(destination.page == Page::FRIENDS);
 }
 
 void MainWindow::navigate(NavigationDestination destination)
@@ -330,7 +327,7 @@ void MainWindow::navigate(NavigationDestination destination)
         navigationHistoryReplay.clear();
         ui->navigateBackButton->setEnabled(true);
         ui->navigateForwardButton->setEnabled(false);
-        updateCheckedDrawerDestination(destination.page);
+        updateCheckedDrawerDestination(destination);
     }
 }
 
@@ -346,7 +343,7 @@ void MainWindow::navigateBack()
     navigationHistoryReplay.push(poppedDestination);
     ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
     ui->navigateForwardButton->setEnabled(true);
-    updateCheckedDrawerDestination(navigationHistory.top().page);
+    updateCheckedDrawerDestination(navigationHistory.top());
 }
 
 void MainWindow::navigateForward()
@@ -361,7 +358,7 @@ void MainWindow::navigateForward()
     navigationHistory.push(pushedDestination);
     ui->navigateBackButton->setEnabled(true);
     ui->navigateForwardButton->setEnabled(navigationHistoryReplay.size() > 0);
-    updateCheckedDrawerDestination(pushedDestination.page);
+    updateCheckedDrawerDestination(pushedDestination);
 }
 
 void MainWindow::on_discoverButton_clicked()
@@ -376,7 +373,7 @@ void MainWindow::on_recentButton_clicked()
 
 void MainWindow::on_storeButton_clicked()
 {
-    navigate(NavigationDestination { Page::STORE });
+    navigate(NavigationDestination { Page::STORE_DYNAMIC_PAGE, QLatin1StringView("/") });
 }
 
 void MainWindow::on_allGamesButton_clicked()

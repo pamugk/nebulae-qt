@@ -60,7 +60,7 @@ private:
 
     QWidget *initializePage(const NavigationDestination &destination);
     void switchUiAuthenticatedState(bool authenticated);
-    void updateCheckedDrawerDestination(Page currentPage);
+    void updateCheckedDrawerDestination(const NavigationDestination &destination);
 
     Q_SIGNAL void authenticationStateChanged();
 };

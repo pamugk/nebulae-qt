@@ -94,7 +94,6 @@ set(PROJECT_SOURCES
         pages/releasepage.h pages/releasepage.cpp pages/releasepage.ui
         pages/storebasepage.h pages/storebasepage.cpp
         pages/storedynamicpage.h pages/storedynamicpage.cpp pages/storedynamicpage.ui
-        pages/storepage.h pages/storepage.cpp pages/storepage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
         widgets/achievementlistitem.h widgets/achievementlistitem.cpp widgets/achievementlistitem.ui

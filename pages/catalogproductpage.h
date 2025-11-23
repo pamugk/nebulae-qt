@@ -14,7 +14,7 @@ class CatalogProductPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit CatalogProductPage(QWidget *parent = nullptr);
+    explicit CatalogProductPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~CatalogProductPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;

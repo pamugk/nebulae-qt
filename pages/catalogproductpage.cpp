@@ -34,8 +34,8 @@
 #include "../widgets/videoholder.h"
 #include "../windows/catalogproductmediadialog.h"
 
-CatalogProductPage::CatalogProductPage(QWidget *parent) :
-    StoreBasePage(Page::CATALOG_PRODUCT, parent),
+CatalogProductPage::CatalogProductPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     reviewFilters({ { "en-US", "ru-RU", "de-DE", "pl-PL", "fr-FR", "zh-Hans" } }),
     reviewsPage(1),
     reviewsPageSize(5),

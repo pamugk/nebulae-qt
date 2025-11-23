@@ -15,7 +15,7 @@ class OrdersPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit OrdersPage(QWidget *parent = nullptr);
+    explicit OrdersPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~OrdersPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
