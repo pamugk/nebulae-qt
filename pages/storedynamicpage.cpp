@@ -155,9 +155,9 @@ void StoreDynamicPage::getNowOnSale()
                     connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
                 }
                 connect(dealCard, &StoreSaleCard::navigateToItem,
-                        this, [this]()
+                        this, [this, url = QUrl(data.bigThingy.url)]()
                 {
-                    emit navigate({ Page::ALL_GAMES, QMap<QString, QVariant>({ std::pair("discounted", true) }) });
+                    emit navigate({ Page::STORE_DYNAMIC_PAGE, url.path() });
                 });
                 connect(this, &StoreDynamicPage::timeTicked, dealCard, [dealCard, promoEndDateTime = data.bigThingy.countdownDate](const QDateTime &currentDateTime)
                         {
@@ -567,9 +567,16 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     sectionWidget->setLayout(new QHBoxLayout());
                     auto promoBannerWidget = new StorePromoBanner(sectionWidget);
                     promoBannerWidget->setCustomButton(data.buttonText);
-                    connect(promoBannerWidget, &StorePromoBanner::customInfoClicked, this, [url = data.link]()
+                    connect(promoBannerWidget, &StorePromoBanner::customInfoClicked, this, [this, url = QUrl(data.link)]()
                     {
-                        QDesktopServices::openUrl(QUrl(url));
+                        if (url.path() == QLatin1StringView("/gog-preservation-program"))
+                        {
+                            emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                        }
+                        else
+                        {
+                            QDesktopServices::openUrl(url);
+                        }
                     });
                     QString url = data.image;
                     QNetworkReply *backgroundReply = apiClient->getAnything(url.replace(".jpg", "_promo_banner_background_1096x215.webp"));
@@ -722,7 +729,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                                 }
                                 else
                                 {
-                                    QDesktopServices::openUrl(QUrl(url));
+                                    QDesktopServices::openUrl(url);
                                 }
                             });
                         }
@@ -827,9 +834,17 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                             }
                             if (!item.customProperties.url.isEmpty())
                             {
-                                connect(itemWidget, &StoreHighlightsItem::customInfoClicked, this, [url = item.customProperties.url]()
+                                connect(itemWidget, &StoreHighlightsItem::customInfoClicked, this, [this, url = QUrl(item.customProperties.url)]()
                                 {
-                                    QDesktopServices::openUrl(QUrl(url));
+                                    // TODO: handle all possible
+                                    if (url.path().startsWith(QLatin1StringView("/promo/")))
+                                    {
+                                        emit navigate({Page::STORE_DYNAMIC_PAGE, url.path()});
+                                    }
+                                    else
+                                    {
+                                        QDesktopServices::openUrl(url);
+                                    }
                                 });
                             }
                         }
