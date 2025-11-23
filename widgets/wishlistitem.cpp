@@ -36,23 +36,25 @@ WishlistItem::WishlistItem(const api::Product &data,
         ui->ratingLayout->addWidget(starWidget);
     }
 
-    imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
-    connect(imageReply, &QNetworkReply::finished, this, [this]() {
+    QNetworkReply *imageReply = apiClient->getAnything(QString("https:%1_100.png").arg(data.image));
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]() {
         if (imageReply->error() == QNetworkReply::NoError)
         {
             ui->coverLabel->setPixmap(QPixmap::fromImage(QImage::fromData(imageReply->readAll(), "PNG")));
         }
-        imageReply->deleteLater();
-        imageReply = nullptr;
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 WishlistItem::~WishlistItem()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->deleteLater();
-    }
     delete ui;
 }
 

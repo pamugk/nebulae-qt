@@ -23,14 +23,13 @@ NewsItemTile::NewsItemTile(const api::NewsItem &data,
     this->setMaximumWidth(width);
     ui->rootFrame->setMinimumWidth(width);
     ui->rootFrame->setMaximumWidth(width);
-    imageReply = apiClient->getAnything(data.imageSmall);
-    connect(imageReply, &QNetworkReply::finished, this, [this, primary]() {
-        auto networkReply = imageReply;
-        imageReply = nullptr;
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *imageReply = apiClient->getAnything(data.imageSmall);
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, this, [this, primary, imageReply]() {
+        if (imageReply->error() == QNetworkReply::NoError)
         {
             QPixmap image;
-            image.loadFromData(networkReply->readAll());
+            image.loadFromData(imageReply->readAll());
             QPalette backgroundPalette;
             backgroundPalette.setBrush(this->backgroundRole(), QBrush(primary
                                                                       ? image.scaled(this->size(), Qt::KeepAspectRatioByExpanding)
@@ -38,18 +37,20 @@ NewsItemTile::NewsItemTile(const api::NewsItem &data,
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        networkReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 
     itemId = data.id;
 }
 
 NewsItemTile::~NewsItemTile()
 {
-    if (imageReply != nullptr)
-    {
-        imageReply->abort();
-    }
     delete ui;
 }
 

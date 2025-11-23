@@ -14,7 +14,7 @@ class NewsPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit NewsPage(QWidget *parent = nullptr);
+    explicit NewsPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~NewsPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
@@ -22,10 +22,6 @@ public:
 private:
     api::GogApiClient *apiClient;
     Ui::NewsPage *ui;
-
-    QNetworkReply *bannerReply;
-    QNetworkReply *newsHeadlinesReply;
-    QNetworkReply *newsPageReply;
 
 public slots:
     virtual void initialize(const QVariant &data) override;

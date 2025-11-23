@@ -3,9 +3,6 @@
 
 #include <QWidget>
 
-#include "../api/gogapiclient.h"
-#include "../api/models/store.h"
-
 namespace Ui {
 class StoreSaleCard;
 }
@@ -15,10 +12,16 @@ class StoreSaleCard : public QWidget
     Q_OBJECT
 
 public:
-    explicit StoreSaleCard(const api::StoreNowOnSaleTabCard &data,
-                           api::GogApiClient *apiClient,
-                           QWidget *parent = nullptr);
+    explicit StoreSaleCard(QWidget *parent = nullptr);
     ~StoreSaleCard();
+
+    void setBackgroundImage(const QPixmap &image);
+    void setColor(std::array<unsigned char, 3> colorRgbArray);
+    void setColor(const QString &colorDefinition);
+    void setCountdownValue(std::chrono::seconds countdownTimerValue);
+    void setDiscount(const QString &discount);
+    void setDiscountUpTo(bool upTo);
+    void setTitle(const QString &title);
 
 signals:
     void navigateToItem();

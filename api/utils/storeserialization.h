@@ -7,6 +7,7 @@
 
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data);
 void parseGetStoreDiscoverSectionResponse(const QJsonValue &json, api::GetStoreDiscoverGamesSectionResponse &data);
+void parseGetStoreHeroSectionResponse(const QJsonValue &json, api::GetStoreHeroSectionResponse &data);
 void parseGetStoreHighlightsSectionResponse(const QJsonValue &json, api::GetStoreHighlightsSectionResponse &data);
 void parseGetStoreNewsSectionResponse(const QJsonValue &json, api::GetStoreNewsSectionResponse &data);
 void parseGetStoreNowOnSaleResponse(const QJsonValue &json, api::GetStoreNowOnSaleResponse &data);
@@ -15,5 +16,6 @@ void parseGetStoreProductsSectionResponse(const QJsonValue &json, api::GetStoreP
 void parseGetStorePromoBannerSectionResponse(const QJsonValue &json, api::GetStorePromoBannerSectionResponse &data);
 void parseGetStoreRankingSectionResponse(const QJsonValue &json, api::GetStoreRankingSectionResponse &data);
 void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data);
+void parseGetStoreVerticalBannerSectionResponse(const QJsonValue &json, api::GetStoreVerticalBannerSectionResponse &data);
 
 #endif // STORESERIALIZATION_H

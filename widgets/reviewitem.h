@@ -1,7 +1,6 @@
 #ifndef REVIEWITEM_H
 #define REVIEWITEM_H
 
-#include <QNetworkReply>
 #include <QWidget>
 
 #include "../api/gogapiclient.h"
@@ -22,7 +21,6 @@ public:
     ~ReviewItem();
 
 private:
-    QNetworkReply *avatarReply;
     Ui::ReviewItem *ui;
 };
 

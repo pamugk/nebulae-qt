@@ -866,8 +866,8 @@ void OwnedGamesPage::layoutData()
                                 icon.loadFromData(networkReply->readAll());
                                 emit listItemReceivedIcon(id, icon);
                             }
-                            networkReply->deleteLater();
                         });
+                        connect(listIconReplies[item.id], &QNetworkReply::finished, listIconReplies[item.id], &QNetworkReply::deleteLater);
                         connect(this, &OwnedGamesPage::listItemReceivedIcon, listIconReplies[item.id], [releaseItem, id = item.id](const QString &releaseId, const QPixmap &icon)
                         {
                             if (id == releaseId)
@@ -900,8 +900,8 @@ void OwnedGamesPage::layoutData()
                                 icon.loadFromData(networkReply->readAll());
                                 emit listItemReceivedIcon(id, icon);
                             }
-                            networkReply->deleteLater();
                         });
+                        connect(listIconReplies[item.id], &QNetworkReply::finished, listIconReplies[item.id], &QNetworkReply::deleteLater);
                         connect(this, &OwnedGamesPage::listItemReceivedIcon, listIconReplies[item.id], [releaseItem, id = item.id](const QString &releaseId, const QPixmap &icon)
                         {
                             if (id == releaseId)

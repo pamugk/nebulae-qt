@@ -29,7 +29,6 @@ protected:
 
 private:
     unsigned long long itemId;
-    QNetworkReply *imageReply;
     Ui::NewsItemTile *ui;
 };
 

@@ -10,11 +10,8 @@
 #include "../api/utils/newsserialization.h"
 #include "../widgets/clickablelabel.h"
 
-NewsPage::NewsPage(QWidget *parent) :
-    StoreBasePage(Page::NEWS, parent),
-    bannerReply(nullptr),
-    newsHeadlinesReply(nullptr),
-    newsPageReply(nullptr),
+NewsPage::NewsPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     ui(new Ui::NewsPage)
 {
     ui->setupUi(this);
@@ -29,18 +26,6 @@ NewsPage::NewsPage(QWidget *parent) :
 
 NewsPage::~NewsPage()
 {
-    if (bannerReply != nullptr)
-    {
-        bannerReply->abort();
-    }
-    if (newsHeadlinesReply != nullptr)
-    {
-        newsHeadlinesReply->abort();
-    }
-    if (newsPageReply != nullptr)
-    {
-        newsPageReply->abort();
-    }
     delete ui;
 }
 
@@ -54,16 +39,14 @@ void NewsPage::initialize(const QVariant &data)
     ui->contentStackedWidget->setCurrentWidget(ui->contentLoadingPage);
 
     QString systemLanguage = QLocale::languageToCode(QLocale::system().language(), QLocale::ISO639Part1);
-    newsHeadlinesReply = apiClient->getNews(0, systemLanguage, 6);
+    QNetworkReply *newsHeadlinesReply = apiClient->getNews(0, systemLanguage, 6);
+    connect(this, &QObject::destroyed, newsHeadlinesReply, &QNetworkReply::abort);
     connect(newsHeadlinesReply, &QNetworkReply::finished,
-            this, [this]()
+            this, [this, newsHeadlinesReply]()
     {
-        auto networkReply = newsHeadlinesReply;
-        newsHeadlinesReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (newsHeadlinesReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(newsHeadlinesReply->readAll()).toUtf8()).object();
             api::GetNewsResponse data;
             parseNewsResponse(resultJson, data);
 
@@ -96,24 +79,22 @@ void NewsPage::initialize(const QVariant &data)
             ui->headlinesResultsPageLayout->addStretch();
             ui->headlinesStackedWidget->setCurrentWidget(ui->headlinesResultsPage);
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (newsHeadlinesReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << newsHeadlinesReply->error()
+                     << newsHeadlinesReply->errorString()
+                     << QString(newsHeadlinesReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
-    newsPageReply = apiClient->getNews(0, systemLanguage, 11);
-    connect(newsPageReply, &QNetworkReply::finished,
-            this, [this, id = data.toULongLong()]()
-    {
-        auto networkReply = newsPageReply;
-        newsPageReply = nullptr;
+    connect(newsHeadlinesReply, &QNetworkReply::finished, newsHeadlinesReply, &QNetworkReply::deleteLater);
 
-        if (networkReply->error() == QNetworkReply::NoError)
+    QNetworkReply *newsPageReply = apiClient->getNews(0, systemLanguage, 11);
+    connect(newsPageReply, &QNetworkReply::finished,
+            this, [this, newsPageReply, id = data.toULongLong()]()
+    {
+        if (newsPageReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(newsPageReply->readAll()).toUtf8()).object();
             api::GetNewsResponse data;
             parseNewsResponse(resultJson, data);
 
@@ -123,31 +104,29 @@ void NewsPage::initialize(const QVariant &data)
                 {
                     const api::NewsItem &displayedNews = data.items[i];
                     ui->titleLabel->setText(displayedNews.title);
-                    bannerReply = apiClient->getAnything(displayedNews.imageLarge);
+                    QNetworkReply *bannerReply = apiClient->getAnything(displayedNews.imageLarge);
+                    connect(this, &QObject::destroyed, bannerReply, &QNetworkReply::abort);
                     connect(bannerReply, &QNetworkReply::finished,
-                            this, [this]()
+                            this, [this, bannerReply]()
                     {
-                        auto networkReply = bannerReply;
-                        bannerReply = nullptr;
-
-                        if (networkReply->error() == QNetworkReply::NoError)
+                        if (bannerReply->error() == QNetworkReply::NoError)
                         {
                             QPixmap bannerImage;
-                            bannerImage.loadFromData(networkReply->readAll());
+                            bannerImage.loadFromData(bannerReply->readAll());
 
                             QSize imageSize = bannerImage.size() / 2;
                             ui->coverLabel->setMinimumSize(imageSize);
                             ui->coverLabel->setMaximumSize(imageSize);
                             ui->coverLabel->setPixmap(bannerImage.scaled(imageSize, Qt::KeepAspectRatioByExpanding));
                         }
-                        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                        else if (bannerReply->error() != QNetworkReply::OperationCanceledError)
                         {
-                            qDebug() << networkReply->error()
-                                     << networkReply->errorString()
-                                     << QString(networkReply->readAll()).toUtf8();
+                            qDebug() << bannerReply->error()
+                                     << bannerReply->errorString()
+                                     << QString(bannerReply->readAll()).toUtf8();
                         }
-                        networkReply->deleteLater();
                     });
+                    connect(bannerReply, &QNetworkReply::finished, bannerReply, &QNetworkReply::deleteLater);
 
                     ui->publishedLabel->setText(QLocale::system().toString(displayedNews.publishDate, QLocale::ShortFormat));
                     ui->descriptionWebEngineView->setHtml(displayedNews.body);
@@ -207,14 +186,14 @@ void NewsPage::initialize(const QVariant &data)
                 }
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (newsPageReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << newsPageReply->error()
+                     << newsPageReply->errorString()
+                     << QString(newsPageReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(newsPageReply, &QNetworkReply::finished, newsPageReply, &QNetworkReply::deleteLater);
 }
 
 void NewsPage::switchUiAuthenticatedState(bool authenticated)

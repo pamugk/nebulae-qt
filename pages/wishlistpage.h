@@ -12,9 +12,10 @@ class WishlistPage;
 
 class WishlistPage : public StoreBasePage
 {
+    Q_OBJECT
 
 public:
-    explicit WishlistPage(QWidget *parent = nullptr);
+    explicit WishlistPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~WishlistPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
@@ -28,10 +29,9 @@ private:
     Pagination *paginator;
     Ui::WishlistPage *ui;
 
-    QNetworkReply *getWishlistReply;
-    QNetworkReply *setWishlistSharingReply;
-
     void fetchData();
+
+    Q_SIGNAL void updatingData();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

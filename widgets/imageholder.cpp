@@ -13,6 +13,7 @@ ImageHolder::ImageHolder(QSize size,
     ui->setupUi(this);
     setFixedSize(size);
     QNetworkReply *imageReply = apiClient->getAnything(url);
+    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
     connect(imageReply, &QNetworkReply::finished, this, [this, imageReply]()
     {
         if (imageReply->error() == QNetworkReply::NoError)
@@ -24,9 +25,14 @@ ImageHolder::ImageHolder(QSize size,
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        imageReply->deleteLater();
+        else if (imageReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << imageReply->error()
+                     << imageReply->errorString()
+                     << QString(imageReply->readAll()).toUtf8();
+        }
     });
-    connect(this, &QObject::destroyed, imageReply, &QNetworkReply::abort);
+    connect(imageReply, &QNetworkReply::finished, imageReply, &QNetworkReply::deleteLater);
 }
 
 ImageHolder::~ImageHolder()

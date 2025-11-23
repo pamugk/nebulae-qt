@@ -13,6 +13,7 @@ VideoHolder::VideoHolder(QSize size,
     ui->setupUi(this);
     setFixedSize(size);
     QNetworkReply *thumbnailReply = apiClient->getAnything(thumbnailLink);
+    connect(this, &QObject::destroyed, thumbnailReply, &QNetworkReply::abort);
     connect(thumbnailReply, &QNetworkReply::finished, this, [this, thumbnailReply]()
     {
         if (thumbnailReply->error() == QNetworkReply::NoError)
@@ -24,9 +25,14 @@ VideoHolder::VideoHolder(QSize size,
             this->setAutoFillBackground(true);
             this->setPalette(backgroundPalette);
         }
-        thumbnailReply->deleteLater();
+        else if (thumbnailReply->error() != QNetworkReply::OperationCanceledError)
+        {
+            qDebug() << thumbnailReply->error()
+                     << thumbnailReply->errorString()
+                     << QString(thumbnailReply->readAll()).toUtf8();
+        }
     });
-    connect(this, &QObject::destroyed, thumbnailReply, &QNetworkReply::abort);
+    connect(thumbnailReply, &QNetworkReply::finished, thumbnailReply, &QNetworkReply::deleteLater);
 }
 
 VideoHolder::~VideoHolder()

@@ -49,7 +49,6 @@ private:
     AdditionalInfo displayedAdditionalData;
     const std::optional<double> rating;
     const QString title;
-    QNetworkReply *imageReply;
     Ui::OwnedProductGridItem *ui;
 };
 

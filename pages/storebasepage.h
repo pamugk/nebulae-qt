@@ -6,7 +6,7 @@
 class StoreBasePage : public BasePage
 {
 public:
-    StoreBasePage(Page page, QWidget *parent = nullptr);
+    StoreBasePage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~StoreBasePage();
 
     virtual const QVector<QWidget *> getHeaderControls() override;

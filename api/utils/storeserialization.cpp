@@ -19,8 +19,14 @@ void parseBannerItem(const QJsonValue &json, api::StoreBannerItem &data)
     data.gradientBaseColor = json["gradientBaseColor"]["desktop"].toString();
     data.title = json["text"]["title"].toString();
     data.subtitle = json["text"]["subtitle"].toString();
-    data.visibleFrom = QDateTime::fromString(json["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
-    data.visibleTo = QDateTime::fromString(json["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    if (json["visibleFrom"].isString())
+    {
+        data.visibleFrom = QDateTime::fromString(json["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
+    }
+    if (json["visibleTo"].isString())
+    {
+        data.visibleTo = QDateTime::fromString(json["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    }
     data.customProperties.url = json["customProperties"]["url"].toString();
     data.customProperties.buttonText = json["customProperties"]["buttonText"].toString();
     data.customProperties.discountText = json["customProperties"]["discountText"].toString();
@@ -124,6 +130,18 @@ void parseProduct(const QJsonValue &json, api::StoreProduct &data, const QString
     data.preorder = json["isPreorder"].toBool();
 }
 
+void parseVerticalBannerItem(const QJsonValue &json, api::StoreVerticalBannerItem &data)
+{
+    data.promoId = json["promoId"].toString();
+    data.title = json["title"].toString();
+    data.url = json["url"].toString();
+    data.backgroundImage = json["backgroundImage"].toString();
+    data.color = json["color"].toString();
+    data.discount = json["discount"].toString();
+    data.discountUpTo = json["discountIsUpTo"].toBool();
+    data.promoEndDate = QDateTime::fromSecsSinceEpoch(json["promoEndDate"].toString().toLongLong());
+}
+
 void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetStoreAnnouncementSectionResponse &data)
 {
     const auto properties = json["properties"];
@@ -139,8 +157,14 @@ void parseGetStoreAnnouncementSectionResponse(const QJsonValue &json, api::GetSt
     data.data.gradientBaseColor = properties["gradientBaseColor"]["desktop"].toString();
     data.data.title = properties["info"].toString();
     data.data.subtitle = properties["headline"].toString();
-    data.data.visibleFrom = QDateTime::fromString(properties["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
-    data.data.visibleTo = QDateTime::fromString(properties["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    if (properties["visibleFrom"].isString())
+    {
+        data.data.visibleFrom = QDateTime::fromString(properties["visibleFrom"].toString(), Qt::DateFormat::ISODateWithMs);
+    }
+    if (properties["visibleTo"].isString())
+    {
+        data.data.visibleTo = QDateTime::fromString(properties["visibleTo"].toString(), Qt::DateFormat::ISODateWithMs);
+    }
     data.data.customProperties.url = properties["url"].toString();
     data.data.customProperties.buttonText = properties["buttonText"].toString();
     data.data.customProperties.discountText = properties["discountText"].toString();
@@ -152,6 +176,30 @@ void parseGetStoreDiscoverSectionResponse(const QJsonValue &json, api::GetStoreD
     const auto properties = json["properties"];
     parseDiscoverColumn(properties["columnLeft"], data.columnLeft);
     parseDiscoverColumn(properties["columnRight"], data.columnRight);
+}
+
+void parseGetStoreHeroSectionResponse(const QJsonValue &json, api::GetStoreHeroSectionResponse &data)
+{
+    const auto properties = json["properties"];
+    data.theme = properties["theme"].toString();
+    data.title = properties["title"].toString();
+    data.button.link = properties["button"]["buttonLink"].toString();
+    data.button.text = properties["button"]["buttonText"].toString();
+    data.button.anchor = properties["button"]["buttonAnchor"].toString();
+    data.imageHash = properties["images"]["desktopImageHash"].toString();
+    if (properties["endDate"].isString())
+    {
+        data.endDate = QDateTime::fromString(properties["endDate"].toString(), Qt::DateFormat::ISODateWithMs);
+    }
+    data.videoId = properties["videoId"].toString();
+    data.subtitle = properties["subtitle"].toString();
+    data.sectionId = properties["sectionId"].toString();
+    data.description = properties["description"].toString();
+    data.showCountdown = properties["showCountdown"].toBool();
+    data.buttonSecondary.link = properties["buttonSecondary"]["buttonLink"].toString();
+    data.buttonSecondary.text = properties["buttonSecondary"]["buttonText"].toString();
+    data.buttonSecondary.anchor = properties["buttonSecondary"]["buttonAnchor"].toString();
+    data.showTopModLabel = properties["showTopModLabel"].toBool();
 }
 
 void parseGetStoreHighlightsSectionResponse(const QJsonValue &json, api::GetStoreHighlightsSectionResponse &data)
@@ -271,10 +319,35 @@ void parseSection(const QJsonValue &json, api::StoreSection &data)
 
 void parseGetStoreSectionsResponse(const QJsonValue &json, api::GetStoreSectionsResponse &data)
 {
+    if (json["config"].isObject())
+    {
+        auto config = json["config"];
+        data.config.type = config["type"].toString();
+        if (config["endDate"].isString())
+        {
+            data.config.endDate = QDateTime::fromString(config["endDate"].toString(), Qt::DateFormat::ISODateWithMs);
+        }
+        data.config.pageUrl = config["pageUrl"].toString();
+        data.config.promoId = config["promoId"].toString();
+        if (config["startDate"].isString())
+        {
+            data.config.startDate = QDateTime::fromString(config["startDate"].toString(), Qt::DateFormat::ISODateWithMs);
+        }
+    }
     auto sections = json["sections"].toArray();
     data.sections.resize(sections.count());
     for (std::size_t i = 0; i < sections.count(); i++)
     {
         parseSection(sections[i], data.sections[i]);
+    }
+}
+
+void parseGetStoreVerticalBannerSectionResponse(const QJsonValue &json, api::GetStoreVerticalBannerSectionResponse &data)
+{
+    const auto items = json["properties"].toArray();
+    data.items.resize(items.count());
+    for (std::size_t i = 0; i < items.count(); i++)
+    {
+        parseVerticalBannerItem(items[i], data.items[i]);
     }
 }

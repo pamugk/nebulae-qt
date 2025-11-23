@@ -93,6 +93,18 @@ namespace api
         QString contentSourceType;
     };
 
+    struct StoreVerticalBannerItem
+    {
+        QString promoId;
+        QString title;
+        QString url;
+        QString backgroundImage;
+        QString color;
+        QString discount;
+        bool discountUpTo;
+        QDateTime promoEndDate;
+    };
+
     struct GetStoreAnnouncementSectionResponse
     {
         StoreBannerItem data;
@@ -102,6 +114,32 @@ namespace api
     {
         StoreDiscoverColumn columnLeft;
         StoreDiscoverColumn columnRight;
+    };
+
+    struct GetStoreHeroSectionResponse
+    {
+        QString theme;
+        QString title;
+        struct
+        {
+            QString link;
+            QString text;
+            QString anchor;
+        } button;
+        QString imageHash;
+        QDateTime endDate;
+        QString videoId;
+        QString subtitle;
+        QString sectionId;
+        QString description;
+        bool showCountdown;
+        struct
+        {
+            QString link;
+            QString text;
+            QString anchor;
+        } buttonSecondary;
+        bool showTopModLabel;
     };
 
     struct GetStoreHighlightsSectionResponse
@@ -159,7 +197,20 @@ namespace api
 
     struct GetStoreSectionsResponse
     {
+        struct
+        {
+            QString type;
+            QDateTime endDate;
+            QString pageUrl;
+            QString promoId;
+            QDateTime startDate;
+        } config;
         QVector<StoreSection> sections;
+    };
+
+    struct GetStoreVerticalBannerSectionResponse
+    {
+        QVector<StoreVerticalBannerItem> items;
     };
 }
 

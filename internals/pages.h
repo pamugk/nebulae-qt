@@ -5,7 +5,7 @@ enum Page
 {
     DISCOVER,
     RECENT,
-    STORE,
+    STORE_DYNAMIC_PAGE,
     ALL_GAMES,
     WISHLIST,
     ORDER_HISTORY,

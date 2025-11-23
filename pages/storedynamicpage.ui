@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StorePage</class>
- <widget class="QWidget" name="StorePage">
+ <class>StoreDynamicPage</class>
+ <widget class="QWidget" name="StoreDynamicPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -39,14 +39,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QStackedWidget" name="landingStackedWidget">
-     <widget class="QWidget" name="landingLoadingPage">
-      <layout class="QVBoxLayout" name="landingLoadingPageLayout">
+    <widget class="QStackedWidget" name="pageStackedWidget">
+     <widget class="QWidget" name="loadingPage">
+      <layout class="QVBoxLayout" name="loadingPageLayout">
        <item>
-        <widget class="QProgressBar" name="landingProgressBar">
-         <property name="minimum">
-          <number>0</number>
-         </property>
+        <widget class="QProgressBar" name="loadingProgressBar">
          <property name="maximum">
           <number>0</number>
          </property>
@@ -57,8 +54,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="landingResultPage">
-      <layout class="QVBoxLayout" name="landingResultPageLayout">
+     <widget class="QWidget" name="resultPage">
+      <layout class="QVBoxLayout" name="resultPageLayout">
        <property name="spacing">
         <number>0</number>
        </property>
@@ -75,20 +72,23 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QScrollArea" name="landingScrollArea">
+        <widget class="QScrollArea" name="resultScrollArea">
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="landingScrollAreaContents">
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <widget class="QWidget" name="resultScrollAreaContents">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>1160</width>
+            <height>600</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="landingScrollAreaContentsLayout">
+          <layout class="QVBoxLayout" name="resultScrollAreaContentsLayout">
            <property name="spacing">
             <number>16</number>
            </property>
@@ -110,7 +110,24 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="landingErrorPage"/>
+     <widget class="QWidget" name="errorPage"/>
+     <widget class="QWidget" name="expiredPage">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item alignment="Qt::AlignmentFlag::AlignVCenter">
+        <widget class="QLabel" name="expiredLabel">
+         <property name="text">
+          <string>Looks like this page is no more available. Please, go somewhere else.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

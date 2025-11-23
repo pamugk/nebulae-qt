@@ -34,25 +34,12 @@
 #include "../widgets/videoholder.h"
 #include "../windows/catalogproductmediadialog.h"
 
-CatalogProductPage::CatalogProductPage(QWidget *parent) :
-    StoreBasePage(Page::CATALOG_PRODUCT, parent),
-    averageRatingReply(nullptr),
-    averageOwnerRatingReply(nullptr),
-    backgroundReply(nullptr),
-    lastReviewsReply(nullptr),
-    logotypeReply(nullptr),
-    mainReply(nullptr),
-    ownedProductsReply(nullptr),
-    pricesReply(nullptr),
-    recommendedPurchasedTogetherReply(nullptr),
-    recommendedSimilarReply(nullptr),
+CatalogProductPage::CatalogProductPage(const NavigationDestination &destination, QWidget *parent) :
+    StoreBasePage(destination, parent),
     reviewFilters({ { "en-US", "ru-RU", "de-DE", "pl-PL", "fr-FR", "zh-Hans" } }),
     reviewsPage(1),
     reviewsPageSize(5),
     reviewsOrder({"votes", false}),
-    seriesGamesReply(nullptr),
-    seriesTotalPriceReply(nullptr),
-    wishlistReply(nullptr),
     ui(new Ui::CatalogProductPage)
 {
     ui->setupUi(this);
@@ -112,18 +99,6 @@ CatalogProductPage::CatalogProductPage(QWidget *parent) :
 
 CatalogProductPage::~CatalogProductPage()
 {
-    if (averageRatingReply != nullptr)
-    {
-        averageRatingReply->abort();
-    }
-    if (averageOwnerRatingReply != nullptr)
-    {
-        averageOwnerRatingReply->abort();
-    }
-    if (backgroundReply != nullptr)
-    {
-        backgroundReply->abort();
-    }
     for (QNetworkReply *dependentProductReply : std::as_const(dependentProductReplies))
     {
         if (dependentProductReply != nullptr)
@@ -131,52 +106,12 @@ CatalogProductPage::~CatalogProductPage()
             dependentProductReply->abort();
         }
     }
-    if (lastReviewsReply != nullptr)
-    {
-        lastReviewsReply->abort();
-    }
-    if (logotypeReply != nullptr)
-    {
-        logotypeReply->abort();
-    }
-    if (mainReply != nullptr)
-    {
-        mainReply->abort();
-    }
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (pricesReply != nullptr)
-    {
-        pricesReply->abort();
-    }
-    if (recommendedSimilarReply != nullptr)
-    {
-        recommendedSimilarReply->abort();
-    }
-    if (recommendedPurchasedTogetherReply != nullptr)
-    {
-        recommendedPurchasedTogetherReply->abort();
-    }
     for (QNetworkReply *requiredProductReply : std::as_const(requiredProductReplies))
     {
         if (requiredProductReply != nullptr)
         {
             requiredProductReply->abort();
         }
-    }
-    if (seriesGamesReply != nullptr)
-    {
-        seriesGamesReply->abort();
-    }
-    if (seriesTotalPriceReply != nullptr)
-    {
-        seriesTotalPriceReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
     }
     delete ui;
 }
@@ -230,15 +165,13 @@ void initializeSystemRequirements(QWidget *rootWidget, QGridLayout *grid, const 
 void CatalogProductPage::initialize(const QVariant &initialData)
 {
     id = initialData.toString();
-    averageRatingReply = apiClient->getProductAverageRating(id);
-    connect(averageRatingReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *averageRatingReply = apiClient->getProductAverageRating(id);
+    connect(this, &QObject::destroyed, averageRatingReply, &QNetworkReply::abort);
+    connect(averageRatingReply, &QNetworkReply::finished, this, [this, averageRatingReply]()
     {
-        auto networkReply = averageRatingReply;
-        averageRatingReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (averageRatingReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(averageRatingReply->readAll()).toUtf8()).object();
             api::GetRatingResponse data;
             parseRatingResponse(resultJson, data);
 
@@ -249,49 +182,45 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->ratingLabel->setVisible(true);
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (averageRatingReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << averageRatingReply->error()
+                     << averageRatingReply->errorString()
+                     << QString(averageRatingReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(averageRatingReply, &QNetworkReply::finished, averageRatingReply, &QNetworkReply::deleteLater);
 
-    averageOwnerRatingReply = apiClient->getProductAverageRating(id, "verified_owner");
-    connect(averageOwnerRatingReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *averageOwnerRatingReply = apiClient->getProductAverageRating(id, "verified_owner");
+    connect(this, &QObject::destroyed, averageOwnerRatingReply, &QNetworkReply::abort);
+    connect(averageOwnerRatingReply, &QNetworkReply::finished, this, [this, averageOwnerRatingReply]()
     {
-        auto networkReply = averageOwnerRatingReply;
-        averageOwnerRatingReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (averageOwnerRatingReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(averageOwnerRatingReply->readAll()).toUtf8()).object();
             api::GetRatingResponse data;
             parseRatingResponse(resultJson, data);
 
             ui->ownersRatingLabel->setText(QString("Verified owners rating: %1/5").arg(QString::number(data.value, 'g', 2)));
             ui->ownersRatingLabel->setVisible(true);
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (averageOwnerRatingReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << averageOwnerRatingReply->error()
+                     << averageOwnerRatingReply->errorString()
+                     << QString(averageOwnerRatingReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(averageOwnerRatingReply, &QNetworkReply::finished, averageOwnerRatingReply, &QNetworkReply::deleteLater);
 
     auto countryCode = QLocale::territoryToCode(QLocale::system().territory());
-    pricesReply = apiClient->getProductPrices(id, countryCode);
-    connect(pricesReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *pricesReply = apiClient->getProductPrices(id, countryCode);
+    connect(this, &QObject::destroyed, pricesReply, &QNetworkReply::abort);
+    connect(pricesReply, &QNetworkReply::finished, this, [this, pricesReply]()
     {
-        auto networkReply = pricesReply;
-        pricesReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (pricesReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(pricesReply->readAll()).toUtf8()).object();
             api::GetPricesResponse data;
             parseGetPricesResponse(resultJson, data);
             if (!data.prices.isEmpty())
@@ -319,69 +248,63 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->pricelabel->setVisible(true);
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (pricesReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+            qDebug() << pricesReply->error() << pricesReply->errorString() << QString(pricesReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(pricesReply, &QNetworkReply::finished, pricesReply, &QNetworkReply::deleteLater);
 
-    mainReply = apiClient->getCatalogProductInfo(id, QLocale::system().name(QLocale::TagSeparator::Dash));
-    connect(mainReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *mainReply = apiClient->getCatalogProductInfo(id, QLocale::system().name(QLocale::TagSeparator::Dash));
+    connect(this, &QObject::destroyed, mainReply, &QNetworkReply::abort);
+    connect(mainReply, &QNetworkReply::finished, this, [this, mainReply]()
     {
-        auto networkReply = mainReply;
-        mainReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (mainReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(mainReply->readAll()).toUtf8()).object();
             api::GetCatalogProductInfoResponse data;
             parseCatalogProductInfoResponse(resultJson, data);
 
             if (!data.galaxyBackgroundImageLink.isNull())
             {
-                backgroundReply = apiClient->getAnything(data.galaxyBackgroundImageLink);
-                connect(backgroundReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *backgroundReply = apiClient->getAnything(data.galaxyBackgroundImageLink);
+                connect(this, &QObject::destroyed, backgroundReply, &QNetworkReply::abort);
+                connect(backgroundReply, &QNetworkReply::finished, this, [this, backgroundReply]()
                 {
-                    auto networkReply = backgroundReply;
-                    backgroundReply = nullptr;
-
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (backgroundReply->error() == QNetworkReply::NoError)
                     {
-                        backgroundImage.loadFromData(networkReply->readAll());
+                        backgroundImage.loadFromData(backgroundReply->readAll());
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (backgroundReply->error() != QNetworkReply::OperationCanceledError)
                     {
-                        qDebug() << networkReply->error()
-                                 << networkReply->errorString()
-                                 << QString(networkReply->readAll()).toUtf8();
+                        qDebug() << backgroundReply->error()
+                                 << backgroundReply->errorString()
+                                 << QString(backgroundReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
                 });
+                connect(backgroundReply, &QNetworkReply::finished, backgroundReply, &QNetworkReply::deleteLater);
             }
 
             if (!data.logoLink.isNull())
             {
-                logotypeReply = apiClient->getAnything(data.logoLink);
-                connect(logotypeReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *logotypeReply = apiClient->getAnything(data.logoLink);
+                connect(this, &QObject::destroyed, logotypeReply, &QNetworkReply::abort);
+                connect(logotypeReply, &QNetworkReply::finished, this, [this, logotypeReply]()
                 {
-                    auto networkReply = logotypeReply;
-                    logotypeReply = nullptr;
-
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (logotypeReply->error() == QNetworkReply::NoError)
                     {
                         QPixmap logo;
-                        logo.loadFromData(networkReply->readAll());
+                        logo.loadFromData(logotypeReply->readAll());
                         ui->logotypeLabel->setPixmap(logo.scaled(480, 285, Qt::KeepAspectRatioByExpanding));
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (logotypeReply->error() != QNetworkReply::OperationCanceledError)
                     {
-                        qDebug() << networkReply->error()
-                                 << networkReply->errorString()
-                                 << QString(networkReply->readAll()).toUtf8();
+                        qDebug() << logotypeReply->error()
+                                 << logotypeReply->errorString()
+                                 << QString(logotypeReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
                 });
+                connect(logotypeReply, &QNetworkReply::finished, logotypeReply, &QNetworkReply::deleteLater);
             }
 
             QLocale systemLocale = QLocale::system();
@@ -779,7 +702,6 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                  << networkReply->errorString()
                                  << QString(networkReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
 
                     if (requiredProductsLeft == 0)
                     {
@@ -800,6 +722,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         ui->mainGameLabel->setVisible(ui->mainGameLayout->count() > 0);
                     }
                 });
+                connect(requiredProductReplies[mainPartIndex], &QNetworkReply::finished, requiredProductReplies[mainPartIndex], &QNetworkReply::deleteLater);
             }
 
             ui->dlcsLabel->setVisible(false);
@@ -827,7 +750,6 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                  << networkReply->errorString()
                                  << QString(networkReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
 
                     if (dependentProductsLeft == 0)
                     {
@@ -848,6 +770,7 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                         ui->dlcsLabel->setVisible(ui->dlcsLayout->count() > 0);
                     }
                 });
+                connect(dependentProductReplies[dlcIndex], &QNetworkReply::finished, dependentProductReplies[dlcIndex], &QNetworkReply::deleteLater);
             }
 
             if (data.series.name.isNull())
@@ -858,15 +781,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
             }
             else
             {
-                seriesGamesReply = apiClient->getSeriesGames(data.series.id);
-                connect(seriesGamesReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *seriesGamesReply = apiClient->getSeriesGames(data.series.id);
+                connect(this, &QObject::destroyed, seriesGamesReply, &QNetworkReply::abort);
+                connect(seriesGamesReply, &QNetworkReply::finished, this, [this, seriesGamesReply]()
                 {
-                    auto networkReply = seriesGamesReply;
-                    seriesGamesReply = nullptr;
-
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (seriesGamesReply->error() == QNetworkReply::NoError)
                     {
-                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        auto resultJson = QJsonDocument::fromJson(QString(seriesGamesReply->readAll()).toUtf8()).object();
                         api::GetSeriesGamesResponse data;
                         parseGetSeriesGamesResponse(resultJson, data);
 
@@ -877,7 +798,24 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             {
                                 count++;
                                 auto productItem = new SimpleProductItem(ui->seriesResultPage);
-                                productItem->setCover(item.imageLink, apiClient);
+                                QNetworkReply *coverReply = apiClient->getAnything(item.imageLink);
+                                connect(productItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                                connect(coverReply, &QNetworkReply::finished, productItem, [productItem, coverReply]()
+                                        {
+                                            if (coverReply->error() == QNetworkReply::NoError)
+                                            {
+                                                QPixmap image;
+                                                image.loadFromData(coverReply->readAll());
+                                                productItem->setCover(image);
+                                            }
+                                            else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                            {
+                                                qDebug() << coverReply->error()
+                                                << coverReply->errorString()
+                                                << QString(coverReply->readAll()).toUtf8();
+                                            }
+                                        });
+                                connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
                                 productItem->setTitle(item.title);
 
                                 connect(this, &CatalogProductPage::ownedProductsChanged,
@@ -910,24 +848,22 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                                                  .arg(count));
                         ui->seriesStackedWidget->setCurrentWidget(ui->seriesResultPage);
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (seriesGamesReply->error() != QNetworkReply::OperationCanceledError)
                     {
-                        qDebug() << networkReply->error()
-                                 << networkReply->errorString()
-                                 << QString(networkReply->readAll()).toUtf8();
+                        qDebug() << seriesGamesReply->error()
+                                 << seriesGamesReply->errorString()
+                                 << QString(seriesGamesReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
                 });
+                connect(seriesGamesReply, &QNetworkReply::finished, seriesGamesReply, &QNetworkReply::deleteLater);
 
-                seriesTotalPriceReply = apiClient->getSeriesPrices(data.series.id, countryCode, currencyCode);
-                connect(seriesTotalPriceReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *seriesTotalPriceReply = apiClient->getSeriesPrices(data.series.id, countryCode, currencyCode);
+                connect(this, &QObject::destroyed, seriesTotalPriceReply, &QNetworkReply::abort);
+                connect(seriesTotalPriceReply, &QNetworkReply::finished, this, [this, seriesTotalPriceReply]()
                 {
-                    auto networkReply = seriesTotalPriceReply;
-                    seriesTotalPriceReply = nullptr;
-
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (seriesTotalPriceReply->error() == QNetworkReply::NoError)
                     {
-                        auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                        auto resultJson = QJsonDocument::fromJson(QString(seriesTotalPriceReply->readAll()).toUtf8()).object();
                         api::GetPricesResponse data;
                         parseGetPricesResponse(resultJson, data);
 
@@ -942,31 +878,48 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                             ui->seriesBuyButton->setVisible(true);
                         }
                     }
-                    else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                    else if (seriesTotalPriceReply->error() != QNetworkReply::OperationCanceledError)
                     {
-                        qDebug() << networkReply->error()
-                                 << networkReply->errorString()
-                                 << QString(networkReply->readAll()).toUtf8();
+                        qDebug() << seriesTotalPriceReply->error()
+                                 << seriesTotalPriceReply->errorString()
+                                 << QString(seriesTotalPriceReply->readAll()).toUtf8();
                     }
-                    networkReply->deleteLater();
                 });
+                connect(seriesTotalPriceReply, &QNetworkReply::finished, seriesTotalPriceReply, &QNetworkReply::deleteLater);
             }
-            recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
-            connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this]()
-            {
-                auto networkReply = recommendedPurchasedTogetherReply;
-                recommendedPurchasedTogetherReply = nullptr;
 
-                if (networkReply->error() == QNetworkReply::NoError)
+            QNetworkReply *recommendedPurchasedTogetherReply = apiClient->getProductRecommendationsPurchasedTogether(id, countryCode, currencyCode, 8);
+            connect(this, &QObject::destroyed, recommendedPurchasedTogetherReply, &QNetworkReply::abort);
+            connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, this, [this, recommendedPurchasedTogetherReply]()
+            {
+                if (recommendedPurchasedTogetherReply->error() == QNetworkReply::NoError)
                 {
-                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    auto resultJson = QJsonDocument::fromJson(QString(recommendedPurchasedTogetherReply->readAll()).toUtf8()).object();
                     api::GetRecommendationsResponse data;
                     parseRecommendationsResponse(resultJson, data);
 
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
                         auto recommendationItem = new SimpleProductItem(ui->purchasedTogetherResultPage);
-                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(recommendation.details.imageHorizontalUrl);
+                        connect(recommendationItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, recommendationItem, [recommendationItem, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        recommendationItem->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
                         {
@@ -1003,29 +956,46 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     }
                     ui->purchasedTogetherStackedWidget->setCurrentWidget(ui->purchasedTogetherResultPage);
                 }
-                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                else if (recommendedPurchasedTogetherReply->error() != QNetworkReply::OperationCanceledError)
                 {
                     ui->purchasedTogetherLabel->setVisible(false);
                     ui->purchasedTogetherStackedWidget->setVisible(false);
                 }
-                networkReply->deleteLater();
             });
-            recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
-            connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this]()
-            {
-                auto networkReply = recommendedSimilarReply;
-                recommendedSimilarReply = nullptr;
+            connect(recommendedPurchasedTogetherReply, &QNetworkReply::finished, recommendedPurchasedTogetherReply, &QNetworkReply::deleteLater);
 
-                if (networkReply->error() == QNetworkReply::NoError)
+            QNetworkReply *recommendedSimilarReply = apiClient->getProductRecommendationsSimilar(id, countryCode, currencyCode, 8);
+            connect(this, &QObject::destroyed, recommendedSimilarReply, &QNetworkReply::abort);
+            connect(recommendedSimilarReply, &QNetworkReply::finished, this, [this, recommendedSimilarReply]()
+            {
+                if (recommendedSimilarReply->error() == QNetworkReply::NoError)
                 {
-                    auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                    auto resultJson = QJsonDocument::fromJson(QString(recommendedSimilarReply->readAll()).toUtf8()).object();
                     api::GetRecommendationsResponse data;
                     parseRecommendationsResponse(resultJson, data);
 
                     for (const api::Recommendation &recommendation : std::as_const(data.products))
                     {
                         auto recommendationItem = new SimpleProductItem(ui->similarProductsResultPage);
-                        recommendationItem->setCover(recommendation.details.imageHorizontalUrl, apiClient);
+                        QNetworkReply *coverReply = apiClient->getAnything(recommendation.details.imageHorizontalUrl);
+                        connect(recommendationItem, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, recommendationItem, [recommendationItem, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        recommendationItem->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+
                         recommendationItem->setTitle(recommendation.details.title);
                         if (recommendation.pricing.priceSet)
                         {
@@ -1062,13 +1032,13 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                     }
                     ui->similarProductsStackedWidget->setCurrentWidget(ui->similarProductsResultPage);
                 }
-                else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+                else if (recommendedSimilarReply->error() != QNetworkReply::OperationCanceledError)
                 {
                     ui->similarProductsLabel->setVisible(false);
                     ui->similarProductsStackedWidget->setVisible(false);
                 }
-                networkReply->deleteLater();
             });
+            connect(recommendedSimilarReply, &QNetworkReply::finished, recommendedSimilarReply, &QNetworkReply::deleteLater);
 
             ui->descriptionView->setHtml("<style>body{max-width:100%;}img{max-width:100%;}</style>" + data.description);
             ui->featuresLabel->setText(data.featuresDescription);
@@ -1089,14 +1059,14 @@ void CatalogProductPage::initialize(const QVariant &initialData)
                 ui->contentStack->setCurrentWidget(ui->mainPage);
             }
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (mainReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << mainReply->error()
+                     << mainReply->errorString()
+                     << QString(mainReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(mainReply, &QNetworkReply::finished, mainReply, &QNetworkReply::deleteLater);
 }
 
 void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
@@ -1107,24 +1077,18 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
     ui->wishlistButton->setEnabled(authenticated);
     ui->wishlistButton->setVisible(true);
 
-    if (ownedProductsReply != nullptr)
-    {
-        ownedProductsReply->abort();
-    }
-    if (wishlistReply != nullptr)
-    {
-        wishlistReply->abort();
-    }
+    emit authenticationStateChanged();
+
     if (authenticated)
     {
-        ownedProductsReply = apiClient->getOwnedLicensesIds();
-        connect(ownedProductsReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *ownedProductsReply = apiClient->getOwnedLicensesIds();
+        connect(this, &QObject::destroyed, ownedProductsReply, &QNetworkReply::abort);
+        connect(this, &CatalogProductPage::authenticationStateChanged, ownedProductsReply, &QNetworkReply::abort);
+        connect(ownedProductsReply, &QNetworkReply::finished, this, [this, ownedProductsReply]()
         {
-            auto networkReply = ownedProductsReply;
-            ownedProductsReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (ownedProductsReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(ownedProductsReply->readAll()).toUtf8());
                 auto ownedProducts = resultJson.toVariant().toList();
                 for (const QVariant &id : std::as_const(ownedProducts))
                 {
@@ -1140,23 +1104,23 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                 }
                 emit ownedProductsChanged(this->ownedProducts);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (ownedProductsReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << ownedProductsReply->error()
+                         << ownedProductsReply->errorString()
+                         << QString(ownedProductsReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
-        wishlistReply = apiClient->getWishlistIds();
-        connect(wishlistReply, &QNetworkReply::finished, this, [this]()
+        connect(ownedProductsReply, &QNetworkReply::finished, ownedProductsReply, &QNetworkReply::deleteLater);
+
+        QNetworkReply *wishlistReply = apiClient->getWishlistIds();
+        connect(this, &QObject::destroyed, wishlistReply, &QNetworkReply::abort);
+        connect(this, &CatalogProductPage::authenticationStateChanged, wishlistReply, &QNetworkReply::abort);
+        connect(wishlistReply, &QNetworkReply::finished, this, [this, wishlistReply]()
         {
-            auto networkReply = wishlistReply;
-            wishlistReply = nullptr;
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (wishlistReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8());
+                auto resultJson = QJsonDocument::fromJson(QString(wishlistReply->readAll()).toUtf8());
                 auto wishlistedItems = resultJson["wishlist"].toObject();
                 for (const QString &key : wishlistedItems.keys())
                 {
@@ -1168,15 +1132,14 @@ void CatalogProductPage::switchUiAuthenticatedState(bool authenticated)
                 ui->wishlistButton->setChecked(wishlist.contains(id));
                 emit wishlistChanged(wishlist);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (wishlistReply->error() != QNetworkReply::OperationCanceledError)
             {
-                qDebug() << networkReply->error()
-                         << networkReply->errorString()
-                         << QString(networkReply->readAll()).toUtf8();
+                qDebug() << wishlistReply->error()
+                         << wishlistReply->errorString()
+                         << QString(wishlistReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(wishlistReply, &QNetworkReply::finished, wishlistReply, &QNetworkReply::deleteLater);
     }
     else
     {
@@ -1336,10 +1299,7 @@ void CatalogProductPage::initializeUserReviewsFilters()
 void CatalogProductPage::updateUserReviews()
 {
     ui->userReviewsStackedWidget->setCurrentWidget(ui->userReviewsLoaderPage);
-    if (lastReviewsReply != nullptr)
-    {
-        lastReviewsReply->abort();
-    }
+    emit updatingReviews();
     while (!ui->userReviewsContentsLayout->isEmpty())
     {
         auto item = ui->userReviewsContentsLayout->itemAt(0);
@@ -1348,15 +1308,14 @@ void CatalogProductPage::updateUserReviews()
         delete item;
     }
 
-    lastReviewsReply = apiClient->getProductReviews(id, reviewFilters, reviewsOrder, reviewsPageSize, reviewsPage);
-    connect(lastReviewsReply, &QNetworkReply::finished, this, [this]()
+    QNetworkReply *lastReviewsReply = apiClient->getProductReviews(id, reviewFilters, reviewsOrder, reviewsPageSize, reviewsPage);
+    connect(this, &QObject::destroyed, lastReviewsReply, &QNetworkReply::abort);
+    connect(this, &CatalogProductPage::updatingReviews, lastReviewsReply, &QNetworkReply::abort);
+    connect(lastReviewsReply, &QNetworkReply::finished, this, [this, lastReviewsReply]()
     {
-        auto networkReply = lastReviewsReply;
-        lastReviewsReply = nullptr;
-
-        if (networkReply->error() == QNetworkReply::NoError)
+        if (lastReviewsReply->error() == QNetworkReply::NoError)
         {
-            auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+            auto resultJson = QJsonDocument::fromJson(QString(lastReviewsReply->readAll()).toUtf8()).object();
             api::GetReviewsResponse data;
             parseReviewsResponse(resultJson, data);
 
@@ -1384,14 +1343,14 @@ void CatalogProductPage::updateUserReviews()
             emit userReviewsResultsUpdated(data.page, data.pages);
             ui->userReviewsStackedWidget->setVisible(data.reviewable);
         }
-        else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+        else if (lastReviewsReply->error() != QNetworkReply::OperationCanceledError)
         {
-            qDebug() << networkReply->error()
-                     << networkReply->errorString()
-                     << QString(networkReply->readAll()).toUtf8();
+            qDebug() << lastReviewsReply->error()
+                     << lastReviewsReply->errorString()
+                     << QString(lastReviewsReply->readAll()).toUtf8();
         }
-        networkReply->deleteLater();
     });
+    connect(lastReviewsReply, &QNetworkReply::finished, lastReviewsReply, &QNetworkReply::deleteLater);
 }
 
 void CatalogProductPage::changeUserReviewsPage(unsigned short page)

@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Gui NetworkAuth Sql SvgWidgets WebEngineWidgets Widgets LinguistTools)
@@ -93,7 +93,7 @@ set(PROJECT_SOURCES
         pages/ownedgamespage.h pages/ownedgamespage.cpp pages/ownedgamespage.ui
         pages/releasepage.h pages/releasepage.cpp pages/releasepage.ui
         pages/storebasepage.h pages/storebasepage.cpp
-        pages/storepage.h pages/storepage.cpp pages/storepage.ui
+        pages/storedynamicpage.h pages/storedynamicpage.cpp pages/storedynamicpage.ui
         pages/wishlistpage.h pages/wishlistpage.cpp pages/wishlistpage.ui
 
         widgets/achievementlistitem.h widgets/achievementlistitem.cpp widgets/achievementlistitem.ui
@@ -114,7 +114,9 @@ set(PROJECT_SOURCES
         widgets/pagination.h widgets/pagination.cpp widgets/pagination.ui
         widgets/reviewitem.h widgets/reviewitem.cpp widgets/reviewitem.ui
         widgets/simpleproductitem.h widgets/simpleproductitem.cpp widgets/simpleproductitem.ui
+        widgets/storecatalogsection.h widgets/storecatalogsection.cpp widgets/storecatalogsection.ui
         widgets/storediscoveritem.h widgets/storediscoveritem.cpp widgets/storediscoveritem.ui
+        widgets/storeherobanner.h widgets/storeherobanner.cpp widgets/storeherobanner.ui
         widgets/storehighlightsitem.h widgets/storehighlightsitem.cpp widgets/storehighlightsitem.ui
         widgets/storegridtile.h widgets/storegridtile.cpp widgets/storegridtile.ui
         widgets/storelistitem.h widgets/storelistitem.cpp widgets/storelistitem.ui

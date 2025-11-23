@@ -20,7 +20,7 @@
 #include "../pages/orderspage.h"
 #include "../pages/releasepage.h"
 #include "../pages/ownedgamespage.h"
-#include "../pages/storepage.h"
+#include "../pages/storedynamicpage.h"
 #include "../pages/wishlistpage.h"
 
 MainWindow::MainWindow(api::GogApiClient *apiClient,
@@ -30,9 +30,7 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
     , ui(new Ui::MainWindow),
       apiClient(apiClient),
       initialized(false),
-      settingsManager(settingsManager),
-      userAvatarReply(nullptr),
-      userReply(nullptr)
+      settingsManager(settingsManager)
 {
     ui->setupUi(this);
 
@@ -137,23 +135,15 @@ MainWindow::MainWindow(api::GogApiClient *apiClient,
     connect(logoutAction, &QAction::triggered, apiClient, &api::GogApiClient::logout);
     ui->userToolButton->setMenu(userMenu);
 
-    NavigationDestination startDestination = NavigationDestination { Page::STORE };
+    NavigationDestination startDestination = NavigationDestination { Page::STORE_DYNAMIC_PAGE, QLatin1StringView("/") };
     QWidget *startPage = initializePage(startDestination);
     navigationHistory.push(startDestination);
-    updateCheckedDrawerDestination(startDestination.page);
+    updateCheckedDrawerDestination(startDestination);
     ui->scaffoldLayout->addWidget(startPage, 1, 1);
 }
 
 MainWindow::~MainWindow()
 {
-    if (userAvatarReply != nullptr)
-    {
-        userAvatarReply->abort();
-    }
-    if (userReply != nullptr)
-    {
-        userReply->abort();
-    }
     delete ui;
 }
 
@@ -165,17 +155,17 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
         break;
     case RECENT:
         break;
-    case STORE:
-        page = new StorePage(ui->scaffold);
+    case STORE_DYNAMIC_PAGE:
+        page = new StoreDynamicPage(destination, ui->scaffold);
         break;
     case ALL_GAMES:
-        page = new AllGamesPage(ui->scaffold);
+        page = new AllGamesPage(destination, ui->scaffold);
         break;
     case WISHLIST:
-        page = new WishlistPage(ui->scaffold);
+        page = new WishlistPage(destination, ui->scaffold);
         break;
     case ORDER_HISTORY:
-        page = new OrdersPage(ui->scaffold);
+        page = new OrdersPage(destination, ui->scaffold);
         break;
     case OWNED_GAMES:
         page = new OwnedGamesPage(ui->scaffold);
@@ -185,13 +175,13 @@ QWidget *MainWindow::initializePage(const NavigationDestination &destination)
     case FRIENDS:
         break;
     case CATALOG_PRODUCT:
-        page = new CatalogProductPage(ui->scaffold);
+        page = new CatalogProductPage(destination, ui->scaffold);
         break;
     case RELEASE:
         page = new ReleasePage(ui->scaffold);
         break;
     case NEWS:
-        page = new NewsPage(ui->scaffold);
+        page = new NewsPage(destination, ui->scaffold);
     case DEALS:
         break;
     case CART:
@@ -226,59 +216,56 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
 {
     ui->loginButton->setVisible(!authenticated);
     ui->userToolButton->setVisible(authenticated);
-    if (userAvatarReply != nullptr)
-    {
-        userAvatarReply->abort();
-    }
-    if (userReply != nullptr)
-    {
-        userReply->abort();
-    }
+    emit authenticationStateChanged();
     if (authenticated)
     {
-        userReply = apiClient->getCurrentUser();
-        connect(userReply, &QNetworkReply::finished, this, [this]()
+        QNetworkReply *userReply = apiClient->getCurrentUser();
+        connect(this, &QObject::destroyed, userReply, &QNetworkReply::abort);
+        connect(this, &MainWindow::authenticationStateChanged, userReply, &QNetworkReply::abort);
+        connect(userReply, &QNetworkReply::finished, this, [this, userReply]()
         {
-            auto networkReply = userReply;
-            userReply = nullptr;
             auto userInfo = static_cast<QWidgetAction *>(ui->userToolButton->menu()->actions()[0])->defaultWidget();
             auto userInfoLayout = static_cast<QGridLayout *>(userInfo->layout());
             auto userNameLabel = static_cast<QLabel *>(userInfoLayout->itemAtPosition(0, 1)->widget());
-            if (networkReply->error() == QNetworkReply::NoError)
+            if (userReply->error() == QNetworkReply::NoError)
             {
-                auto resultJson = QJsonDocument::fromJson(QString(networkReply->readAll()).toUtf8()).object();
+                auto resultJson = QJsonDocument::fromJson(QString(userReply->readAll()).toUtf8()).object();
                 api::UserFullData data;
                 parseUserFullData(resultJson, data);
 
                 userNameLabel->setText(data.username);
-                userAvatarReply = apiClient->getAnything(QString("https://images.gog.com/%1_avm.webp").arg(data.avatar.gogImageId));
-                connect(userAvatarReply, &QNetworkReply::finished, this, [this]()
+                QNetworkReply *userAvatarReply = apiClient->getAnything(QString("https://images.gog.com/%1_avm.webp").arg(data.avatar.gogImageId));
+                connect(this, &QObject::destroyed, userAvatarReply, &QNetworkReply::abort);
+                connect(this, &MainWindow::authenticationStateChanged, userAvatarReply, &QNetworkReply::abort);
+                connect(userAvatarReply, &QNetworkReply::finished, this, [this, userAvatarReply]()
                 {
-                    auto networkReply = userAvatarReply;
-                    userAvatarReply = nullptr;
-                    if (networkReply->error() == QNetworkReply::NoError)
+                    if (userAvatarReply->error() == QNetworkReply::NoError)
                     {
                         auto userInfo = static_cast<QWidgetAction *>(ui->userToolButton->menu()->actions()[0])->defaultWidget();
                         auto userInfoLayout = static_cast<QGridLayout *>(userInfo->layout());
                         auto userInfoAvatarLabel = static_cast<QLabel *>(userInfoLayout->itemAtPosition(0, 0)->widget());
 
                         QPixmap avatar;
-                        avatar.loadFromData(networkReply->readAll());
+                        avatar.loadFromData(userAvatarReply->readAll());
                         userInfoAvatarLabel->setPixmap(avatar.scaled(userInfoAvatarLabel->size()));
                         ui->userToolButton->setIcon(QIcon(avatar.scaled(ui->userToolButton->size())));
                     }
-
-                    networkReply->deleteLater();
+                    else if (userAvatarReply->error() != QNetworkReply::OperationCanceledError)
+                    {
+                        qDebug() << userAvatarReply->error()
+                                 << userAvatarReply->errorString()
+                                 << QString(userAvatarReply->readAll()).toUtf8();
+                    }
                 });
+                connect(userAvatarReply, &QNetworkReply::finished, userAvatarReply, &QNetworkReply::deleteLater);
             }
-            else if (networkReply->error() != QNetworkReply::OperationCanceledError)
+            else if (userReply->error() != QNetworkReply::OperationCanceledError)
             {
                 userNameLabel->setText("User login not loaded");
-                qDebug() << networkReply->error() << networkReply->errorString() << QString(networkReply->readAll()).toUtf8();
+                qDebug() << userReply->error() << userReply->errorString() << QString(userReply->readAll()).toUtf8();
             }
-
-            networkReply->deleteLater();
         });
+        connect(userReply, &QNetworkReply::finished, userReply, &QNetworkReply::deleteLater);
     }
     else if (initialized)
     {
@@ -305,19 +292,20 @@ void MainWindow::switchUiAuthenticatedState(bool authenticated)
     initialized = true;
 }
 
-void MainWindow::updateCheckedDrawerDestination(Page currentPage)
+void MainWindow::updateCheckedDrawerDestination(const NavigationDestination &destination)
 {
-    ui->discoverButton->setChecked(currentPage == Page::DISCOVER);
-    ui->recentButton->setChecked(currentPage == Page::RECENT);
-    ui->storeButton->setChecked(currentPage == Page::STORE || currentPage == Page::NEWS);
-    ui->allGamesButton->setChecked(currentPage == Page::ALL_GAMES);
-    ui->dealsButton->setChecked(currentPage == Page::DEALS);
-    ui->wishlistButton->setChecked(currentPage == Page::WISHLIST);
-    ui->cartButton->setChecked(currentPage == Page::DEALS);
-    ui->ordersButton->setChecked(currentPage == Page::ORDER_HISTORY);
-    ui->libraryButton->setChecked(currentPage == Page::OWNED_GAMES);
-    ui->installedButton->setChecked(currentPage == Page::INSTALLED_GAMES);
-    ui->friendsButton->setChecked(currentPage == Page::FRIENDS);
+    ui->discoverButton->setChecked(destination.page == Page::DISCOVER);
+    ui->recentButton->setChecked(destination.page == Page::RECENT);
+    ui->storeButton->setChecked(destination.page == Page::STORE_DYNAMIC_PAGE && destination.parameters == QLatin1StringView("/")
+                                || destination.page == Page::NEWS);
+    ui->allGamesButton->setChecked(destination.page == Page::ALL_GAMES);
+    ui->dealsButton->setChecked(destination.page == Page::DEALS);
+    ui->wishlistButton->setChecked(destination.page == Page::WISHLIST);
+    ui->cartButton->setChecked(destination.page == Page::DEALS);
+    ui->ordersButton->setChecked(destination.page == Page::ORDER_HISTORY);
+    ui->libraryButton->setChecked(destination.page == Page::OWNED_GAMES);
+    ui->installedButton->setChecked(destination.page == Page::INSTALLED_GAMES);
+    ui->friendsButton->setChecked(destination.page == Page::FRIENDS);
 }
 
 void MainWindow::navigate(NavigationDestination destination)
@@ -339,7 +327,7 @@ void MainWindow::navigate(NavigationDestination destination)
         navigationHistoryReplay.clear();
         ui->navigateBackButton->setEnabled(true);
         ui->navigateForwardButton->setEnabled(false);
-        updateCheckedDrawerDestination(destination.page);
+        updateCheckedDrawerDestination(destination);
     }
 }
 
@@ -355,7 +343,7 @@ void MainWindow::navigateBack()
     navigationHistoryReplay.push(poppedDestination);
     ui->navigateBackButton->setEnabled(navigationHistory.size() > 1);
     ui->navigateForwardButton->setEnabled(true);
-    updateCheckedDrawerDestination(navigationHistory.top().page);
+    updateCheckedDrawerDestination(navigationHistory.top());
 }
 
 void MainWindow::navigateForward()
@@ -370,7 +358,7 @@ void MainWindow::navigateForward()
     navigationHistory.push(pushedDestination);
     ui->navigateBackButton->setEnabled(true);
     ui->navigateForwardButton->setEnabled(navigationHistoryReplay.size() > 0);
-    updateCheckedDrawerDestination(pushedDestination.page);
+    updateCheckedDrawerDestination(pushedDestination);
 }
 
 void MainWindow::on_discoverButton_clicked()
@@ -385,7 +373,7 @@ void MainWindow::on_recentButton_clicked()
 
 void MainWindow::on_storeButton_clicked()
 {
-    navigate(NavigationDestination { Page::STORE });
+    navigate(NavigationDestination { Page::STORE_DYNAMIC_PAGE, QLatin1StringView("/") });
 }
 
 void MainWindow::on_allGamesButton_clicked()

@@ -3,7 +3,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-StoreBasePage::StoreBasePage(Page page, QWidget *parent)
+StoreBasePage::StoreBasePage(const NavigationDestination &destination, QWidget *parent)
     : BasePage(parent)
 {
     auto navigationActionSet = new QWidget(this);
@@ -15,7 +15,7 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
     storeNavigationButton->setFlat(true);
     connect(storeNavigationButton, &QPushButton::clicked, this, [this]()
     {
-        emit navigate({ Page::STORE });
+        emit navigate({ Page::STORE_DYNAMIC_PAGE, QLatin1StringView("/") });
     });
     navigationActionSet->layout()->addWidget(storeNavigationButton);
     auto allGamesNavigationButton = new QPushButton("All games", navigationActionSet);
@@ -39,19 +39,24 @@ StoreBasePage::StoreBasePage(Page page, QWidget *parent)
         emit navigate({ Page::ORDER_HISTORY });
     });
     navigationActionSet->layout()->addWidget(ordersNavigationButton);
-    switch (page)
+    switch (destination.page)
     {
-    case Page::STORE:
-        storeNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+    case Page::STORE_DYNAMIC_PAGE:
+    {
+        if (destination.parameters == QLatin1StringView("/"))
+        {
+            storeNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
+        }
         break;
+    }
     case Page::ALL_GAMES:
-        allGamesNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        allGamesNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     case Page::WISHLIST:
-        wishlistNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        wishlistNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     case Page::ORDER_HISTORY:
-        ordersNavigationButton->setStyleSheet("color: rgb(172, 59, 176);");
+        ordersNavigationButton->setStyleSheet(QLatin1StringView("color: rgb(172, 59, 176);"));
         break;
     default:
         break;

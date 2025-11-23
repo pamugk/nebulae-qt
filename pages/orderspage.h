@@ -15,7 +15,7 @@ class OrdersPage : public StoreBasePage
     Q_OBJECT
 
 public:
-    explicit OrdersPage(QWidget *parent = nullptr);
+    explicit OrdersPage(const NavigationDestination &destination, QWidget *parent = nullptr);
     ~OrdersPage();
 
     virtual void setApiClient(api::GogApiClient *apiClient) override;
@@ -27,9 +27,9 @@ private:
     Pagination *paginator;
     Ui::OrdersPage *ui;
 
-    QNetworkReply *ordersReply;
-
     void fetchData();
+
+    Q_SIGNAL void updatingData();
 
 public slots:
     virtual void initialize(const QVariant &data) override;

@@ -508,7 +508,7 @@ QNetworkReply *api::GogApiClient::getSeriesPrices(unsigned long long seriesId,
     return client.get(request);
 }
 
-QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
+QNetworkReply *api::GogApiClient::getStoreSection(const QString &pageHex, const QString &id, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
     QUrlQuery parameters(
     {
@@ -516,14 +516,14 @@ QNetworkReply *api::GogApiClient::getStoreSection(const QString &id, const QStri
         std::pair(QLatin1StringView("countryCode"), countryCode),
         std::pair(QLatin1StringView("currencyCode"), currencyCode),
     });
-    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f/sections/%1").arg(id));
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/%1/sections/%2").arg(pageHex, id));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);
     return client.get(request);
 }
 
-QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const QString &countryCode, const QString &currencyCode)
+QNetworkReply *api::GogApiClient::getStoreSections(const QString &pageHex, const QString &locale, const QString &countryCode, const QString &currencyCode)
 {
     QUrlQuery parameters(
     {
@@ -531,7 +531,7 @@ QNetworkReply *api::GogApiClient::getStoreSections(const QString &locale, const 
         std::pair(QLatin1StringView("countryCode"), countryCode),
         std::pair(QLatin1StringView("currencyCode"), currencyCode),
     });
-    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/2f"));
+    QUrl url(QLatin1StringView("https://sections.gog.com/v1/pages/%1").arg(pageHex));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);
@@ -612,7 +612,18 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         parameters.addQueryItem(QLatin1StringView("publishers"), QLatin1StringView("in:") + filter.publishers.join(','));
     }
-    parameters.addQueryItem(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field));
+    if (!filter.pageId.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("pageId"), filter.pageId);
+    }
+    if (!filter.sectionId.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("sectionId"), filter.sectionId);
+    }
+    if (!order.field.isEmpty())
+    {
+        parameters.addQueryItem(QLatin1StringView("order"), QLatin1StringView("%1:%2").arg(QLatin1StringView(order.ascending ? "asc" : "desc"), order.field));
+    }
     if (!filter.genres.isEmpty())
     {
         parameters.addQueryItem(QLatin1StringView("genres"), QLatin1StringView("in:") + filter.genres.join(','));
@@ -678,7 +689,7 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     parameters.addQueryItem(QLatin1StringView("locale"), locale);
     parameters.addQueryItem(QLatin1StringView("currencyCode"), currencyCode);
 
-    QUrl url(QLatin1StringView("https://catalog.gog.com/v1/catalog"));
+    QUrl url(QLatin1StringView(filter.pageId.isEmpty() ? "https://catalog.gog.com/v1/catalog" : "https://catalog.gog.com/v1/filtered-catalog"));
     url.setQuery(parameters);
     QNetworkRequest request = api.createRequest();
     request.setUrl(url);
