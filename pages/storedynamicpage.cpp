@@ -579,7 +579,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                         }
                     });
                     QString url = data.image;
-                    QNetworkReply *backgroundReply = apiClient->getAnything(url.replace(".jpg", "_promo_banner_background_1096x215.webp"));
+                    QNetworkReply *backgroundReply = apiClient->getAnything(url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_promo_banner_background_1096x215.webp")));
                     connect(promoBannerWidget, &StorePromoBanner::destroyed, backgroundReply, &QNetworkReply::abort);
                     connect(backgroundReply, &QNetworkReply::finished, promoBannerWidget, [promoBannerWidget, backgroundReply]()
                     {
@@ -672,7 +672,7 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     if (!data.data.logo.isEmpty())
                     {
                         QString url = data.data.logo;
-                        QNetworkReply *logoReply = apiClient->getAnything(url.replace(".jpg", "_big_spot_logo_460x285.webp"));
+                        QNetworkReply *logoReply = apiClient->getAnything(url.replace(QLatin1StringView(".jpg"), QLatin1StringView("_big_spot_logo_460x285.webp")));
                         connect(announcementWidget, &StoreHighlightsItem::destroyed, logoReply, &QNetworkReply::abort);
                         connect(logoReply, &QNetworkReply::finished, announcementWidget, [announcementWidget, logoReply]()
                         {
@@ -1320,7 +1320,13 @@ void StoreDynamicPage::getSections()
                     anchors[QLatin1StringView("Catalog")] = catalogSection;
                     ui->resultScrollAreaContentsLayout->addWidget(catalogSection);
 
-                    catalogSection->initialize(QMap<QString, QVariant>({ std::pair(QLatin1StringView("pageId"), pathHex), std::pair(QLatin1StringView("sectionId"), section.id) }), apiClient, true);
+                    QMap<QString, QVariant> catalogInitialFilters(
+                    {
+                        std::pair(QLatin1StringView("goodOldGames"), path == QLatin1StringView("/gog-preservation-program")),
+                        std::pair(QLatin1StringView("pageId"), pathHex),
+                        std::pair(QLatin1StringView("sectionId"), section.id)
+                    });
+                    catalogSection->initialize(catalogInitialFilters, apiClient, true);
                 }
             }
             ui->resultScrollAreaContentsLayout->addStretch();
@@ -1340,7 +1346,8 @@ void StoreDynamicPage::getSections()
 
 void StoreDynamicPage::initialize(const QVariant &data)
 {
-    pathHex = QString(data.toString().toLatin1().toHex());
+    path = data.toString();
+    pathHex = QString(path.toLatin1().toHex());
     getSections();
 }
 

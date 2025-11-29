@@ -32,23 +32,30 @@ StoreCatalogSection::StoreCatalogSection(QWidget *parent) :
     currentSortOrder = 0;
     orders =
     {
-        api::SortOrder{"trending", false},
-        api::SortOrder{"bestselling", false},
-        api::SortOrder{"price", true},
-        api::SortOrder{"price", false},
-        api::SortOrder{"discount", false},
-        api::SortOrder{"title", true},
-        api::SortOrder{"title", false},
-        api::SortOrder{"releaseDate", false},
-        api::SortOrder{"releaseDate", true},
-        api::SortOrder{"reviewsRating", false}
+        api::SortOrder{QLatin1StringView("trending"), false},
+        api::SortOrder{QLatin1StringView("bestselling"), false},
+        api::SortOrder{QLatin1StringView("price"), true},
+        api::SortOrder{QLatin1StringView("price"), false},
+        api::SortOrder{QLatin1StringView("discount"), false},
+        api::SortOrder{QLatin1StringView("title"), true},
+        api::SortOrder{QLatin1StringView("title"), false},
+        api::SortOrder{QLatin1StringView("releaseDate"), false},
+        api::SortOrder{QLatin1StringView("releaseDate"), true},
+        api::SortOrder{QLatin1StringView("reviewsRating"), false}
     };
 
+    filter.goodOldGames = false;
     filter.free = false;
     filter.discounted = false;
     filter.hideOwned = false;
     filter.onlyWishlisted = false;
-    filter.productTypes = QStringList({"game","pack","dlc","extras"});
+    filter.productTypes = QStringList(
+    {
+        QLatin1StringView("game"),
+        QLatin1StringView("pack"),
+        QLatin1StringView("dlc"),
+        QLatin1StringView("extras")
+    });
 
     ui->appliedFiltersHolder->setLayout(new FlowLayout(ui->appliedFiltersHolder, -1, 4, 4));
 
@@ -236,41 +243,45 @@ void StoreCatalogSection::layoutResults()
 void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *apiClient, bool externalContentScroll)
 {
     QMap<QString, QVariant> initialFilters = data.toMap();
-    if (initialFilters.contains("discounted"))
+    if (initialFilters.contains(QLatin1StringView("goodOldGames")))
     {
-        filter.discounted = initialFilters["discounted"].toBool();
+        filter.goodOldGames = initialFilters[QLatin1StringView("goodOldGames")].toBool();
     }
-    if (initialFilters.contains("developer"))
+    if (initialFilters.contains(QLatin1StringView("discounted")))
     {
-        filter.developers << initialFilters["developer"].toString();
+        filter.discounted = initialFilters[QLatin1StringView("discounted")].toBool();
     }
-    if (initialFilters.contains("publisher"))
+    if (initialFilters.contains(QLatin1StringView("developer")))
     {
-        filter.publishers << initialFilters["publisher"].toString();
+        filter.developers << initialFilters[QLatin1StringView("developer")].toString();
     }
-    if (initialFilters.contains("genre"))
+    if (initialFilters.contains(QLatin1StringView("publisher")))
     {
-        filter.genres << initialFilters["genre"].toString();
+        filter.publishers << initialFilters[QLatin1StringView("publisher")].toString();
     }
-    if (initialFilters.contains("tag"))
+    if (initialFilters.contains(QLatin1StringView("genre")))
     {
-        filter.tags << initialFilters["tag"].toString();
+        filter.genres << initialFilters[QLatin1StringView("genre")].toString();
     }
-    if (initialFilters.contains("feature"))
+    if (initialFilters.contains(QLatin1StringView("tag")))
     {
-        filter.features << initialFilters["feature"].toString();
+        filter.tags << initialFilters[QLatin1StringView("tag")].toString();
     }
-    if (initialFilters.contains("releaseStatus"))
+    if (initialFilters.contains(QLatin1StringView("feature")))
     {
-        filter.releaseStatuses << initialFilters["releaseStatus"].toString();
+        filter.features << initialFilters[QLatin1StringView("feature")].toString();
     }
-    if (initialFilters.contains("pageId"))
+    if (initialFilters.contains(QLatin1StringView("releaseStatus")))
     {
-        filter.pageId = initialFilters["pageId"].toString();
+        filter.releaseStatuses << initialFilters[QLatin1StringView("releaseStatus")].toString();
     }
-    if (initialFilters.contains("sectionId"))
+    if (initialFilters.contains(QLatin1StringView("pageId")))
     {
-        filter.sectionId = initialFilters["sectionId"].toString();
+        filter.pageId = initialFilters[QLatin1StringView("pageId")].toString();
+    }
+    if (initialFilters.contains(QLatin1StringView("sectionId")))
+    {
+        filter.sectionId = initialFilters[QLatin1StringView("sectionId")].toString();
     }
 
     this->apiClient = apiClient;
@@ -331,7 +342,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             auto resultJson = QJsonDocument::fromJson(QString(catalogReply->readAll()).toUtf8()).object();
             parseSearchCatalogResponse(resultJson, this->data, QLatin1StringView("_product_tile_extended_432x243.webp"));
 
-            auto clearAllFiltersButton = new ClearFilterButton("Clear all filters", QString(), ui->appliedFiltersHolder);
+            auto clearAllFiltersButton = new ClearFilterButton(tr("Clear all filters"), QString(), ui->appliedFiltersHolder);
             clearAllFiltersButton->setVisible(false);
             ui->appliedFiltersHolder->layout()->addWidget(clearAllFiltersButton);
             connect(clearAllFiltersButton, &ClearFilterButton::clicked, this, [this, clearAllFiltersButton]()
@@ -357,7 +368,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             {
                 activatedFilterCount++;
                 clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                auto clearFilterButton = new ClearFilterButton("Selected developer", QString(), ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Selected developer"), QString(), ui->appliedFiltersHolder);
                 ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton, clearAllFiltersButton]()
                 {
@@ -378,7 +389,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             {
                 activatedFilterCount++;
                 clearAllFiltersButton->setVisible(activatedFilterCount > 1);
-                auto clearFilterButton = new ClearFilterButton("Selected publisher", QString(), ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Selected publisher"), QString(), ui->appliedFiltersHolder);
                 ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
                 connect(clearFilterButton, &ClearFilterButton::clicked, this, [this, clearFilterButton, clearAllFiltersButton]()
                 {
@@ -396,8 +407,51 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
                 });
             }
 
-            clearFilterButton = new ClearFilterButton("Discounted", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Show only discounted", ui->filtersScrollAreaContents);
+            clearFilterButton = new ClearFilterButton(tr("GOOD OLD GAMES"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("GOOD OLD GAMES"), ui->filtersScrollAreaContents);
+            maxWidth = std::max(maxWidth, checkbox->width());
+            checkbox->setChecked(filter.goodOldGames);
+            if (checkbox->isChecked())
+            {
+                activatedFilterCount++;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+            }
+            else
+            {
+                clearFilterButton->setVisible(false);
+            }
+            connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
+            {
+               checkbox->setChecked(false);
+            });
+            connect(checkbox, &QCheckBox::toggled,
+                    this, [this, clearFilterButton, clearAllFiltersButton](bool value)
+            {
+                if (value)
+                {
+                    activatedFilterCount++;
+                    ui->appliedFiltersHolder->layout()->addWidget(clearFilterButton);
+                }
+                else
+                {
+                    activatedFilterCount--;
+                    ui->appliedFiltersHolder->layout()->removeWidget(clearFilterButton);
+                }
+                filter.goodOldGames = value;
+                clearAllFiltersButton->setVisible(activatedFilterCount > 1);
+                clearFilterButton->setVisible(value);
+
+                if (applyFilters)
+                {
+                    page = 1;
+                    fetchData();
+                }
+            });
+            ui->filtersScrollAreaLayout->addWidget(checkbox);
+
+            clearFilterButton = new ClearFilterButton(tr("Discounted"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("Show only discounted"), ui->filtersScrollAreaContents);
             maxWidth = std::max(maxWidth, checkbox->width());
             checkbox->setChecked(filter.discounted);
             if (checkbox->isChecked())
@@ -439,8 +493,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
-            clearFilterButton = new ClearFilterButton("Excluding owned products", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Hide all owned products", ui->filtersScrollAreaContents);
+            clearFilterButton = new ClearFilterButton(tr("Excluding owned products"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("Hide all owned products"), ui->filtersScrollAreaContents);
             maxWidth = std::max(maxWidth, checkbox->width());
             checkbox->setChecked(filter.hideOwned);
             if (checkbox->isChecked())
@@ -492,8 +546,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             checkbox->setVisible(this->apiClient->isAuthenticated());
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
-            clearFilterButton = new ClearFilterButton("Showing only wishlisted games", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Show only games on my wishlist", ui->filtersScrollAreaContents);
+            clearFilterButton = new ClearFilterButton(tr("Showing only wishlisted games"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("Show only games on my wishlist"), ui->filtersScrollAreaContents);
             maxWidth = std::max(maxWidth, checkbox->width());
             checkbox->setChecked(filter.onlyWishlisted);
             if (checkbox->isChecked())
@@ -547,8 +601,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
 
             area = new CollapsibleArea("DLCs", ui->filtersScrollAreaContents);
             layout = new QVBoxLayout();
-            clearFilterButton = new ClearFilterButton("Showing without DLCs and extras", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Hide DLCs and extras", area);
+            clearFilterButton = new ClearFilterButton(tr("Showing without DLCs and extras"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("Hide DLCs and extras"), area);
             checkbox->setChecked(!filter.productTypes.contains("dlc"));
             if (checkbox->isChecked())
             {
@@ -590,8 +644,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
                 }
             });
             layout->addWidget(checkbox);
-            clearFilterButton = new ClearFilterButton("Showing only DLCs for owned games", QString(), ui->appliedFiltersHolder);
-            checkbox = new QCheckBox("Show only DLCs for my games", area);
+            clearFilterButton = new ClearFilterButton(tr("Showing only DLCs for owned games"), QString(), ui->appliedFiltersHolder);
+            checkbox = new QCheckBox(tr("Show only DLCs for my games"), area);
             checkbox->setChecked(filter.onlyDlcForOwned);
             if (checkbox->isChecked())
             {
@@ -646,9 +700,9 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            clearFilterButton = new ClearFilterButton("Excluding owned products", QString(), ui->appliedFiltersHolder);
+            clearFilterButton = new ClearFilterButton(tr("Excluding owned products"), QString(), ui->appliedFiltersHolder);
             clearFilterButton->setVisible(false);
-            checkbox = new QCheckBox("Hide all owned products", ui->filtersScrollAreaContents);
+            checkbox = new QCheckBox(tr("Hide all owned products"), ui->filtersScrollAreaContents);
             checkbox->setChecked(filter.hideOwned);
             checkbox->setVisible(false);
             connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
@@ -682,9 +736,9 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
-            clearFilterButton = new ClearFilterButton("Showing only wishlisted games", QString(), ui->appliedFiltersHolder);
+            clearFilterButton = new ClearFilterButton(tr("Showing only wishlisted games"), QString(), ui->appliedFiltersHolder);
             clearFilterButton->setVisible(false);
-            checkbox = new QCheckBox("Show only games on my wishlist", ui->filtersScrollAreaContents);
+            checkbox = new QCheckBox(tr("Show only games on my wishlist"), ui->filtersScrollAreaContents);
             checkbox->setChecked(filter.onlyWishlisted);
             checkbox->setVisible(false);
             connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
@@ -718,11 +772,11 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             });
             ui->filtersScrollAreaLayout->addWidget(checkbox);
 
-            area = new CollapsibleArea("Price range", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Price range"), ui->filtersScrollAreaContents);
             layout = new QVBoxLayout();
-            clearFilterButton = new ClearFilterButton("Price Range", "0 - 0", ui->appliedFiltersHolder);
+            clearFilterButton = new ClearFilterButton(tr("Price Range"), "0 - 0", ui->appliedFiltersHolder);
             clearFilterButton->setVisible(false);
-            checkbox = new QCheckBox("Show only free games", area);
+            checkbox = new QCheckBox(tr("Show only free games"), area);
             connect(clearFilterButton, &ClearFilterButton::clicked, checkbox, [this, checkbox]()
             {
                checkbox->setChecked(false);
@@ -757,7 +811,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Release Status", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Release Status"), ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.releaseStatuses.count() + filter.excludeReleaseStatuses.count());
             connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
             {
@@ -777,8 +831,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.releaseStatuses))
             {
-                auto clearFilterButton = new ClearFilterButton("Release status", item.name, ui->appliedFiltersHolder);
-                auto clearHideFilterButton = new ClearFilterButton("Hide release status", item.name, ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Release status"), item.name, ui->appliedFiltersHolder);
+                auto clearHideFilterButton = new ClearFilterButton(tr("Hide release status"), item.name, ui->appliedFiltersHolder);
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 bool shouldInclude = filter.releaseStatuses.contains(item.slug);
                 filterCheckbox->setInclude(shouldInclude);
@@ -892,8 +946,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.genres))
             {
-                auto clearFilterButton = new ClearFilterButton("Genre", item.name, ui->appliedFiltersHolder);
-                auto clearHideFilterButton = new ClearFilterButton("Hide genre", item.name, ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Genre"), item.name, ui->appliedFiltersHolder);
+                auto clearHideFilterButton = new ClearFilterButton(tr("Hide genre"), item.name, ui->appliedFiltersHolder);
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 bool shouldInclude = filter.genres.contains(item.slug);
                 filterCheckbox->setInclude(shouldInclude);
@@ -987,7 +1041,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Tags", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Tags"), ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.tags.count() + filter.excludeTags.count());
             connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
             {
@@ -1007,8 +1061,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.fullTagsList))
             {
-                auto clearFilterButton = new ClearFilterButton("Tag", item.name, ui->appliedFiltersHolder);
-                auto clearHideFilterButton = new ClearFilterButton("Hide tag", item.name, ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Tag"), item.name, ui->appliedFiltersHolder);
+                auto clearHideFilterButton = new ClearFilterButton(tr("Hide tag"), item.name, ui->appliedFiltersHolder);
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 bool shouldInclude = filter.tags.contains(item.slug);
                 filterCheckbox->setInclude(shouldInclude);
@@ -1103,7 +1157,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Operating Systems", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Operating Systems"), ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.systems.count());
             connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
             {
@@ -1122,7 +1176,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.systems))
             {
-                clearFilterButton = new ClearFilterButton("Operating System", item.name, ui->appliedFiltersHolder);
+                clearFilterButton = new ClearFilterButton(tr("Operating System"), item.name, ui->appliedFiltersHolder);
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.systems.contains(item.slug));
                 if (checkbox->isChecked())
@@ -1172,7 +1226,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Features", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Features"), ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.features.count() + filter.excludeFeatures.count());
             connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
             {
@@ -1192,8 +1246,8 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.features))
             {
-                auto clearFilterButton = new ClearFilterButton("Feature", item.name, ui->appliedFiltersHolder);
-                auto clearHideFilterButton = new ClearFilterButton("Hide feature", item.name, ui->appliedFiltersHolder);
+                auto clearFilterButton = new ClearFilterButton(tr("Feature"), item.name, ui->appliedFiltersHolder);
+                auto clearHideFilterButton = new ClearFilterButton(tr("Hide feature"), item.name, ui->appliedFiltersHolder);
                 auto filterCheckbox = new FilterCheckbox(item.name, area);
                 bool shouldInclude = filter.features.contains(item.slug);
                 filterCheckbox->setInclude(shouldInclude);
@@ -1287,10 +1341,10 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             maxWidth = std::max(maxWidth, layout->sizeHint().width());
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Release Date", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Release Date"), ui->filtersScrollAreaContents);
             ui->filtersScrollAreaLayout->addWidget(area);
 
-            area = new CollapsibleArea("Languages", ui->filtersScrollAreaContents);
+            area = new CollapsibleArea(tr("Languages"), ui->filtersScrollAreaContents);
             area->setChangedFilters(filter.languages.count());
             connect(area, &CollapsibleArea::clearFilters, this, [this, area]()
             {
@@ -1309,7 +1363,7 @@ void StoreCatalogSection::initialize(const QVariant &data, api::GogApiClient *ap
             layout->setAlignment(Qt::AlignTop);
             for (const api::MetaTag &item : std::as_const(this->data.filters.languages))
             {
-                clearFilterButton = new ClearFilterButton("Language", item.name, ui->appliedFiltersHolder);
+                clearFilterButton = new ClearFilterButton(tr("Language"), item.name, ui->appliedFiltersHolder);
                 auto checkbox = new QCheckBox(item.name, area);
                 checkbox->setChecked(filter.languages.contains(item.slug));
                 if (checkbox->isChecked())

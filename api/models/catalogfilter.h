@@ -8,6 +8,7 @@ namespace api
 {
     struct CatalogFilter
     {
+        bool goodOldGames;
         bool discounted;
         bool free;
         bool hideOwned;

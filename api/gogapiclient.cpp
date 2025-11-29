@@ -640,9 +640,14 @@ QNetworkReply *api::GogApiClient::searchCatalog(const SortOrder &order,
     {
         parameters.addQueryItem(QLatin1StringView("systems"), QLatin1StringView("in:") + filter.systems.join(','));
     }
-    if (!filter.tags.isEmpty())
+    if (!filter.tags.isEmpty() || filter.goodOldGames)
     {
-        parameters.addQueryItem(QLatin1StringView("tags"), QLatin1StringView("in:") + filter.tags.join(','));
+        QStringList fullTagFilters(filter.tags);
+        if (filter.goodOldGames)
+        {
+            fullTagFilters.append(QLatin1StringView("good-old-game"));
+        }
+        parameters.addQueryItem(QLatin1StringView("tags"), QLatin1StringView("is:") + fullTagFilters.join(','));
     }
     if (!filter.excludeTags.isEmpty())
     {

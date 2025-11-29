@@ -29,6 +29,7 @@ private:
     QVector<QString> nowOnSaleSectionsIds;
     QVector<bool> nowOnSaleSectionsRequested;
     QSet<const QString> ownedProducts;
+    QString path;
     QString pathHex;
     QString promoId;
     std::optional<int> timerId;
