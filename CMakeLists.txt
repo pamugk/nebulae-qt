@@ -32,6 +32,7 @@ set(PROJECT_SOURCES
         api/models/order.h api/models/orderfilter.h
         api/models/ownedproduct.h
         api/models/platformachievement.h
+        api/models/preservationprogram.h
         api/models/price.h
         api/models/product.h
         api/models/productshared.h
@@ -56,6 +57,7 @@ set(PROJECT_SOURCES
         api/utils/orderserialization.h api/utils/orderserialization.cpp
         api/utils/ownedproductserialization.h api/utils/ownedproductserialization.cpp
         api/utils/platformachievementserialization.h api/utils/platformachievementserialization.cpp
+        api/utils/preservationprogramserialization.h api/utils/preservationprogramserialization.cpp
         api/utils/priceserialization.h api/utils/priceserialization.cpp
         api/utils/recommendationserialization.h api/utils/recommendationserialization.cpp
         api/utils/releaseserialization.h api/utils/releaseserialization.cpp

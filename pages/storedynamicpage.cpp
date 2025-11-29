@@ -11,6 +11,7 @@
 #include <QTabWidget>
 
 #include "../api/utils/catalogserialization.h"
+#include "../api/utils/preservationprogramserialization.h"
 #include "../api/utils/storeserialization.h"
 #include "../widgets/newsitemtile.h"
 #include "../widgets/simpleproductitem.h"
@@ -1223,6 +1224,50 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     ui->resultScrollAreaContentsLayout->insertWidget(ui->resultScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
                 }
             }
+            else if (type == QLatin1StringView("GOG_PRESERVATION_PROGRAM_HERO_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetPreservationProgramHeroSectionResponse data;
+                parseGetPreservationProgramHeroSectionResponse(resultJson, data);
+            }
+            else if (type == QLatin1StringView("GOG_PRESERVATION_PROGRAM_DESCRIPTION_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetPreservationProgramDescriptionSectionResponse data;
+                parseGetPreservationProgramDescriptionSectionResponse(resultJson, data);
+            }
+            else if (type == QLatin1StringView("GOG_PRESERVATION_PROGRAM_STORIES_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetPreservationProgramStoriesSectionResponse data;
+                parseGetPreservationProgramStoriesSectionResponse(resultJson, data);
+
+                if (data.stories.isEmpty())
+                {
+                    ui->resultScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+
+                }
+            }
+            else if (type == QLatin1StringView("ACCORDION_SECTION"))
+            {
+                auto resultJson = QJsonDocument::fromJson(QString(sectionReply->readAll()).toUtf8()).object();
+                api::GetAccordionSectionResponse data;
+                parseGetAccordionSectionResponse(resultJson, data);
+
+                if (data.items.isEmpty())
+                {
+                    ui->resultScrollAreaContentsLayout->removeWidget(sectionWidget);
+                    sectionWidget->deleteLater();
+                }
+                else
+                {
+
+                }
+            }
         }
         else if (sectionReply->error() != QNetworkReply::OperationCanceledError)
         {
@@ -1280,7 +1325,11 @@ void StoreDynamicPage::getSections()
                     || section.sectionType == QLatin1StringView("RANKING_SECTION")
                     || section.sectionType == QLatin1StringView("NEWS_SECTION")
                     || section.sectionType == QLatin1StringView("HERO_SECTION")
-                    || section.sectionType == QLatin1StringView("VERTICAL_BANNER_SECTION"))
+                    || section.sectionType == QLatin1StringView("VERTICAL_BANNER_SECTION")
+                    || section.sectionType == QLatin1StringView("GOG_PRESERVATION_PROGRAM_HERO_SECTION")
+                    || section.sectionType == QLatin1StringView("GOG_PRESERVATION_PROGRAM_DESCRIPTION_SECTION")
+                    || section.sectionType == QLatin1StringView("GOG_PRESERVATION_PROGRAM_STORIES_SECTION")
+                    || section.sectionType == QLatin1StringView("ACCORDION_SECTION"))
                 {
                     getSection(section.id, section.sectionType);
                 }
