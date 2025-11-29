@@ -15,6 +15,7 @@
 #include "../api/utils/storeserialization.h"
 #include "../widgets/collapsiblearea.h"
 #include "../widgets/newsitemtile.h"
+#include "../widgets/preservationstoryitem.h"
 #include "../widgets/simpleproductitem.h"
 #include "../widgets/storecatalogsection.h"
 #include "../widgets/storediscoveritem.h"
@@ -1250,7 +1251,49 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                 }
                 else
                 {
+                    if (!data.title.isEmpty())
+                    {
+                        auto titleLabel = new QLabel(data.title, ui->resultScrollAreaContents);
+                        titleLabel->setStyleSheet(QStringLiteral("font: 700 12pt; padding: 16px 0; border-bottom: 1px solid #bfbfbf;"));
+                        ui->resultScrollAreaContentsLayout->insertWidget(ui->resultScrollAreaContentsLayout->indexOf(sectionWidget), titleLabel);
+                    }
 
+                    sectionWidget->setLayout(new QVBoxLayout(sectionWidget));
+                    //sectionWidget->layout()->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+                    sectionWidget->layout()->setContentsMargins(0, 0, 0, 0);
+                    sectionWidget->layout()->setSpacing(1);
+                    for (const api::PreservationProgramStory &story : std::as_const(data.stories))
+                    {
+                        auto *storyItemWidget = new PreservationStoryItem(sectionWidget);
+                        storyItemWidget->setFixedWidth(1096);
+                        storyItemWidget->setTitle(story.product.title);
+                        storyItemWidget->setDescription(story.description);
+                        storyItemWidget->setReadFullArticleButtonText(story.ctaButton.copy);
+                        connect(storyItemWidget, &PreservationStoryItem::showFullArticleClicked, this, [url = QUrl(story.ctaButton.href)]()
+                        {
+                            QDesktopServices::openUrl(url);
+                        });
+
+                        QNetworkReply *coverReply = apiClient->getAnything(story.product.coverHorizontal);
+                        connect(storyItemWidget, &QObject::destroyed, coverReply, &QNetworkReply::abort);
+                        connect(coverReply, &QNetworkReply::finished, storyItemWidget, [storyItemWidget, coverReply]()
+                                {
+                                    if (coverReply->error() == QNetworkReply::NoError)
+                                    {
+                                        QPixmap image;
+                                        image.loadFromData(coverReply->readAll());
+                                        storyItemWidget->setCover(image);
+                                    }
+                                    else if (coverReply->error() != QNetworkReply::OperationCanceledError)
+                                    {
+                                        qDebug() << coverReply->error()
+                                        << coverReply->errorString()
+                                        << QString(coverReply->readAll()).toUtf8();
+                                    }
+                                });
+                        connect(coverReply, &QNetworkReply::finished, coverReply, &QNetworkReply::deleteLater);
+                        sectionWidget->layout()->addWidget(storyItemWidget);
+                    }
                 }
             }
             else if (type == QLatin1StringView("ACCORDION_SECTION"))
@@ -1279,10 +1322,10 @@ void StoreDynamicPage::getSection(const QString &id, const QString &type)
                     sectionWidget->layout()->setSpacing(1);
                     for (const api::AccordionSectionItem &item : std::as_const(data.items))
                     {
-                        CollapsibleArea *area = new CollapsibleArea(item.header, sectionWidget);
-                        QVBoxLayout *layout = new QVBoxLayout();
-                        layout->setContentsMargins(0, 0, 0, 0);
-                        QLabel *descriptionLabel = new QLabel(item.description, area);
+                        auto *area = new CollapsibleArea(item.header, sectionWidget);
+                        auto *layout = new QVBoxLayout();
+                        layout->setContentsMargins(44, 0, 44, 16);
+                        auto *descriptionLabel = new QLabel(item.description, area);
                         layout->addWidget(descriptionLabel);
                         area->setContentLayout(layout);
                         sectionWidget->layout()->addWidget(area);
